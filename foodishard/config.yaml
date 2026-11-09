@@ -1,5 +1,5 @@
 name: FoodIsHard
-version: "0.4.3"
+version: "0.4.4"
 slug: foodishard
 description: Vegetarian family dinner planner with a shared shopping list
 url: https://github.com/smp-seven/FoodIsHard
@@ -13,3 +13,4 @@ ingress: true
 ingress_port: 8099
 panel_icon: mdi:silverware-fork-knife
 panel_title: Dinners
+panel_admin: false

@@ -37,3 +37,6 @@
 - Every pull-up panel has a close (X) button that stays visible as you scroll.
 - The phone's Back button now closes panels and cooking mode instead of leaving the page underneath.
 - Panels stand out more in dark mode.
+
+## 0.4.4
+- Dinners now shows in the sidebar for non-admin users too (panel_admin: false).
