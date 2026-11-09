@@ -14,18 +14,21 @@ Home Assistant add-on.
 
 ## Install on Home Assistant
 
-1. In Home Assistant go to **Settings → Add-ons → Add-on Store**.
-2. Open the **⋮** menu (top right), choose **Repositories**, and add:
-   `https://github.com/smp-seven/FoodIsHard`
-3. Find **FoodIsHard** in the store, click **Install**, then **Start**.
-   The first install builds on your device and takes a minute or two.
-4. Turn on **Show in sidebar**. "Dinners" then appears in Home Assistant on every
-   device and phone, behind your normal HA login, including over Tailscale.
+(Home Assistant renamed add-ons to **apps** in 2026.2.)
 
-Updates appear as an **Update** button on the add-on page.
+1. Go to **Settings → Apps → Install app** (the app store).
+2. Open the **⋮** menu (top right), choose **Repositories**, add
+   `https://github.com/smp-seven/FoodIsHard`, then close the dialog.
+3. Find **FoodIsHard** in the store (use **⋮ → Check for updates** if it isn't there yet)
+   and press **Install**. It builds on your device, which takes a few minutes.
+4. Turn on **Start on boot**, **Watchdog** and **Show in sidebar**, then press **Start**.
+   **Dinners** appears in the sidebar on every device, behind your normal login.
 
-Your household details, plans, ticks, prices and settings are stored in the add-on's `/data` folder, so they're
-included in Home Assistant backups. Nothing personal is kept in this repository.
+Updates appear as an **Update** button on the app's page.
+
+Your household details, plans, ticks, prices and settings are stored in the app's
+`/data` folder, so they're included in Home Assistant backups. Nothing personal is kept
+in this repository.
 
 ## How it's built
 
