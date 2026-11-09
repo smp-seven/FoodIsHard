@@ -24,6 +24,8 @@ DATA_DIR = Path(os.environ.get("FOODISHARD_DATA", "/data"))
 STATE_FILE = DATA_DIR / "state.json"
 PORT = int(os.environ.get("PORT", "8099"))
 MAX_BODY = 512 * 1024
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("font/woff", ".woff")
 # Only Home Assistant's Ingress proxy may talk to us. Set FOODISHARD_ALLOW_ALL=1 when running locally.
 INGRESS_PROXY = "172.30.32.2"
 ALLOW_ALL = bool(os.environ.get("FOODISHARD_ALLOW_ALL"))
@@ -208,7 +210,7 @@ class Handler(BaseHTTPRequestHandler):
         data = path.read_bytes()
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", ctype)
-        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Cache-Control", "max-age=604800" if "/fonts/" in str(path) else "no-cache")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
@@ -246,6 +248,8 @@ class Handler(BaseHTTPRequestHandler):
         name = path.rsplit("/", 1)[-1] or "index.html"
         if "/data/" in path and name.endswith(".json"):
             target = SEED_DIR / name
+        elif "/fonts/" in path:
+            target = STATIC_DIR / "fonts" / name
         else:
             target = STATIC_DIR / name
         try:

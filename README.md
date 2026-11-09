@@ -10,6 +10,7 @@ Home Assistant add-on.
 - **Shopping list:** merged from the week's dinners plus weekly staples. Grouped by aisle or by shop, ticks sync between phones, and it exports as a copy/paste list, a .txt download or a printable PDF.
 - **Prices:** rough estimates per recipe and per week, adjusted for food inflation using the ONS food price index, at your chosen supermarket, plus a rule-of-thumb comparison with the others. Tap any price to correct it.
 - **Swaps and budget mode:** fresh → frozen, fresh ginger → ground and so on. Emergency meals for nights you need something in 15 minutes.
+- **Private by design:** fonts are bundled and the only outside request is the weekly ONS price index (which you can switch off).
 - **Food rules:** strictly vegetarian (no gelatine, anchovy or animal rennet), plus allergies and dislikes you set yourself.
 
 ## Install on Home Assistant

@@ -29,3 +29,6 @@
 
 ## 0.4.1
 - Security: the server now refuses any request that does not come through Home Assistant's Ingress proxy.
+
+## 0.4.2
+- Fonts (Fraunces and Inter, SIL Open Font License) are now bundled, so the app makes no requests to Google or anywhere else from your phones.
