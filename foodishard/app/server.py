@@ -24,6 +24,9 @@ DATA_DIR = Path(os.environ.get("FOODISHARD_DATA", "/data"))
 STATE_FILE = DATA_DIR / "state.json"
 PORT = int(os.environ.get("PORT", "8099"))
 MAX_BODY = 512 * 1024
+# Only Home Assistant's Ingress proxy may talk to us. Set FOODISHARD_ALLOW_ALL=1 when running locally.
+INGRESS_PROXY = "172.30.32.2"
+ALLOW_ALL = bool(os.environ.get("FOODISHARD_ALLOW_ALL"))
 
 _lock = threading.Lock()
 _state = None  # loaded lazily
@@ -213,8 +216,18 @@ class Handler(BaseHTTPRequestHandler):
     def _route_path(self):
         return urlparse(self.path).path
 
+    def _allowed(self):
+        if ALLOW_ALL or self.client_address[0] == INGRESS_PROXY:
+            return True
+        self.send_response(HTTPStatus.FORBIDDEN)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+        return False
+
     # -- GET --
     def do_GET(self):
+        if not self._allowed():
+            return
         url = urlparse(self.path)
         path = url.path
 
@@ -246,6 +259,8 @@ class Handler(BaseHTTPRequestHandler):
 
     # -- POST --
     def do_POST(self):
+        if not self._allowed():
+            return
         path = self._route_path()
         if not path.endswith("/api/op"):
             return self._send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)

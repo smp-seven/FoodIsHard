@@ -44,7 +44,7 @@ in this repository.
 ### Run it locally (optional)
 
 ```bash
-FOODISHARD_DATA=./dev-data PORT=8099 python3 foodishard/app/server.py
+FOODISHARD_ALLOW_ALL=1 FOODISHARD_DATA=./dev-data PORT=8099 python3 foodishard/app/server.py
 # open http://localhost:8099
 ```
 

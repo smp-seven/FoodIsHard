@@ -26,3 +26,6 @@
 - "How was it?" after cooking, with a "Cooked it" badge and copyable feedback for recipe fixes.
 - tools/check_recipes.py checks every recipe against the house standard.
 - Fix: changes made in quick succession could be lost while syncing.
+
+## 0.4.1
+- Security: the server now refuses any request that does not come through Home Assistant's Ingress proxy.
