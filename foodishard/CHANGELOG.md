@@ -40,3 +40,8 @@
 
 ## 0.4.4
 - Dinners now shows in the sidebar for non-admin users too (panel_admin: false).
+
+## 0.5.0
+- Staples and things you add yourself: you set the price for one, plus an optional size (e.g. "1 carton"). No more automatic matching.
+- On the shopping list: a − / + counter for buying several (the cost multiplies) and an × to remove an item. Removing a recipe item or staple moves it to "Not needed this week", where you can bring it back.
+- A staple that matches a recipe ingredient (like Milk) now covers it instead of appearing twice.

@@ -109,6 +109,15 @@ def apply_op(state, op, user):
         item["by"] = user
         item["at"] = now
 
+    elif kind == "qty":
+        week = state["checks"].setdefault(op["week"], {})
+        week.setdefault(op["key"], {})["n"] = max(1, min(99, int(op["n"])))
+
+    elif kind == "extra_update":
+        for item in state["extras"].get(op["week"], []):
+            if item.get("id") == op["id"]:
+                item.update({k: v for k, v in (op.get("patch") or {}).items() if k in ("name", "price", "qty", "shop")})
+
     elif kind == "clear_checks":
         state["checks"][op["week"]] = {}
 

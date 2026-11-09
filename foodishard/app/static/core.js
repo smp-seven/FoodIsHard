@@ -122,6 +122,8 @@ function applyOp(state, op, user) {
       const item = week[op.key] || (week[op.key] = {});
       item[op.field] = !!op.value; item.by = user; item.at = now; break;
     }
+    case "qty": { const week = bag("checks")[op.week] || (state.checks[op.week] = {}); (week[op.key] || (week[op.key] = {})).n = Math.max(1, Math.min(99, op.n | 0)); break; }
+    case "extra_update": (state.extras[op.week] || []).forEach((i) => { if (i.id === op.id) ["name", "price", "qty", "shop"].forEach((k) => { if (k in (op.patch || {})) i[k] = op.patch[k]; }); }); break;
     case "clear_checks": bag("checks")[op.week] = {}; break;
     case "extra_add": (bag("extras")[op.week] || (state.extras[op.week] = [])).push({ ...op.item, by: user }); break;
     case "extra_remove": bag("extras")[op.week] = (state.extras[op.week] || []).filter((i) => i.id !== op.id); break;
@@ -451,17 +453,25 @@ function buildList(week) {
       items.set("i:" + k, { key: "i:" + k, k, name: m.n, aisle: m.a, shop: m.s, flags: m.f || [], note: null, cupboard: true, qty: {}, recipes: [], from: new Set(), swappable: new Set() });
     }
   });
-  (settings().staples || []).filter((s) => s.on).forEach((s) => {
-    const sk = s.k !== undefined ? s.k : catalogueMatch(s.name || "");
-    if (sk && items.has("i:" + sk)) { // already needed for a recipe: fold the staple into it
-      const it = items.get("i:" + sk); it.stapleAmount = s.amount || "weekly"; it.recipes.push("every week"); return;
-    }
-    const m = sk ? ingMeta(sk) : null;
-    items.set("s:" + s.id, { key: "s:" + s.id, k: sk || null, name: s.name, amount: s.amount, aisle: s.aisle || (m && m.a) || "other", shop: s.shop || (m && m.s) || "aldi", flags: [], note: s.note, staple: true, recipes: [], fixedCost: sk ? null : (s.price != null && s.price !== "" ? +s.price : null), onePack: !!sk });
+  const guessAisle = (name) => { const k = catalogueMatch(name || ""); return k ? ingMeta(k).a : "other"; };
+  (settings().staples || []).filter((s) => s.on && (s.name || "").trim()).forEach((s) => {
+    items.set("s:" + s.id, { key: "s:" + s.id, k: null, name: s.name.trim(), aisle: s.aisle || guessAisle(s.name), shop: s.shop || "aldi", flags: [], note: s.amount || s.note || null, staple: true, id: s.id, recipes: [],
+      unitPrice: s.price != null && s.price !== "" ? +s.price : null, baseQty: +s.qty || 1 });
   });
   (app.state.extras[week] || []).forEach((x) => {
-    const m = x.k ? ingMeta(x.k) : null;
-    items.set("x:" + x.id, { key: "x:" + x.id, k: x.k || null, name: x.name, amount: x.amount, aisle: x.aisle || (m && m.a) || "other", shop: x.shop || "any", flags: [], extra: true, id: x.id, by: x.by, recipes: [], onePack: !!x.k });
+    items.set("x:" + x.id, { key: "x:" + x.id, k: null, name: x.name, aisle: x.aisle || guessAisle(x.name), shop: x.shop || "any", flags: [], note: x.amount || null, extra: true, id: x.id, by: x.by, recipes: [],
+      unitPrice: x.price != null && x.price !== "" ? +x.price : null, baseQty: +x.qty || 1 });
+  });
+
+  // a staple that matches a recipe ingredient (e.g. Milk) covers it, so it isn't listed twice
+  items.forEach((st) => {
+    if (!st.staple) return;
+    const k = catalogueMatch(st.name);
+    const ri = k && items.get("i:" + k);
+    if (!ri || ri.cupboard) return;
+    const q = Object.entries(ri.qty).map(([u, n]) => fmtQty(n, u, { forShopping: true })).join(" + ");
+    st.covers = `${q ? q + " " : ""}for ${ri.recipes.join(", ")}`;
+    items.delete("i:" + k);
   });
 
   const checks = (app.state.checks || {})[week] || {};
@@ -473,12 +483,14 @@ function buildList(week) {
     it.from = [...(it.from || [])].map((k) => ingMeta(k).n);
     it.swappable = [...(it.swappable || [])];
     it.checkLabel = it.k ? checkLabelFor(it.k) : [];
-    it.qtyText = it.amount || Object.entries(it.qty || {}).map(([u, q]) => fmtQty(q, u, { forShopping: true })).join(" + ");
-    if (it.stapleAmount) it.qtyText = `${it.qtyText} + ${it.stapleAmount}`;
+    it.qtyText = Object.entries(it.qty || {}).map(([u, q]) => fmtQty(q, u, { forShopping: true })).join(" + ");
     const costShop = it.shop === "any" ? priceShop() : it.shop;
-    if (it.fixedCost != null) it.cost = it.fixedCost * shopMult(costShop);
-    else if (it.onePack && it.k) { const bp = basePrice(it.k); it.cost = bp ? bp.p * shopMult(costShop) : null; }
-    else if (it.k) { const e = Object.entries(it.qty || {}); it.cost = e.length === 1 ? costOf(it.k, e[0][1], e[0][0], { wholePacks: true, shop: costShop }) : null; }
+    if (it.staple || it.extra) {
+      it.counted = true;
+      it.n = c.n || it.baseQty || 1;
+      it.cost = it.unitPrice != null ? it.unitPrice * it.n : null;
+      it.qtyText = "";
+    } else if (it.k) { const e = Object.entries(it.qty || {}); it.cost = e.length === 1 ? costOf(it.k, e[0][1], e[0][0], { wholePacks: true, shop: costShop }) : null; }
     const bp = it.k ? basePrice(it.k) : null;
     it.stale = !!(bp && bp.stale);
     if (it.cupboard) {

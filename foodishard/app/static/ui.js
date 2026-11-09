@@ -215,7 +215,7 @@ function viewShop() {
       ${tabs.length > 1 ? `<div class="shop-tabs"><button class="chip ${app.shopTab === "all" ? "on" : ""}" data-act="shopTab" data-s="all">All · ${toGet.filter((i) => !i.done).length}</button>${tabs.map((t) => `<button class="chip ${app.shopTab === t.s ? "on" : ""}" data-act="shopTab" data-s="${t.s}">${esc(shopName(t.s))} · ${t.n}</button>`).join("")}</div>` : ""}
     </div>
     ${body}
-    ${have.length ? `<details class="fold"><summary class="section-label">Already got · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
+    ${have.length ? `<details class="fold"><summary class="section-label">Not needed this week · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
     <button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="rack">
       <span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">${unchecked ? `${unchecked} thing${unchecked === 1 ? "" : "s"} this week's dinners use ${unchecked === 1 ? "hasn't" : "haven't"} been checked` : "Mark anything running low and it goes on the list"}</span></span>
       ${unchecked ? `<span class="pill warn">Check</span>` : ""}<span aria-hidden="true">›</span></button>
@@ -228,22 +228,28 @@ function itemRow(i) {
   (i.checkLabel || []).forEach((a) => chips.push(`<span class="pill warm">Check: ${esc(a.toLowerCase())}</span>`));
   if (i.stale) chips.push(`<span class="pill">Price may be old</span>`);
   const sub = [];
+  if (i.counted && i.unitPrice != null) sub.push(`${money(i.unitPrice)} each`);
   if (i.from.length) sub.push(`instead of ${esc(i.from.join(", ").toLowerCase())}`);
-  if (i.note && !i.recipes.length) sub.push(esc(i.note));
-  else if (i.note) sub.push(esc(i.note));
-  if (i.extra && i.by) sub.push(`Added by ${esc(i.by)}`);
-  if (i.staple) sub.push("Every week");
+  if (i.note) sub.push(esc(i.note));
+  if (i.extra && i.by) sub.push(`added by ${esc(i.by)}`);
+  if (i.staple) sub.push("every week");
+  if (i.covers) sub.push(`covers the ${esc(i.covers)}`);
   if (i.done && i.checkedBy) sub.push(`✓ ${esc(i.checkedBy)}`);
+  const key = esc(i.key);
   const selected = app.selecting.has(i.key);
-  let lead;
-  if (i.have) lead = `<button class="btn sm" data-act="flag" data-key="${esc(i.key)}" data-f="have" data-v="0">Need it</button>`;
-  else lead = `<input type="checkbox" class="check-input" data-act="tick" data-key="${esc(i.key)}" ${i.done ? "checked" : ""} aria-label="Got ${esc(i.name)}">`;
-  return `<div class="item ${i.done ? "done" : ""} ${selected ? "sel" : ""}" data-key="${esc(i.key)}">
+  const lead = i.have ? `<button class="btn sm" data-act="flag" data-key="${key}" data-f="have" data-v="0">Need it</button>`
+    : `<input type="checkbox" class="check-input" data-act="tick" data-key="${key}" ${i.done ? "checked" : ""} aria-label="Got ${esc(i.name)}">`;
+  const stepper = i.counted && !i.have ? `<span class="mini-step"><button data-act="count" data-key="${key}" data-d="-1" aria-label="One fewer" ${i.n <= 1 ? "disabled" : ""}>−</button><b>${i.n}</b><button data-act="count" data-key="${key}" data-d="1" aria-label="One more">+</button></span>` : "";
+  const remove = i.have || i.cupboard ? "" : `<button class="icon-btn sm plain" data-act="removeItem" data-key="${key}" aria-label="Remove ${esc(i.name)} from the list">${icon("x", 16)}</button>`;
+  return `<div class="item ${i.done ? "done" : ""} ${selected ? "sel" : ""}" data-key="${key}">
     ${lead}
-    <button class="body" data-act="itemOpen" data-key="${esc(i.key)}"><span class="iname">${esc(i.name)}</span> ${i.qtyText ? `<span class="iq">${esc(i.qtyText)}</span>` : ""}
-      ${chips.length || sub.length ? `<span class="sub">${chips.join("")}${sub.length ? `<span>${sub.join(" · ")}</span>` : ""}</span>` : ""}</button>
-    ${i.cost != null && !i.cupboard ? `<span class="price">${money(i.cost)}</span>` : ""}
-    <button class="shop-tag ${esc(i.shop)}" data-act="moveOne" data-key="${esc(i.key)}" aria-label="Shop: ${esc(shopName(i.shop, false))}. Tap to change">${esc(shopName(i.shop))}</button>
+    <div class="grow">
+      <button class="body" data-act="itemOpen" data-key="${key}"><span class="iname">${esc(i.name)}</span> ${i.qtyText ? `<span class="iq">${esc(i.qtyText)}</span>` : ""}
+        ${chips.length || sub.length ? `<span class="sub">${chips.join("")}${sub.length ? `<span>${sub.join(" · ")}</span>` : ""}</span>` : ""}</button>
+      <div class="item-meta">${stepper}${i.cost != null ? `<span class="price">${money(i.cost)}</span>` : ""}
+        <button class="shop-tag ${esc(i.shop)}" data-act="moveOne" data-key="${key}" aria-label="Shop: ${esc(shopName(i.shop, false))}. Tap to change">${esc(shopName(i.shop))}</button></div>
+    </div>
+    ${remove}
   </div>`;
 }
 function dockShop() {
@@ -320,10 +326,13 @@ function viewSettings() {
     s.budget = keepB; app.state.swaps = keepSw; return off - on; })();
   const catalogue = `<datalist id="catalogue">${Object.values(app.ing.items).map((m) => `<option value="${esc(m.n)}">`).join("")}</datalist>`;
   const staples = (s.staples || []).map((st, i) => `<div class="stack" style="padding:14px 16px;gap:8px">
-      <div class="row"><input class="input grow" list="catalogue" value="${esc(st.name)}" data-set="stapleName" data-i="${i}" aria-label="Item">
+      <div class="row"><input class="input grow" value="${esc(st.name)}" placeholder="e.g. Milk" data-set="stapleName" data-i="${i}" aria-label="Item">
         <label class="switch" title="On every list"><input type="checkbox" data-set="stapleOn" data-i="${i}" ${st.on ? "checked" : ""}><i></i></label></div>
-      <div class="row"><input class="input grow" value="${esc(st.amount || "")}" placeholder="Amount, e.g. 4 pints" data-set="stapleAmount" data-i="${i}" aria-label="Amount">
-        ${(st.k !== undefined ? st.k : catalogueMatch(st.name || "")) ? `<span class="pill accent">Priced</span>` : `<span>£</span><input class="input" style="width:84px" inputmode="decimal" value="${st.price != null ? esc(st.price) : ""}" placeholder="0.00" data-set="staplePrice" data-i="${i}" aria-label="Price">`}
+      <input class="input" value="${esc(st.amount || "")}" placeholder="Size, e.g. 1 carton (optional)" data-set="stapleAmount" data-i="${i}" aria-label="Size">
+      <div class="row wrap">
+        <span class="row" style="gap:6px"><b>£</b><input class="input" style="width:84px" inputmode="decimal" value="${st.price != null ? esc(st.price) : ""}" placeholder="each" data-set="staplePrice" data-i="${i}" aria-label="Price each"></span>
+        <div class="stepper"><button data-act="stapleCount" data-i="${i}" data-d="-1" aria-label="Fewer">−</button><span>×${+st.qty || 1}</span><button data-act="stapleCount" data-i="${i}" data-d="1" aria-label="More">+</button></div>
+        <select class="input" style="width:auto;flex:1;min-width:110px" data-set="stapleShop" data-i="${i}" aria-label="Shop">${shopOrder().map((k) => `<option value="${k}" ${(st.shop || "aldi") === k ? "selected" : ""}>${esc(shopName(k))}</option>`).join("")}</select>
         <button class="icon-btn plain" data-act="stapleDel" data-i="${i}" aria-label="Remove">${icon("trash", 18)}</button></div></div>`).join("");
 
   return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="tonight" aria-label="Back">${icon("left", 18)}</button>`)}
@@ -379,11 +388,11 @@ function viewSettings() {
 
     <p class="section-label">Weekly staples</p>
     <div class="list">${staples}<div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="stapleAdd">${icon("plus", 16)}Add a staple</button>
-      <span class="small muted">Breakfasts, lunches and anything you buy every week. Pick a name from the suggestions and it's priced for you.</span></div></div>
+      <span class="small muted">Breakfasts, lunches and anything you buy every week, with the price for one and how many you usually get.</span></div></div>
     ${catalogue}
     <p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.4.4</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.5.0</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -524,6 +533,10 @@ function openItem(key) {
     <p class="muted" style="margin:6px 0 12px">${it.qtyText ? `${esc(it.qtyText)} · ` : ""}${it.recipes.length ? `for ${esc(it.recipes.join(", "))}` : it.staple ? "Every week" : it.extra ? `Added${it.by ? ` by ${esc(it.by)}` : ""}` : ""}</p>
     ${it.note ? `<p class="pill" style="white-space:normal;padding:8px 12px">${esc(it.note)}</p>` : ""}
     <div class="stack">
+      ${it.counted ? `<form class="card stack" style="padding:14px 16px;gap:10px" data-form="manual" data-key="${esc(key)}">
+        <label><span class="small muted">Name</span><input class="input" name="name" value="${esc(it.name)}"></label>
+        <label><span class="small muted">Price each</span><span class="row" style="gap:6px"><b>£</b><input class="input" name="price" inputmode="decimal" value="${it.unitPrice != null ? it.unitPrice.toFixed(2) : ""}" placeholder="0.00"></span></label>
+        <button class="btn primary">Save</button>${it.staple ? `<span class="small muted">Changes the staple for every week.</span>` : ""}</form>` : ""}
       ${m && m.pk ? `<form class="card stack" style="padding:14px 16px;gap:10px" data-form="price" data-k="${esc(it.k)}">
         <div class="row between"><b>Price</b><span class="small muted">${bp && bp.own ? `Updated by ${esc(bp.own.by || "someone")} on ${niceDate(new Date(bp.own.at * 1000))}` : `Estimate, checked ${esc(app.ing.prices_checked || "")}`}</span></div>
         <span class="small muted">For a pack of ${esc(fmtQty(m.pk[0], m.pk[1]))}</span>
@@ -554,15 +567,17 @@ function openAdd() {
   const shops = shopOrder(), last = app.lastShop || shops[0];
   openSheet(`<h1 class="title" style="font-size:26px">Add to the list</h1>
     <form data-form="add" class="stack" style="margin-top:12px">
-      <input class="input" name="name" list="catalogue2" placeholder="What do you need?" autocomplete="off" required>
-      <input class="input" name="amount" placeholder="How much (optional)" autocomplete="off">
+      <input class="input" name="name" placeholder="What do you need?" autocomplete="off" required>
+      <div class="row">
+        <label class="grow"><span class="small muted">Price each (optional)</span><span class="row" style="gap:6px"><b>£</b><input class="input" name="price" inputmode="decimal" placeholder="0.00" autocomplete="off"></span></label>
+        <div><span class="small muted">How many</span><div class="stepper"><button type="button" data-act="addCount" data-d="-1" aria-label="Fewer">−</button><span id="addCountShow">1</span><button type="button" data-act="addCount" data-d="1" aria-label="More">+</button></div></div>
+        <input type="hidden" name="qty" value="1">
+      </div>
       <div class="shop-grid">${shops.map((s) => `<button type="button" class="${s === last ? "on" : ""}" data-act="addShop" data-s="${s}">${esc(shopName(s))}</button>`).join("")}</div>
       <input type="hidden" name="shop" value="${last}">
-      <button class="btn lg primary">Add</button></form>
-    <datalist id="catalogue2">${Object.values(app.ing.items).map((m) => `<option value="${esc(m.n)}">`).join("")}</datalist>`);
+      <button class="btn lg primary">Add</button></form>`);
   setTimeout(() => { const f = $("#sheetBody input[name=name]"); if (f) f.focus(); }, 250);
 }
-
 function openDone() {
   const { toGet } = shopData();
   const left = toGet.filter((i) => !i.done), got = toGet.length - left.length;
@@ -810,6 +825,15 @@ const ACTIONS = {
     toast(`Moved ${keys.length} to ${shopName(shop)}`);
   },
   moveTo: (d) => { const week = currentWeek(); send({ op: "shop_pref", keys: [d.keys], shop: d.s }, { rerender: false }); send({ op: "shop_for", week, key: d.keys, shop: null }); closeSheet(); toast(`Now from ${shopName(d.s)}`); },
+  count: (d) => { const it = buildList(currentWeek()).find((x) => x.key === d.key); if (it) send({ op: "qty", week: currentWeek(), key: d.key, n: (it.n || 1) + +d.d }); },
+  removeItem: (d) => {
+    const week = currentWeek();
+    if (d.key.startsWith("x:")) { send({ op: "extra_remove", week, id: d.key.slice(2) }); toast("Removed"); return; }
+    send({ op: "check", week, key: d.key, field: "have", value: true });
+    toast(d.key.startsWith("s:") ? "Off the list this week" : "Moved to Not needed this week");
+  },
+  addCount: (d) => { const f = $("#sheetBody input[name=qty]"); const n = Math.max(1, (+f.value || 1) + +d.d); f.value = n; $("#addCountShow").textContent = n; },
+  stapleCount: (d) => { const st = clone(settings().staples || []); st[+d.i].qty = Math.max(1, (+st[+d.i].qty || 1) + +d.d); send({ op: "settings", patch: { staples: st } }); },
   resetPrice: (d) => { send({ op: "price", key: d.k, price: null }); closeSheet(); toast("Using the built-in estimate"); },
   removeExtra: (d) => { send({ op: "extra_remove", week: currentWeek(), id: d.id }); closeSheet(); },
   addItem: () => openAdd(),
@@ -842,7 +866,7 @@ const ACTIONS = {
     if (!on.size) return toast("Keep at least one shop");
     send({ op: "settings", patch: { shops: SHOP_ORDER.filter((s) => on.has(s)) } });
   },
-  stapleAdd: () => { const staples = clone(settings().staples || []); staples.push({ id: uid(), name: "", amount: "", aisle: "other", shop: enabledShops()[0] || "aldi", on: true }); send({ op: "settings", patch: { staples } }); },
+  stapleAdd: () => { const staples = clone(settings().staples || []); staples.push({ id: uid(), name: "", price: null, qty: 1, shop: enabledShops()[0] || "aldi", on: true }); send({ op: "settings", patch: { staples } }); },
   stapleDel: (d) => { const staples = clone(settings().staples || []); staples.splice(+d.i, 1); send({ op: "settings", patch: { staples } }); },
 };
 
@@ -875,11 +899,8 @@ function onChange(e) {
     }
     case "bool": return send({ op: "settings", patch: { [d.f]: el.checked } });
     case "theme": { const t = { ...(s.themes || {}) }; if (el.value) t[d.i] = el.value; else delete t[d.i]; return send({ op: "settings", patch: { themes: t } }); }
-    case "stapleName": {
-      const st = staples(), k = catalogueMatch(el.value), m = k ? ingMeta(k) : null;
-      st[+d.i] = { ...st[+d.i], name: el.value.trim(), k: k || null, ...(m ? { aisle: m.a, shop: st[+d.i].shop || m.s } : {}) };
-      return send({ op: "settings", patch: { staples: st } });
-    }
+    case "stapleName": { const st = staples(); st[+d.i] = { ...st[+d.i], name: el.value.trim() }; delete st[+d.i].k; return send({ op: "settings", patch: { staples: st } }); }
+    case "stapleShop": { const st = staples(); st[+d.i].shop = el.value; return send({ op: "settings", patch: { staples: st } }); }
     case "stapleAmount": { const st = staples(); st[+d.i].amount = el.value; return send({ op: "settings", patch: { staples: st } }); }
     case "staplePrice": { const st = staples(); st[+d.i].price = el.value.trim() === "" ? null : Math.max(0, parseFloat(el.value.replace(/[£,]/g, "")) || 0); return send({ op: "settings", patch: { staples: st } }); }
     case "stapleOn": { const st = staples(); st[+d.i].on = el.checked; return send({ op: "settings", patch: { staples: st } }); }
@@ -909,11 +930,19 @@ function onSubmit(e) {
     toast(app.fbRating === "never" ? "Won't suggest that again. It's under Recipes → Hidden." : "Thanks. Saved.");
     return;
   }
+  if (f.dataset.form === "manual") {
+    const key = f.dataset.key, name = val("name").trim(), pt = val("price").replace(/[£,\s]/g, "");
+    const price = pt === "" ? null : Math.max(0, parseFloat(pt) || 0);
+    if (key.startsWith("x:")) send({ op: "extra_update", week: currentWeek(), id: key.slice(2), patch: { ...(name ? { name } : {}), price } });
+    else if (key.startsWith("s:")) { const st = clone(settings().staples || []), s = st.find((x) => "s:" + x.id === key); if (s) { if (name) s.name = name; s.price = price; } send({ op: "settings", patch: { staples: st } }); }
+    closeSheet(); toast("Saved"); return;
+  }
   if (f.dataset.form === "add") {
     const name = val("name").trim(); if (!name) return;
-    const shop = val("shop"), k = catalogueMatch(name);
+    const shop = val("shop"), priceTxt = val("price").replace(/[£,\s]/g, "");
+    const price = priceTxt === "" ? null : Math.max(0, parseFloat(priceTxt) || 0);
     app.lastShop = shop;
-    send({ op: "extra_add", week: currentWeek(), item: { id: uid(), name: k ? ingMeta(k).n : name, amount: val("amount").trim() || null, shop, k, aisle: k ? ingMeta(k).a : "other" } });
+    send({ op: "extra_add", week: currentWeek(), item: { id: uid(), name, price, qty: Math.max(1, +val("qty") || 1), shop } });
     closeSheet(); toast(`Added ${name} (${shopName(shop)})`);
   }
 }
