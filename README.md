@@ -4,7 +4,7 @@ A vegetarian family dinner planner with a shared shopping list, built to run as 
 Home Assistant add-on.
 
 - **Tonight:** the home screen, with tonight's dinner, per-person protein (tap for full nutrition) and what's coming up.
-- **Week view:** "Plan my week" suggests seven dinners from meal families, with theme nights if you want them. Use Another curry, Swap or Skip on any day.
+- **Week view:** "Plan my week" suggests seven dinners from meal families, with optional theme nights (Curry night, Fakeaway night, Quick night and about 20 more). Use Another curry, Swap or Skip on any day.
 - **Cooking mode:** one step at a time, with timers and the baby's step highlighted.
 - **Recipes:** scaled to everyone's portion sizes, with protein per person and a "take the baby's portion out here" step.
 - **Shopping list:** merged from the week's dinners plus weekly staples. Grouped by aisle or by shop, ticks sync between phones, and it exports as a copy/paste list, a .txt download or a printable PDF.
@@ -38,7 +38,7 @@ in this repository.
 - `foodishard/app/static/`: the web app (plain HTML, CSS and JavaScript, no build step).
 - `foodishard/app/data/recipes.json`: the recipe library. Quantities are per standard
   adult portion, and `{{300|ml}}` in a step is scaled automatically.
-- `tools/check_recipes.py`: run after editing recipes. It checks every recipe has amounts, a baby step before any seasoning, nutrition data and nothing from the banned list.
+- `tools/check_recipes.py`: run after editing recipes. It checks every recipe has amounts, known tags and families for the theme nights, a baby step before any seasoning, nutrition data and nothing from the banned list.
 - `foodishard/app/data/ingredients.json`: aisle, suggested shop and label warnings
   for every ingredient.
 

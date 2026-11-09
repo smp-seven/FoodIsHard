@@ -49,3 +49,10 @@
 ## 0.5.1
 - Budget mode only makes like-for-like swaps (frozen veg, garlic paste, bottled lemon and so on) and never changes the ingredient a dish is named after.
 - Swapping an ingredient from a recipe now applies to that recipe only. The week card and Tonight show "with firm tofu" (or similar) so it is obvious.
+
+## 0.6.0
+- 45 recipes (up from 13): new curries, pasta and gnocchi, burritos, fajitas and tacos, stir-fries, traybakes, pies, soups and stews, risotto and biryani, bowls, naan pizzas and burgers, and brunch-for-dinner. Most use the air fryer or blender where it saves effort.
+- Theme nights reworked: 20 themes in a searchable list (Curry night, Fakeaway night, Brunch for dinner, Italian, Quick night, Air fryer night, Cheap & cheerful, Protein-packed, Try something new, Favourites…). Each shows how many dinners fit. Other days avoid a theme's dinners so the theme still feels special.
+- "Eggs" family is now "Brunch for dinner" (old settings carry over). New families: Risotto & rice, Bowls & salads.
+- The dinner picker has a search box, and dinners that fit the day's theme come first.
+- Recipe checker also checks tags and theme rules.

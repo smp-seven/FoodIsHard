@@ -9,6 +9,7 @@ async function boot() {
   const [rec, ing, defaults] = await Promise.all([getJSON("data/recipes.json"), getJSON("data/ingredients.json"), getJSON("data/defaults.json")]);
   app.recipes = rec.recipes; app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
   app.families = rec.families; app.famById = Object.fromEntries(app.families.map((f) => [f.id, f]));
+  app.themes = rec.themes || []; app.themeById = Object.fromEntries(app.themes.map((t) => [t.id, t]));
   app.ing = ing;
 
   try {
@@ -150,12 +151,12 @@ function viewWeek() {
     const dateCol = `<div><div class="dow">${DOW[mondayIndex(date)].toUpperCase()}</div><div class="dom">${date.getDate()}</div></div>`;
     if (d.status === "skip") return `<article class="day off">${dateCol}<div class="row between"><span><b>Skipped${d.note ? ` · ${esc(d.note)}` : ""}</b><br><span class="small muted">Not on the shopping list</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Undo</button></div></article>`;
     if (d.status === "leftovers") return `<article class="day off">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">From earlier in the week</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
-    if (!r) return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${theme ? `<div class="fam">${esc(family(theme).name)} · theme night</div>` : ""}
+    if (!r) return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${theme ? `<div class="fam">${esc(theme.name)}</div>` : ""}
       <button class="name" style="font-family:var(--sans);font-size:15px;color:var(--muted)" data-act="pick" data-i="${i}">+ Choose a dinner</button>
       <div class="actions"><button class="btn sm soft" data-act="skip" data-i="${i}">Skip</button></div></div></article>`;
     const c = recipeCost(r) * factor; cost += c;
-    const famText = r.emergency ? `<span class="fam quick">Quick · ${r.time} min${isToday ? " · tonight" : ""}</span>`
-      : `<span class="fam">${esc(family(r.family).name)}${isToday ? " · tonight" : theme ? " · theme night" : ""}</span>`;
+    const famText = r.emergency ? `<span class="fam quick">${theme && themeMatch(theme, r) ? esc(theme.name) : "Quick"} · ${r.time} min${isToday ? " · tonight" : ""}</span>`
+      : `<span class="fam">${esc(theme && themeMatch(theme, r) ? theme.name : family(r.family).name)}${isToday ? " · tonight" : ""}</span>`;
     const fam = `<div class="row between" style="margin:-6px -6px 0 0">${famText}<span class="row" style="gap:0">
         <button class="icon-btn sm ${d.locked ? "on" : "plain"}" data-act="lock" data-i="${i}" aria-label="${d.locked ? "Unlock" : "Keep this one"}">${icon(d.locked ? "lock" : "unlock", 17)}</button>
         <button class="icon-btn sm plain" data-act="dayMenu" data-i="${i}" aria-label="More">${icon("dots", 17)}</button></span></div>`;
@@ -312,9 +313,8 @@ function viewSettings() {
       ${s.people.length > 1 ? `<button class="icon-btn plain" data-act="removePerson" data-i="${i}" aria-label="Remove ${esc(p.name)}">${icon("trash", 18)}</button>` : ""}</div>
       <div class="row between"><span class="small muted">Portion size</span>${stepper("portion", i, p.portion, 0.1, (v) => (+v).toFixed(1))}</div>
       <div class="row between"><span class="small muted">Protein goal at dinner</span>${stepper("goal", i, p.goal || 40, 5, (v) => `${v} g`)}</div></div>`).join("");
-  const famOpts = (cur) => `<option value="">No theme</option>` + app.families.map((f) => `<option value="${f.id}" ${cur === f.id ? "selected" : ""}>${esc(f.name)}</option>`).join("");
-  const themes = s.themes || {};
-  const themeRows = DOW_LONG.map((d, i) => `<div class="row between" style="padding:6px 16px"><span>${d}</span><select class="input" style="width:170px;min-height:42px" data-set="theme" data-i="${i}">${famOpts(themes[String(i)])}</select></div>`).join("");
+  const themeRows = DOW_LONG.map((d, i) => { const t = themeById(themeIdForDow(i));
+    return `<button class="rrow" data-act="themePick" data-i="${i}" style="padding:10px 16px"><span class="grow">${d}</span><span class="${t ? "" : "muted"}">${esc(t ? t.name : "No theme")}</span><span class="muted">›</span></button>`; }).join("");
   const shopsOn = s.shops || SHOP_ORDER;
   const avoid = s.avoid || [];
   const inf = app.state.inflation || {};
@@ -393,7 +393,7 @@ function viewSettings() {
     ${catalogue}
     <p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.5.1</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.6.0</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -498,13 +498,30 @@ function openMacros(id, who) {
     <button class="btn" data-act="recipe" data-id="${id}">Back to the recipe</button></div>`);
 }
 
+const sheetSearch = (placeholder) => `<label class="search" style="margin:4px 0 12px">${icon("search", 18)}<input type="search" placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}" data-input="sfilter" autocomplete="off"></label>`;
 function openPicker(i, { emergency = false } = {}) {
-  const week = app.weekStart, date = addDays(parseISO(week), i), maxT = maxTimeFor(week, i), theme = themeFor(week, i);
+  const week = app.weekStart, date = addDays(parseISO(week), i), maxT = maxTimeFor(week, i), theme = emergency ? null : themeFor(week, i);
+  const fits = (r) => !!theme && themeMatch(theme, r);
   const list = app.recipes.filter((r) => usable(r) && (!emergency || r.emergency))
-    .sort((a, b) => (theme ? (b.family === theme) - (a.family === theme) : 0) || (a.time > maxT) - (b.time > maxT) || a.name.localeCompare(b.name));
+    .sort((a, b) => (fits(b) - fits(a)) || (a.time > maxT) - (b.time > maxT) || a.name.localeCompare(b.name));
+  const row = (r) => `<button class="rrow" data-act="put" data-id="${r.id}" data-i="${i}" data-text="${esc(`${r.name} ${family(r.family).name} ${r.cuisine} ${r.ingredients.map((x) => ingMeta(x.k).n).join(" ")}`.toLowerCase())}"><span class="grow"><b>${esc(r.name)}</b><br><span class="small muted">${esc(r.emergency ? "Quick" : family(r.family).name)} · ${r.time} min · ${money(recipeCost(r))} a portion</span></span>${prefsFor(r.id).fav ? "♥" : ""}</button>`;
+  const themed = list.filter(fits), rest = list.filter((r) => !fits(r));
   openSheet(`<p class="eyebrow">${DOW_LONG[mondayIndex(date)]} ${date.getDate()}</p><h1 class="title" style="font-size:26px">${emergency ? "Something quick" : "Choose a dinner"}</h1>
-    <p class="muted">${theme ? `${esc(family(theme).name)} night comes first. ` : ""}Up to ${maxT} minutes suits this day.</p>
-    <div class="list">${list.map((r) => `<button class="rrow" data-act="put" data-id="${r.id}" data-i="${i}"><span class="grow"><b>${esc(r.name)}</b><br><span class="small muted">${esc(r.emergency ? "Quick" : family(r.family).name)} · ${r.time} min · ${money(recipeCost(r))} a portion</span></span>${prefsFor(r.id).fav ? "♥" : ""}</button>`).join("")}</div>`);
+    <p class="muted">Up to ${maxT} minutes suits this day.</p>${sheetSearch("Search dinners or ingredients")}
+    ${themed.length ? `<p class="section-label" data-group>${esc(theme.name)}</p><div class="list" style="margin-bottom:12px">${themed.map(row).join("")}</div><p class="section-label" data-group>Everything else</p>` : ""}
+    <div class="list">${rest.map(row).join("")}</div><div class="empty" data-none hidden>Nothing matches that.</div>`);
+}
+
+function openThemePicker(dow) {
+  const cur = themeIdForDow(dow);
+  const groups = [["Food", "By type of dinner"], ["Cuisine", "By cuisine"], ["Other", "Something different"]];
+  const row = (t) => { const n = themeRecipes(t).length;
+    return `<button class="rrow" data-act="setTheme" data-i="${dow}" data-t="${t.id}" data-text="${esc(`${t.name} ${t.blurb}`.toLowerCase())}"><span class="grow"><b>${esc(t.name)}</b><br><span class="small muted">${esc(t.blurb)} · ${n ? `${n} dinner${n === 1 ? "" : "s"}` : "none yet"}</span></span>${cur === t.id ? `<span class="pill accent">✓</span>` : ""}</button>`; };
+  openSheet(`<p class="eyebrow">Theme night</p><h1 class="title" style="font-size:26px">${DOW_LONG[dow]}</h1>
+    <p class="muted">The planner picks something that fits. Other days steer clear of it, so the theme still feels special.</p>${sheetSearch("Search themes")}
+    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="setTheme" data-i="${dow}" data-t="" data-text="no theme random"><span class="grow"><b>No theme</b><br><span class="small muted">Anything goes</span></span>${cur ? "" : `<span class="pill accent">✓</span>`}</button></div>
+    ${groups.map(([g, label]) => { const ts = app.themes.filter((t) => (t.group || "Other") === g); return ts.length ? `<p class="section-label" data-group>${label}</p><div class="list" style="margin-bottom:12px">${ts.map(row).join("")}</div>` : ""; }).join("")}
+    <div class="empty" data-none hidden>No themes match that.</div>`);
 }
 
 function openSkip(i) {
@@ -757,10 +774,16 @@ const ACTIONS = {
   macros: (d) => openMacros(d.id, d.who),
   cook: (d) => startCooking(d.id),
   pick: (d) => openPicker(+d.i),
+  themePick: (d) => openThemePicker(+d.i),
+  setTheme: (d) => {
+    const t = { ...(settings().themes || {}) }; if (d.t) t[d.i] = d.t; else delete t[d.i];
+    send({ op: "settings", patch: { themes: t } }); closeSheet();
+    toast(d.t ? `${DOW_LONG[+d.i]}: ${themeById(d.t).name}` : `${DOW_LONG[+d.i]}: no theme`);
+  },
   put: (d) => { dayUpdate(+d.i, { recipe: d.id, status: "cook", note: null }); closeSheet(); toast(`${app.byId[d.id].name} added`); },
   another: (d) => {
     const i = +d.i, days = planFor(app.weekStart), cur = app.byId[days[i].recipe];
-    const next = pickRecipe(app.weekStart, i, days, { exclude: new Set([cur.id]), fam: cur.family });
+    const next = pickRecipe(app.weekStart, i, days, { exclude: new Set([cur.id]), fam: cur.family, emergency: !!cur.emergency });
     if (!next || next === cur.id) return toast(`No other ${family(cur.family).name.toLowerCase()} yet`);
     dayUpdate(i, { recipe: next });
   },
@@ -951,6 +974,14 @@ function onSubmit(e) {
 
 let searchTimer;
 function onInput(e) {
+  if (e.target.dataset.input === "sfilter") {
+    const q = e.target.value.trim().toLowerCase(), body = $("#sheetBody");
+    $$("[data-text]", body).forEach((el) => { el.hidden = !!q && !q.split(/\s+/).every((w) => el.dataset.text.includes(w)); });
+    $$(".list", body).forEach((l) => { const rows = $$("[data-text]", l); if (rows.length) l.hidden = rows.every((r) => r.hidden); });
+    $$("[data-group]", body).forEach((h) => { let n = h.nextElementSibling; h.hidden = !!(n && n.classList.contains("list") && n.hidden); });
+    const none = $("[data-none]", body); if (none) none.hidden = $$("[data-text]", body).some((r) => !r.hidden);
+    return;
+  }
   if (e.target.dataset.input === "rsearch") {
     app.recipeQuery = e.target.value;
     clearTimeout(searchTimer);

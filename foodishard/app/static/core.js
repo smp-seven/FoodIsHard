@@ -85,7 +85,7 @@ const app = {
   mode: "loading", // live | demo
   user: "",
   state: null,
-  recipes: [], byId: {}, families: [], famById: {},
+  recipes: [], byId: {}, families: [], famById: {}, themes: [], themeById: {},
   ing: null,
   tab: "tonight",
   weekStart: null,
@@ -360,7 +360,34 @@ function planFor(week) {
     return day;
   });
 }
-function themeFor(week, i) { return (settings().themes || {})[String(mondayIndex(addDays(parseISO(week), i)))] || null; }
+// Theme nights. Settings store a theme id per weekday (0 = Monday). Older versions stored a
+// family id, which is why "eggs" is mapped to brunch.
+const THEME_ALIASES = { eggs: "brunch" };
+function themeById(id) { return id ? app.themeById[THEME_ALIASES[id] || id] || null : null; }
+function themeIdForDow(dow) { const t = themeById((settings().themes || {})[String(dow)]); return t ? t.id : null; }
+function themeFor(week, i) { return themeById(themeIdForDow(mondayIndex(addDays(parseISO(week), i)))); }
+function everCooked(id) {
+  if (cookedIt(id)) return true;
+  const thisWeek = app.weekStart || iso(new Date());
+  return Object.entries(app.state.plans || {}).some(([wk, p]) => wk < thisWeek && (p.days || []).some((d) => d && d.recipe === id && d.status === "cook"));
+}
+/** Does recipe r fit theme t? Category rules (families, tags, cuisines) are OR'd; limits are AND'd. */
+function themeMatch(t, r) {
+  if (!t || !r) return false;
+  const m = t.match || {};
+  if (r.emergency && !m.emergency) return false;
+  const cats = [...(m.families || []), ...(m.tags || []), ...(m.cuisines || [])];
+  if (cats.length && !((m.families || []).includes(r.family) || (m.tags || []).some((x) => (r.tags || []).includes(x)) || (m.cuisines || []).includes(r.cuisine))) return false;
+  if (m.maxTime && r.time > m.maxTime) return false;
+  if (m.maxCost && recipeCost(r) > m.maxCost) return false;
+  if (m.minProtein && nutritionPerPortion(r).protein < m.minProtein) return false;
+  if (m.fav && !prefsFor(r.id).fav) return false;
+  if (m.uncooked && everCooked(r.id)) return false;
+  return true;
+}
+function themeRecipes(t) { return app.recipes.filter((r) => usable(r) && themeMatch(t, r)); }
+/** Themes set on other days that "reserve" their recipes, so a curry night isn't undercut by a curry on Tuesday. */
+function reservedThemes() { return Object.values(settings().themes || {}).map(themeById).filter((t) => t && t.reserve); }
 function previousWeekRecipes(week) { return new Set(planFor(iso(addDays(parseISO(week), -7))).map((d) => d.recipe).filter(Boolean)); }
 function maxTimeFor(week, i) {
   const s = settings(), weekend = mondayIndex(addDays(parseISO(week), i)) >= 5;
@@ -373,14 +400,20 @@ function pickRecipe(week, i, days, { exclude = new Set(), emergency = false, fam
   const famCount = {};
   others.forEach((id) => { const f = app.byId[id] && app.byId[id].family; if (f) famCount[f] = (famCount[f] || 0) + 1; });
   const neighbours = [days[i - 1], days[i + 1]].map((d) => d && d.recipe && app.byId[d.recipe] && app.byId[d.recipe].family).filter(Boolean);
-  const theme = fam || (emergency ? null : themeFor(week, i));
-  const themed = new Set(Object.values(settings().themes || {}));
+  const theme = fam || emergency ? null : themeFor(week, i);
+  const reserved = theme ? [] : reservedThemes();
+  const free = (r) => !reserved.some((t) => themeMatch(t, r));
   const maxT = maxTimeFor(week, i);
-  const pool = app.recipes.filter((r) => usable(r) && !exclude.has(r.id)
-    && (theme ? r.family === theme : (!!r.emergency === emergency)));
+  const base = app.recipes.filter((r) => usable(r) && !exclude.has(r.id));
+  let pool = fam ? base.filter((r) => r.family === fam && !!r.emergency === emergency)
+    : theme ? base.filter((r) => themeMatch(theme, r))
+    : base.filter((r) => !!r.emergency === emergency);
+  if (!pool.length && fam) pool = base.filter((r) => r.family === fam);
+  if (!pool.length && theme) pool = base.filter((r) => !r.emergency); // nothing fits the theme any more
   const tiers = [
-    (r) => r.time <= maxT && !used.has(r.id) && !recent.has(r.id) && !famCount[r.family] && !neighbours.includes(r.family) && (theme || !themed.has(r.family)),
-    (r) => r.time <= maxT && !used.has(r.id) && (famCount[r.family] || 0) < 2 && !neighbours.includes(r.family) && (theme || !themed.has(r.family)),
+    (r) => r.time <= maxT && !used.has(r.id) && !recent.has(r.id) && !famCount[r.family] && !neighbours.includes(r.family) && free(r),
+    (r) => r.time <= maxT && !used.has(r.id) && (famCount[r.family] || 0) < 2 && !neighbours.includes(r.family) && free(r),
+    (r) => r.time <= maxT && !used.has(r.id) && !recent.has(r.id),
     (r) => r.time <= maxT && !used.has(r.id),
     (r) => !used.has(r.id),
     () => true,

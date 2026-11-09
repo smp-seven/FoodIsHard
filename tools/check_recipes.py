@@ -20,6 +20,7 @@ BANNED = ["parmesan", "grana padano", "worcestershire", "gelatine", "gelatin", "
 SEASONING = re.compile(r"\b(salt|chilli|soy|stock|henderson|feta|halloumi)\b", re.I)
 STAGES = ("smooth", "finger", "chopped")
 UNITS = {"g", "ml", "tin", "tbsp", "tsp", "slices", ""}
+TAGS = {"airfryer", "blender", "oven", "onepot", "comfort", "fakeaway", "pizza", "burger"}
 
 errors, warnings = [], []
 seen = set()
@@ -42,6 +43,9 @@ for r in recipes["recipes"]:
     seen.add(r.get("id"))
     if r.get("family") not in families:
         err(r, f"unknown family {r.get('family')!r}")
+    for t in r.get("tags", []):
+        if t not in TAGS:
+            err(r, f"unknown tag {t!r} (known: {', '.join(sorted(TAGS))})")
     if r.get("hands", 0) > r.get("time", 0):
         err(r, "hands-on time is longer than total time")
     if r.get("emergency") and r.get("time", 99) > 15:
@@ -98,6 +102,25 @@ for r in recipes["recipes"]:
     for i, s in enumerate(steps):
         if len(s["t"]) > 320:
             warn(r, f"step {i + 1} is long ({len(s['t'])} characters)")
+
+# Theme nights: every rule must point at something real, and category themes need enough dinners.
+cuisines = {r.get("cuisine") for r in recipes["recipes"]}
+for t in recipes.get("themes", []):
+    m = t.get("match", {})
+    for f in m.get("families", []):
+        if f not in families:
+            errors.append(f"theme {t['id']}: unknown family {f!r}")
+    for c in m.get("cuisines", []):
+        if c not in cuisines:
+            warnings.append(f"theme {t['id']}: no recipes have cuisine {c!r}")
+    for tg in m.get("tags", []):
+        if tg not in TAGS:
+            errors.append(f"theme {t['id']}: unknown tag {tg!r}")
+    cats = m.get("families", []) + m.get("tags", []) + m.get("cuisines", [])
+    if cats:
+        n = sum(1 for r in recipes["recipes"] if not r.get("emergency") and (r["family"] in m.get("families", []) or r.get("cuisine") in m.get("cuisines", []) or set(r.get("tags", [])) & set(m.get("tags", []))))
+        if n < 3:
+            warnings.append(f"theme {t['id']}: only {n} dinners fit, so it will repeat a lot")
 
 for w in warnings:
     print("warning:", w)

@@ -100,7 +100,8 @@
     "smooth": "Blend or mash until smooth and loosen with their usual milk. Serve with a little plain yoghurt.",
     "finger": "Keep it thick and let it cool to warm. Chapati or toast fingers to scoop with, plus a spoon of plain yoghurt.",
     "chopped": "As yours before the chilli and salt, with small pieces of chapati."
-   }
+   },
+   "tags": []
   },
   {
    "id": "bean-chilli",
@@ -205,7 +206,10 @@
     "smooth": "Mash the beans and sweet potato smooth with a little yoghurt.",
     "finger": "Lightly squashed beans, soft sweet potato cubes to pick up, sticky rice and a pinch of cheese.",
     "chopped": "As yours before the chilli, with a little cheese."
-   }
+   },
+   "tags": [
+    "onepot"
+   ]
   },
   {
    "id": "tofu-peanut-noodles",
@@ -214,7 +218,7 @@
    "time": 25,
    "hands": 20,
    "family": "noodles",
-   "cuisine": "Asian",
+   "cuisine": "East Asian",
    "ingredients": [
     {
      "k": "tofu",
@@ -292,7 +296,8 @@
     "smooth": "Blend broccoli and a little tofu with a teaspoon of the peanut sauce and some water.",
     "finger": "Tofu fingers, soft broccoli florets, squashed edamame and short noodles. If peanut is new to them, try it earlier in the day first.",
     "chopped": "As yours before the soy and chilli, chopped small."
-   }
+   },
+   "tags": []
   },
   {
    "id": "lentil-bolognese",
@@ -386,7 +391,10 @@
     "smooth": "Blend the sauce with a few pieces of soft pasta.",
     "finger": "Big pasta shapes like fusilli, cooked soft and coated in sauce, with a little grated cheese.",
     "chopped": "As yours before seasoning, with the pasta cut small."
-   }
+   },
+   "tags": [
+    "comfort"
+   ]
   },
   {
    "id": "mattar-paneer",
@@ -495,7 +503,8 @@
     "smooth": "Blend the sauce with the peas and a little paneer.",
     "finger": "Paneer fingers, squashed peas, and rice they can grab in clumps.",
     "chopped": "As yours before the chilli and salt, paneer chopped small."
-   }
+   },
+   "tags": []
   },
   {
    "id": "shakshuka",
@@ -503,7 +512,7 @@
    "blurb": "Eggs baked in a smoky pepper and tomato sauce, with bread to dunk.",
    "time": 30,
    "hands": 10,
-   "family": "eggs",
+   "family": "brunch",
    "cuisine": "Middle Eastern",
    "ingredients": [
     {
@@ -585,7 +594,10 @@
     "smooth": "Cook their egg until firm and mash it into blended sauce.",
     "finger": "Their egg cooked until fully set, in strips, with squashed chickpeas and bread fingers to dip. No feta: it's salty.",
     "chopped": "As yours, egg cooked through, no feta."
-   }
+   },
+   "tags": [
+    "onepot"
+   ]
   },
   {
    "id": "chickpea-traybake",
@@ -679,7 +691,10 @@
     "smooth": "Mash the roast veg and chickpeas with plain yoghurt.",
     "finger": "Soft roast pepper and courgette strips, squashed chickpeas, quartered cherry tomatoes, flatbread fingers and plain yoghurt. No halloumi: it's very salty.",
     "chopped": "As yours, with a little halloumi at most."
-   }
+   },
+   "tags": [
+    "oven"
+   ]
   },
   {
    "id": "cottage-pie",
@@ -783,7 +798,11 @@
     "smooth": "Mash the filling and potato together until smooth.",
     "finger": "Soft forkfuls of filling and mash, with squashed peas.",
     "chopped": "As yours before the stock, with a little cheese."
-   }
+   },
+   "tags": [
+    "oven",
+    "comfort"
+   ]
   },
   {
    "id": "pesto-quorn-pasta",
@@ -840,7 +859,8 @@
     "smooth": "Blend pasta, peas and spinach with a little water and a tiny bit of pesto.",
     "finger": "Big pasta shapes, Quorn cut into small strips, squashed peas. If tree nuts are new to them, try pesto earlier in the day first.",
     "chopped": "As yours with the Quorn chopped small and only a little pesto."
-   }
+   },
+   "tags": []
   },
   {
    "id": "egg-fried-rice",
@@ -848,8 +868,8 @@
    "blurb": "Microwave rice, frozen veg and eggs. On the table in 12 minutes.",
    "time": 12,
    "hands": 12,
-   "family": "noodles",
-   "cuisine": "Asian",
+   "family": "rice",
+   "cuisine": "East Asian",
    "emergency": true,
    "ingredients": [
     {
@@ -907,7 +927,10 @@
     "smooth": "Blend rice, peas and egg with a little water.",
     "finger": "Clumps of rice, strips of well-cooked egg, squashed peas and edamame.",
     "chopped": "As yours, before the soy sauce."
-   }
+   },
+   "tags": [
+    "fakeaway"
+   ]
   },
   {
    "id": "cheesy-beans-toast",
@@ -915,7 +938,7 @@
    "blurb": "The classic emergency dinner, with enough protein to count.",
    "time": 10,
    "hands": 10,
-   "family": "eggs",
+   "family": "brunch",
    "cuisine": "British",
    "emergency": true,
    "ingredients": [
@@ -965,7 +988,10 @@
     "smooth": "Mash a few beans with soft-cooked egg.",
     "finger": "Toast fingers, a small spoon of mashed reduced-salt beans, and egg cooked through, in strips. Go easy on the cheese.",
     "chopped": "As yours, cut small, with a little cheese."
-   }
+   },
+   "tags": [
+    "comfort"
+   ]
   },
   {
    "id": "chickpea-spinach-curry",
@@ -1053,7 +1079,8 @@
     "smooth": "Blend with a spoon of yoghurt until smooth.",
     "finger": "Squashed chickpeas and spinach to scoop with rice, plus plain yoghurt.",
     "chopped": "As yours, before the chilli and salt."
-   }
+   },
+   "tags": []
   },
   {
    "id": "bean-quesadillas",
@@ -1119,7 +1146,2859 @@
     "smooth": "Mash the beans with yoghurt.",
     "finger": "Quesadilla cut into strips once cooled, with yoghurt to dip.",
     "chopped": "Small wedges of yours without the chilli."
+   },
+   "tags": []
+  },
+  {
+   "id": "chana-masala",
+   "name": "Chana masala with naan",
+   "blurb": "A proper tomatoey chickpea curry with cool garlic yoghurt.",
+   "time": 30,
+   "hands": 10,
+   "family": "curry",
+   "cuisine": "Indian",
+   "tags": [],
+   "ingredients": [
+    {
+     "k": "chickpeas",
+     "q": 0.6,
+     "u": "tin"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1.5
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "naan",
+     "q": 1
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "coriander",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "ground_coriander",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "turmeric",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "garam_masala",
+     "q": 0.75,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Soften the chopped onion in the oil for 8 minutes until golden at the edges. Add most of the garlic, the grated ginger, cumin, ground coriander and turmeric and stir for 1 minute."
+    },
+    {
+     "t": "Add the tomatoes, the drained chickpeas and {{100|ml}} water. Simmer for 15 minutes, squashing a few chickpeas against the pan to thicken it."
+    },
+    {
+     "t": "Spoon the baby's portion out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Stir the garam masala and chilli into the rest and season with salt and lemon. Mix the remaining garlic, finely grated, into the yoghurt with a pinch of salt. Serve with the yoghurt, coriander and warm naan."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend with a spoon of plain yoghurt until smooth.",
+    "finger": "Squash the chickpeas with a fork so they're soft and flat. Strips of naan to dip.",
+    "chopped": "As yours before the chilli and salt, chickpeas squashed, with naan pieces."
    }
+  },
+  {
+   "id": "aloo-gobi-chickpea",
+   "name": "Potato, cauliflower & chickpea curry",
+   "blurb": "Aloo gobi made into a full dinner. Everything goes in one pan.",
+   "time": 40,
+   "hands": 12,
+   "family": "curry",
+   "cuisine": "Indian",
+   "tags": [
+    "onepot"
+   ],
+   "ingredients": [
+    {
+     "k": "potato",
+     "q": 150,
+     "u": "g"
+    },
+    {
+     "k": "cauliflower",
+     "q": 0.25
+    },
+    {
+     "k": "chickpeas",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.3,
+     "u": "tin"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 120,
+     "u": "g"
+    },
+    {
+     "k": "chapati",
+     "q": 1
+    },
+    {
+     "k": "coriander",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.75,
+     "u": "tsp"
+    },
+    {
+     "k": "turmeric",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "ground_coriander",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "garam_masala",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Soften the sliced onion in the oil for 5 minutes. Add the garlic, grated ginger, cumin, turmeric and ground coriander and stir for 1 minute."
+    },
+    {
+     "t": "Add the potato (2 cm cubes), the cauliflower (small florets), the drained chickpeas, the tomatoes and {{150|ml}} water. Cover and cook on a low heat for 25 minutes, stirring now and then, until the potato is tender and the sauce clings."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Stir the garam masala and chilli into the rest and season with salt. Scatter with coriander and serve with yoghurt and warm chapatis."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend with a little yoghurt until smooth.",
+    "finger": "Soft potato and cauliflower pieces and squashed chickpeas, with chapati fingers.",
+    "chopped": "As yours before the chilli and salt, cut small."
+   }
+  },
+  {
+   "id": "saag-paneer",
+   "name": "Saag paneer",
+   "blurb": "Golden paneer in a silky spiced spinach sauce. The blender does the work.",
+   "time": 30,
+   "hands": 15,
+   "family": "curry",
+   "cuisine": "Indian",
+   "tags": [
+    "blender"
+   ],
+   "ingredients": [
+    {
+     "k": "paneer",
+     "q": 110,
+     "u": "g"
+    },
+    {
+     "k": "frozen_spinach",
+     "q": 150,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1.5
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "chapati",
+     "q": 1.5
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "ground_coriander",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "garam_masala",
+     "q": 0.75,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Cut the paneer into cubes and fry in half the oil until golden on a few sides, about 5 minutes. Tip out onto a plate."
+    },
+    {
+     "t": "Fry the chopped onion in the rest of the oil for 6 minutes. Add the garlic, grated ginger, cumin and ground coriander for 1 minute, then the spinach and a splash of water. Cook until the spinach has thawed and is hot."
+    },
+    {
+     "t": "Blend until smooth, adding water to loosen it to a thick sauce. Take the baby's portion out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Return the rest to the pan with the paneer, garam masala and chilli. Simmer for 3 minutes, then stir in half the yoghurt and season with salt and lemon. Serve with the rest of the yoghurt and warm chapatis."
+    }
+   ],
+   "baby": {
+    "smooth": "The blended spinach is perfect as it is, loosened with a little yoghurt.",
+    "finger": "Paneer cut into fingers, plus spinach sauce to dip chapati into.",
+    "chopped": "As yours before the chilli and salt, paneer cut small."
+   }
+  },
+  {
+   "id": "lemon-ricotta-pasta",
+   "name": "Lemon ricotta pasta with peas & broccoli",
+   "blurb": "Bright, creamy and green. Dinner in the time it takes the pasta to boil.",
+   "time": 20,
+   "hands": 10,
+   "family": "pasta",
+   "cuisine": "Italian",
+   "tags": [],
+   "ingredients": [
+    {
+     "k": "pasta",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "ricotta",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "peas",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "broccoli",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "hard_cheese",
+     "q": 15,
+     "u": "g"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Boil the pasta. Add the broccoli, cut into small florets, for the last 4 minutes and the peas for the last 2."
+    },
+    {
+     "t": "Meanwhile, mix the ricotta with the grated garlic, most of the grated cheese and the lemon zest."
+    },
+    {
+     "t": "Drain, keeping a mugful of the water. Take the baby's portion out now, toss with a spoon of ricotta and a splash of water, before the chilli.",
+     "baby": true
+    },
+    {
+     "t": "Toss the rest with the ricotta mix, the oil and enough pasta water to make it creamy. Finish with a squeeze of lemon, the chilli, black pepper and the rest of the cheese."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the pasta, veg and ricotta with a little of the water.",
+    "finger": "Pasta shapes and broccoli florets, ricotta-coated.",
+    "chopped": "As yours before the chilli, chopped small."
+   }
+  },
+  {
+   "id": "chickpea-puttanesca",
+   "name": "Chickpea puttanesca",
+   "blurb": "Olives, capers and garlic in a punchy tomato sauce, with chickpeas for protein.",
+   "time": 25,
+   "hands": 10,
+   "family": "pasta",
+   "cuisine": "Italian",
+   "tags": [],
+   "ingredients": [
+    {
+     "k": "pasta",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "chickpeas",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "olives",
+     "q": 25,
+     "u": "g"
+    },
+    {
+     "k": "capers",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "garlic",
+     "q": 1.5
+    },
+    {
+     "k": "hard_cheese",
+     "q": 15,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "oregano",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Put the pasta on to boil. Gently fry the sliced garlic in the oil for 1 minute, then add the tomatoes, the drained chickpeas and the oregano and simmer for 10 minutes."
+    },
+    {
+     "t": "Take the baby's portion of sauce out now, before the olives, capers and chilli.",
+     "baby": true
+    },
+    {
+     "t": "Stir the halved olives, capers and chilli into the rest and simmer for 2 minutes. Toss with the drained pasta and a splash of its water. Finish with the grated cheese."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the plain sauce and some pasta until smooth.",
+    "finger": "Pasta shapes in the plain sauce, chickpeas squashed.",
+    "chopped": "Plain sauce and pasta, chickpeas squashed."
+   }
+  },
+  {
+   "id": "roast-pepper-feta-pasta",
+   "name": "Roasted pepper pasta with feta",
+   "blurb": "A creamy blended sauce of red peppers and white beans, with salty feta on top.",
+   "time": 20,
+   "hands": 8,
+   "family": "pasta",
+   "cuisine": "Italian",
+   "tags": [
+    "blender"
+   ],
+   "ingredients": [
+    {
+     "k": "pasta",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "roasted_peppers",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "cannellini",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "feta",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "spinach",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Put the pasta on to boil. Blend the drained roasted peppers, the drained beans, the garlic, smoked paprika, oil and {{80|ml}} water until smooth."
+    },
+    {
+     "t": "Warm the sauce in a pan, then drain the pasta and toss it through with the spinach until the spinach wilts. Loosen with pasta water."
+    },
+    {
+     "t": "Take the baby's portion out now, before the feta and chilli.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest, then crumble the feta over the top and add the chilli."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend a little more with water until smooth.",
+    "finger": "Pasta shapes coated in the sauce.",
+    "chopped": "As yours before the feta, chopped small."
+   }
+  },
+  {
+   "id": "creamy-bean-gnocchi",
+   "name": "Creamy spinach & white bean gnocchi",
+   "blurb": "Pan-fried gnocchi in a lemony ricotta, spinach and bean sauce.",
+   "time": 20,
+   "hands": 15,
+   "family": "pasta",
+   "cuisine": "Italian",
+   "tags": [],
+   "ingredients": [
+    {
+     "k": "gnocchi",
+     "q": 200,
+     "u": "g"
+    },
+    {
+     "k": "cannellini",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "spinach",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "ricotta",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "hard_cheese",
+     "q": 15,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 0.75,
+     "u": "tbsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Fry the gnocchi in the oil in a big non-stick pan until golden in places, about 8 minutes. No need to boil them first."
+    },
+    {
+     "t": "Add the garlic for 30 seconds, then the drained beans, the spinach and {{60|ml}} water. Stir until the spinach wilts, then stir in the ricotta and most of the cheese."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest with lemon, salt, pepper and the chilli, and finish with the last of the cheese."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend with a little water until smooth.",
+    "finger": "Gnocchi halved lengthways, with the beans squashed.",
+    "chopped": "As yours before the chilli and salt, gnocchi cut small."
+   }
+  },
+  {
+   "id": "sweet-potato-burritos",
+   "name": "Sweet potato & black bean burritos",
+   "blurb": "Air-fried sweet potato, smoky beans, cheese and salsa, all rolled up.",
+   "time": 30,
+   "hands": 12,
+   "family": "mexican",
+   "cuisine": "Mexican",
+   "tags": [
+    "airfryer"
+   ],
+   "ingredients": [
+    {
+     "k": "sweet_potato",
+     "q": 0.5
+    },
+    {
+     "k": "black_beans",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "tortillas",
+     "q": 2
+    },
+    {
+     "k": "cheddar",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "salsa",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "lime",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Cut the sweet potato into 2 cm cubes and toss with the oil, cumin and smoked paprika. Air fry at 200°C for 18 minutes, shaking once (or roast at 220°C for 25 minutes)."
+    },
+    {
+     "t": "Warm the drained beans in a pan with a splash of water, squashing about half of them."
+    },
+    {
+     "t": "Take the baby's share of sweet potato and beans out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest with chilli, salt and lime. Fill the warmed tortillas with beans, sweet potato, cheese, salsa and yoghurt, then roll them up."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the sweet potato and beans with a little yoghurt.",
+    "finger": "Sweet potato cubes, squashed beans and strips of tortilla.",
+    "chopped": "Sweet potato, beans and grated cheese, cut small."
+   }
+  },
+  {
+   "id": "black-bean-enchiladas",
+   "name": "Black bean & sweetcorn enchiladas",
+   "blurb": "Rolled, sauced and baked under bubbling cheese. Ten minutes of work.",
+   "time": 35,
+   "hands": 10,
+   "family": "mexican",
+   "cuisine": "Mexican",
+   "tags": [
+    "oven"
+   ],
+   "ingredients": [
+    {
+     "k": "black_beans",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "sweetcorn",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "tortillas",
+     "q": 2
+    },
+    {
+     "k": "passata",
+     "q": 150,
+     "u": "g"
+    },
+    {
+     "k": "cheddar",
+     "q": 35,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "oregano",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Heat the oven to 200°C. Fry the chopped pepper in the oil for 4 minutes, then add the garlic, cumin and paprika for 1 minute. Stir in the drained beans and the sweetcorn and squash some of the beans."
+    },
+    {
+     "t": "Mix the passata with the oregano. Take the baby's portion out now (some filling, a spoon of passata, a little cheese), before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the filling with chilli and salt. Roll it up in the tortillas, lay them seam-down in a dish, then pour over the passata and scatter with the cheese. Bake for 20 minutes. Serve with yoghurt."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the filling with the passata.",
+    "finger": "A tortilla rolled round some filling, baked with a little cheese, cut into strips.",
+    "chopped": "Cut up from a mini baked one."
+   }
+  },
+  {
+   "id": "halloumi-fajitas",
+   "name": "Air-fryer halloumi fajitas",
+   "blurb": "Charred peppers and squeaky halloumi with salsa and yoghurt.",
+   "time": 25,
+   "hands": 12,
+   "family": "mexican",
+   "cuisine": "Mexican",
+   "tags": [
+    "airfryer"
+   ],
+   "ingredients": [
+    {
+     "k": "halloumi",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "red_pepper",
+     "q": 1
+    },
+    {
+     "k": "red_onion",
+     "q": 0.5
+    },
+    {
+     "k": "tortillas",
+     "q": 2
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "salsa",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "lime",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Slice the pepper and onion into strips and toss with the oil, cumin and smoked paprika. Air fry at 200°C for 8 minutes."
+    },
+    {
+     "t": "Take a few soft pepper strips out for the baby now, before the halloumi and chilli.",
+     "baby": true
+    },
+    {
+     "t": "Add the halloumi, cut into fingers, and the chilli. Air fry for 8 more minutes, shaking once, until the halloumi is golden. Squeeze over the lime and serve in warm tortillas with salsa and yoghurt."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the peppers with plain yoghurt.",
+    "finger": "Soft pepper strips and tortilla strips spread with yoghurt.",
+    "chopped": "Peppers and tortilla cut small, with yoghurt."
+   }
+  },
+  {
+   "id": "smoky-tofu-tacos",
+   "name": "Smoky tofu tacos with lime slaw",
+   "blurb": "Crisp smoky tofu, crunchy slaw and a soft tortilla.",
+   "time": 30,
+   "hands": 15,
+   "family": "mexican",
+   "cuisine": "Mexican",
+   "tags": [
+    "airfryer"
+   ],
+   "ingredients": [
+    {
+     "k": "tofu",
+     "q": 130,
+     "u": "g"
+    },
+    {
+     "k": "tortillas",
+     "q": 2
+    },
+    {
+     "k": "white_cabbage",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "carrot",
+     "q": 0.5
+    },
+    {
+     "k": "lime",
+     "q": 0.5
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "cornflour",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.75,
+     "u": "tsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Pat the tofu dry and tear into bite-sized chunks. Toss with the oil, cornflour, smoked paprika, cumin and grated garlic. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+    },
+    {
+     "t": "Meanwhile, finely shred the cabbage and grate the carrot. Mix with half the yoghurt and the lime juice."
+    },
+    {
+     "t": "Take the baby's tofu out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Toss the rest of the tofu with the chilli and a pinch of salt. Pile into warm tortillas with the slaw and the rest of the yoghurt."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the tofu with plain yoghurt.",
+    "finger": "Tofu fingers, soft grated carrot and tortilla strips.",
+    "chopped": "Tofu and tortilla cut small, a little grated carrot."
+   }
+  },
+  {
+   "id": "huevos-rancheros",
+   "name": "Huevos rancheros",
+   "blurb": "Eggs baked in smoky tomatoes and beans with crisp tortillas.",
+   "time": 25,
+   "hands": 10,
+   "family": "brunch",
+   "cuisine": "Mexican",
+   "tags": [],
+   "ingredients": [
+    {
+     "k": "eggs",
+     "q": 2
+    },
+    {
+     "k": "black_beans",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "tortillas",
+     "q": 1
+    },
+    {
+     "k": "cheddar",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "avocado",
+     "q": 0.25
+    },
+    {
+     "k": "lime",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Soften the chopped onion and pepper in the oil for 6 minutes. Add the cumin and smoked paprika for 1 minute, then the tomatoes and the drained beans. Simmer for 8 minutes until thick."
+    },
+    {
+     "t": "Take the baby's portion of sauce out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest. Make dips in the sauce, crack in the eggs, cover and cook gently for 6 to 8 minutes until the whites are set. Meanwhile, toast the tortillas in a dry pan. Top with cheese, sliced avocado, lime and chilli."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the sauce with mashed avocado.",
+    "finger": "Toasted tortilla strips to dip, avocado fingers, and egg cooked until the yolk is completely firm.",
+    "chopped": "Sauce, a fully set egg and avocado, chopped."
+   }
+  },
+  {
+   "id": "veg-chow-mein",
+   "name": "Veg chow mein with egg",
+   "blurb": "Takeaway-style noodles in 20 minutes, with plenty of egg.",
+   "time": 20,
+   "hands": 15,
+   "family": "noodles",
+   "cuisine": "East Asian",
+   "tags": [
+    "fakeaway"
+   ],
+   "ingredients": [
+    {
+     "k": "noodles",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "eggs",
+     "q": 2
+    },
+    {
+     "k": "beansprouts",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "white_cabbage",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "carrot",
+     "q": 0.5
+    },
+    {
+     "k": "spring_onion",
+     "q": 2
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "soy_sauce",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "sesame_seeds",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Cook the noodles, drain and rinse under cold water. Beat the eggs."
+    },
+    {
+     "t": "Get a wok very hot with half the oil. Scramble the eggs until just set, then tip out. Add the rest of the oil and stir-fry the shredded cabbage, the carrot (in matchsticks) and the garlic and ginger for 3 minutes."
+    },
+    {
+     "t": "Add the noodles, beansprouts and egg and toss for 2 minutes. Take the baby's portion out now, before the soy and chilli.",
+     "baby": true
+    },
+    {
+     "t": "Toss the rest with the soy sauce and most of the sliced spring onions. Finish with the sesame seeds, the rest of the spring onion and the chilli."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the egg, noodles and veg with a little water.",
+    "finger": "Noodles cut short, egg pieces and soft carrot.",
+    "chopped": "As yours before the soy, noodles cut short."
+   }
+  },
+  {
+   "id": "sticky-sesame-tofu",
+   "name": "Sticky sesame tofu with broccoli & rice",
+   "blurb": "Crisp tofu in a sticky sweet chilli glaze. A Friday-night favourite.",
+   "time": 30,
+   "hands": 12,
+   "family": "noodles",
+   "cuisine": "East Asian",
+   "tags": [
+    "airfryer",
+    "fakeaway"
+   ],
+   "ingredients": [
+    {
+     "k": "tofu",
+     "q": 130,
+     "u": "g"
+    },
+    {
+     "k": "rice",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "broccoli",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "edamame",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "spring_onion",
+     "q": 1
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "cornflour",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "soy_sauce",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "sweet_chilli",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "sesame_seeds",
+     "q": 0.5,
+     "u": "tsp"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Put the rice on. Pat the tofu dry, cut into cubes and toss with the oil and cornflour. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+    },
+    {
+     "t": "Steam or boil the broccoli and edamame for 4 minutes."
+    },
+    {
+     "t": "Take the baby's tofu, rice and broccoli out now, before the soy and sweet chilli.",
+     "baby": true
+    },
+    {
+     "t": "In a pan, bubble the soy sauce, sweet chilli sauce, grated garlic and ginger and {{1|tbsp}} water for 1 minute. Toss the tofu through the glaze. Serve on rice with the greens, sesame seeds and spring onion."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the tofu, broccoli and rice with water.",
+    "finger": "Plain tofu fingers, broccoli florets and squashed rice balls.",
+    "chopped": "Plain tofu, rice and broccoli, chopped small."
+   }
+  },
+  {
+   "id": "gnocchi-traybake",
+   "name": "Gnocchi traybake with mozzarella",
+   "blurb": "Crisp gnocchi, roasted peppers and tomatoes, and melting mozzarella. One tray.",
+   "time": 35,
+   "hands": 8,
+   "family": "traybake",
+   "cuisine": "Italian",
+   "tags": [
+    "oven"
+   ],
+   "ingredients": [
+    {
+     "k": "gnocchi",
+     "q": 200,
+     "u": "g"
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "red_onion",
+     "q": 0.5
+    },
+    {
+     "k": "cherry_tomatoes",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "cannellini",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "mozzarella",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "oregano",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Heat the oven to 220°C. Toss the gnocchi, the pepper and onion in chunks, the tomatoes, the drained beans and the squashed garlic with the oil and oregano on a large tray."
+    },
+    {
+     "t": "Roast for 20 minutes, shaking halfway, until the gnocchi are golden."
+    },
+    {
+     "t": "Take the baby's portion off the tray now, before the salt.",
+     "baby": true
+    },
+    {
+     "t": "Tear the mozzarella over the rest, season, and roast for 5 more minutes until it melts."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the veg and beans with a little water.",
+    "finger": "Gnocchi halved, soft pepper strips and squashed tomatoes, and a little torn mozzarella.",
+    "chopped": "As yours, cut small."
+   }
+  },
+  {
+   "id": "tandoori-paneer-traybake",
+   "name": "Tandoori paneer traybake",
+   "blurb": "Yoghurt-spiced paneer and veg roasted hot, with cucumber raita.",
+   "time": 40,
+   "hands": 12,
+   "family": "traybake",
+   "cuisine": "Indian",
+   "tags": [
+    "oven"
+   ],
+   "ingredients": [
+    {
+     "k": "paneer",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "cauliflower",
+     "q": 0.2
+    },
+    {
+     "k": "red_onion",
+     "q": 0.5
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "cucumber",
+     "q": 0.15
+    },
+    {
+     "k": "naan",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "garam_masala",
+     "q": 1,
+     "u": "tsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "turmeric",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Heat the oven to 220°C. Mix half the yoghurt with the grated garlic and ginger, the garam masala, cumin, turmeric, smoked paprika and oil."
+    },
+    {
+     "t": "Toss the paneer cubes, cauliflower florets and onion and pepper chunks in the spiced yoghurt and spread out on a lined tray. Roast for 25 minutes until charred at the edges."
+    },
+    {
+     "t": "Take the baby's portion off the tray now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest with chilli, salt and lemon. Grate the cucumber into the rest of the yoghurt for raita. Serve with warm naan."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the veg with plain yoghurt.",
+    "finger": "Paneer fingers, soft cauliflower and naan strips, with raita to dip.",
+    "chopped": "As yours, cut small."
+   }
+  },
+  {
+   "id": "spinach-feta-filo-pie",
+   "name": "Spinach, feta & cottage cheese filo pie",
+   "blurb": "A crisp, flaky pie with a high-protein filling. Takes 15 minutes to assemble.",
+   "time": 50,
+   "hands": 15,
+   "family": "bake",
+   "cuisine": "Greek",
+   "tags": [
+    "oven"
+   ],
+   "ingredients": [
+    {
+     "k": "filo",
+     "q": 70,
+     "u": "g"
+    },
+    {
+     "k": "frozen_spinach",
+     "q": 150,
+     "u": "g"
+    },
+    {
+     "k": "cottage_cheese",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "feta",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "eggs",
+     "q": 1
+    },
+    {
+     "k": "spring_onion",
+     "q": 2
+    },
+    {
+     "k": "salad_leaves",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Heat the oven to 190°C. Thaw the spinach in the microwave, then squeeze it really dry."
+    },
+    {
+     "t": "Mix the spinach with the cottage cheese, beaten eggs, sliced spring onions and plenty of black pepper."
+    },
+    {
+     "t": "Spoon the baby's share of the filling into a small ramekin now, before the feta goes in.",
+     "baby": true
+    },
+    {
+     "t": "Crumble the feta into the rest. Layer half the filo in an oiled dish, brushing each sheet with oil, add the filling and scrunch the rest of the filo on top. Brush with oil and bake for 30 minutes, with the ramekin alongside for the last 20. Serve with salad."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the baby's baked filling until smooth.",
+    "finger": "Fingers of the set ramekin filling, plus a little flaky pastry.",
+    "chopped": "The ramekin filling and some pastry, cut small."
+   }
+  },
+  {
+   "id": "cheesy-bean-pasta-bake",
+   "name": "Cheesy bean & broccoli pasta bake",
+   "blurb": "A smoky tomato pasta bake packed with two kinds of beans.",
+   "time": 40,
+   "hands": 10,
+   "family": "bake",
+   "cuisine": "British",
+   "tags": [
+    "oven",
+    "comfort"
+   ],
+   "ingredients": [
+    {
+     "k": "pasta",
+     "q": 90,
+     "u": "g"
+    },
+    {
+     "k": "cannellini",
+     "q": 0.3,
+     "u": "tin"
+    },
+    {
+     "k": "kidney_beans",
+     "q": 0.3,
+     "u": "tin"
+    },
+    {
+     "k": "broccoli",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "passata",
+     "q": 150,
+     "u": "g"
+    },
+    {
+     "k": "cheddar",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "oregano",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Heat the oven to 200°C. Boil the pasta for 3 minutes less than the packet says, adding the broccoli florets for the last 2 minutes."
+    },
+    {
+     "t": "Meanwhile, warm the garlic in the oil, then add the passata, oregano, smoked paprika and both lots of drained beans and simmer for 5 minutes."
+    },
+    {
+     "t": "Drain the pasta and stir it into the sauce. Spoon the baby's portion into a ramekin now, before the salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest and tip into a dish. Top both with the cheese and bake for 20 minutes until golden."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend with a little water.",
+    "finger": "Pasta shapes and broccoli florets, beans squashed.",
+    "chopped": "As yours, cut small."
+   }
+  },
+  {
+   "id": "jacket-potato-beans",
+   "name": "Microwave jacket potato, beans & cheese",
+   "blurb": "A jacket potato in 15 minutes, loaded with protein.",
+   "time": 15,
+   "hands": 5,
+   "family": "bake",
+   "cuisine": "British",
+   "tags": [
+    "comfort"
+   ],
+   "ingredients": [
+    {
+     "k": "potato",
+     "q": 250,
+     "u": "g"
+    },
+    {
+     "k": "baked_beans",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "cheddar",
+     "q": 35,
+     "u": "g"
+    },
+    {
+     "k": "cottage_cheese",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "salad_leaves",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "butter",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Prick the potato all over and microwave on full for 10 to 12 minutes, turning halfway, until soft. (Air fry it for 5 minutes afterwards if you want crisp skin.)"
+    },
+    {
+     "t": "Warm the beans. Take the baby's portion out now: potato flesh, a few beans and a little cheese.",
+     "baby": true
+    },
+    {
+     "t": "Split the potato, add the butter, then pile on the beans, cheese and cottage cheese. Add black pepper and serve with salad."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash the potato with butter and their usual milk.",
+    "finger": "Potato wedges once cool, and a few beans squashed.",
+    "chopped": "Potato, beans and cheese, cut small."
+   },
+   "emergency": true
+  },
+  {
+   "id": "tomato-lentil-soup",
+   "name": "Tomato & red lentil soup with cheese toasties",
+   "blurb": "Thick, smooth soup with a toastie to dunk in it.",
+   "time": 35,
+   "hands": 10,
+   "family": "soup",
+   "cuisine": "British",
+   "tags": [
+    "blender",
+    "comfort"
+   ],
+   "ingredients": [
+    {
+     "k": "red_lentils",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "carrot",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "bread",
+     "q": 2
+    },
+    {
+     "k": "cheddar",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "butter",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "stock",
+     "q": 0.5
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Soften the chopped onion and carrot in the oil for 6 minutes. Add the garlic and smoked paprika for 1 minute."
+    },
+    {
+     "t": "Add the rinsed lentils, the tomatoes and {{400|ml}} water. Simmer for 20 minutes until the lentils have collapsed, then blend until smooth."
+    },
+    {
+     "t": "Take the baby's portion out now, before the stock goes in.",
+     "baby": true
+    },
+    {
+     "t": "Crumble the stock cube into the rest and simmer for 2 minutes. Add pepper. Meanwhile, make toasties from the buttered bread and cheese in a dry pan."
+    }
+   ],
+   "baby": {
+    "smooth": "Perfect as it is, served lukewarm.",
+    "finger": "Thick soup to dip toast fingers into, plus a little toastie cut into strips.",
+    "chopped": "Soup thickened a little, with toastie pieces."
+   }
+  },
+  {
+   "id": "minestrone",
+   "name": "Big bean minestrone",
+   "blurb": "A hearty Italian veg soup thick with beans and pasta.",
+   "time": 35,
+   "hands": 10,
+   "family": "soup",
+   "cuisine": "Italian",
+   "tags": [
+    "onepot"
+   ],
+   "ingredients": [
+    {
+     "k": "cannellini",
+     "q": 0.6,
+     "u": "tin"
+    },
+    {
+     "k": "pasta",
+     "q": 35,
+     "u": "g"
+    },
+    {
+     "k": "mixed_veg",
+     "q": 120,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.33,
+     "u": "tin"
+    },
+    {
+     "k": "spinach",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "hard_cheese",
+     "q": 15,
+     "u": "g"
+    },
+    {
+     "k": "bread",
+     "q": 1
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "mixed_herbs",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "stock",
+     "q": 0.5
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Soften the chopped onion in the oil for 5 minutes, then add the garlic and herbs for 1 minute."
+    },
+    {
+     "t": "Add the frozen veg, the tomatoes, the drained beans and {{450|ml}} water. Bring to the boil, then add the pasta and simmer for 12 minutes until the pasta is tender. Stir in the spinach."
+    },
+    {
+     "t": "Take the baby's portion out now, before the stock and salt.",
+     "baby": true
+    },
+    {
+     "t": "Crumble the stock cube into the rest and simmer for 2 minutes. Season, then serve with the grated cheese and bread."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend with a spoon of grated cheese.",
+    "finger": "Drain some of the bits out: pasta, beans and soft veg, with a little cheese.",
+    "chopped": "As yours before the stock, cut small."
+   }
+  },
+  {
+   "id": "chickpea-apricot-stew",
+   "name": "Chickpea & apricot stew with couscous",
+   "blurb": "A gently sweet, cinnamon-spiced North African-style stew.",
+   "time": 35,
+   "hands": 10,
+   "family": "soup",
+   "cuisine": "North African",
+   "tags": [
+    "onepot"
+   ],
+   "ingredients": [
+    {
+     "k": "chickpeas",
+     "q": 0.6,
+     "u": "tin"
+    },
+    {
+     "k": "dried_apricots",
+     "q": 25,
+     "u": "g"
+    },
+    {
+     "k": "sweet_potato",
+     "q": 0.3
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.4,
+     "u": "tin"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "spinach",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "couscous",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "coriander",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "cinnamon",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "ground_ginger",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Soften the chopped onion in the oil for 6 minutes. Add the garlic, cumin, cinnamon and ground ginger for 1 minute."
+    },
+    {
+     "t": "Add the sweet potato (2 cm cubes), the drained chickpeas, the tomatoes, the chopped apricots and {{200|ml}} water. Cover and simmer for 20 minutes until the potato is tender. Stir in the spinach to wilt."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest. Pour {{75|ml}} boiling water over the couscous, cover for 5 minutes and fluff. Serve the stew on the couscous with yoghurt, lemon and coriander."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend with a little yoghurt.",
+    "finger": "Sweet potato pieces, squashed chickpeas and couscous pressed into small balls.",
+    "chopped": "As yours, cut small."
+   }
+  },
+  {
+   "id": "baked-pea-risotto",
+   "name": "Baked pea & spinach risotto",
+   "blurb": "Creamy risotto without the stirring. It goes in the oven.",
+   "time": 40,
+   "hands": 8,
+   "family": "rice",
+   "cuisine": "Italian",
+   "tags": [
+    "oven",
+    "comfort"
+   ],
+   "ingredients": [
+    {
+     "k": "arborio",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "peas",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "edamame",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "spinach",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "ricotta",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "hard_cheese",
+     "q": 25,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "butter",
+     "q": 10,
+     "u": "g"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "stock",
+     "q": 0.5
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Heat the oven to 200°C. In an ovenproof pan with a lid, soften the chopped onion in the butter for 5 minutes. Add the garlic and the rice and stir for 1 minute."
+    },
+    {
+     "t": "Pour in {{250|ml}} boiling water, cover and bake for 18 minutes. Stir in the peas, edamame, spinach and another {{50|ml}} boiling water. Bake for 5 more minutes."
+    },
+    {
+     "t": "Spoon the baby's portion out now, before the stock and cheese.",
+     "baby": true
+    },
+    {
+     "t": "Dissolve the stock cube in {{30|ml}} boiling water and stir it through the rest with most of the cheese, until creamy. Top with the ricotta, the rest of the cheese, lemon zest and black pepper."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend with a spoon of ricotta.",
+    "finger": "Squeeze into small soft balls, with peas squashed.",
+    "chopped": "As yours before the stock, with a little ricotta."
+   }
+  },
+  {
+   "id": "egg-veg-biryani",
+   "name": "Egg & veg biryani",
+   "blurb": "Fragrant spiced rice with jammy eggs and raita. One pot.",
+   "time": 35,
+   "hands": 10,
+   "family": "rice",
+   "cuisine": "Indian",
+   "tags": [
+    "onepot"
+   ],
+   "ingredients": [
+    {
+     "k": "rice",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "eggs",
+     "q": 2
+    },
+    {
+     "k": "mixed_veg",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "cucumber",
+     "q": 0.15
+    },
+    {
+     "k": "coriander",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "garam_masala",
+     "q": 0.75,
+     "u": "tsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "turmeric",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Boil the eggs for 8 minutes, then cool them in cold water and peel. Meanwhile, fry the sliced onion in the oil for 8 minutes until deep golden."
+    },
+    {
+     "t": "Add the garlic, grated ginger, cumin, turmeric and garam masala for 1 minute, then the rinsed rice, the frozen veg and {{160|ml}} boiling water. Cover tightly and cook on the lowest heat for 12 minutes, then leave to stand, covered, for 5."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest with chilli and salt and fluff it up. Grate the cucumber into the yoghurt for raita. Serve with the halved eggs and coriander."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the rice and veg with a little yoghurt and egg.",
+    "finger": "Squashed rice balls, soft veg and egg quarters (fully set).",
+    "chopped": "As yours before the chilli and salt, with chopped egg."
+   }
+  },
+  {
+   "id": "greek-chickpea-bowls",
+   "name": "Greek chickpea couscous bowls",
+   "blurb": "Crispy chickpeas, crunchy salad, feta and houmous on lemony couscous.",
+   "time": 20,
+   "hands": 12,
+   "family": "bowls",
+   "cuisine": "Greek",
+   "tags": [
+    "airfryer"
+   ],
+   "ingredients": [
+    {
+     "k": "chickpeas",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "couscous",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "cucumber",
+     "q": 0.25
+    },
+    {
+     "k": "cherry_tomatoes",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "red_onion",
+     "q": 0.25
+    },
+    {
+     "k": "olives",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "feta",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "hummus",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "oregano",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Pat the drained chickpeas dry and toss with half the oil, the oregano and paprika. Air fry at 200°C for 12 minutes, shaking once, until crisp."
+    },
+    {
+     "t": "Pour {{75|ml}} boiling water over the couscous, cover for 5 minutes, then fluff with the rest of the oil and the lemon juice."
+    },
+    {
+     "t": "Take the baby's couscous and a few soft chickpeas out now (squashed), plus cucumber sticks, before the feta and olives.",
+     "baby": true
+    },
+    {
+     "t": "Chop the cucumber, tomatoes and red onion. Build the bowls: couscous, salad, chickpeas, crumbled feta, olives and a spoon of houmous."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the couscous and chickpeas with houmous and water.",
+    "finger": "Couscous pressed into balls, squashed chickpeas, and peeled cucumber sticks.",
+    "chopped": "Couscous, squashed chickpeas and chopped cucumber."
+   }
+  },
+  {
+   "id": "halloumi-chickpea-couscous",
+   "name": "15-minute halloumi & chickpea couscous",
+   "blurb": "Golden halloumi, warm chickpeas and tomatoes on lemony couscous.",
+   "time": 15,
+   "hands": 12,
+   "family": "bowls",
+   "cuisine": "Mediterranean",
+   "tags": [],
+   "ingredients": [
+    {
+     "k": "couscous",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "chickpeas",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "halloumi",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "cherry_tomatoes",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "spinach",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "mixed_herbs",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Pour {{75|ml}} boiling water over the couscous with the herbs, cover and leave for 5 minutes."
+    },
+    {
+     "t": "Warm the drained chickpeas, the halved tomatoes and the spinach in half the oil until the spinach wilts. Take the baby's portion (with some couscous) out now, before the halloumi.",
+     "baby": true
+    },
+    {
+     "t": "Fry the halloumi slices in the rest of the oil until golden on both sides. Fluff the couscous with the lemon juice and pepper, stir in the chickpeas and top with the halloumi."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the couscous, chickpeas and tomatoes with water.",
+    "finger": "Couscous balls, squashed chickpeas and soft tomatoes.",
+    "chopped": "As yours before the halloumi, chopped."
+   },
+   "emergency": true
+  },
+  {
+   "id": "naan-pizzas",
+   "name": "Naan pizzas",
+   "blurb": "Pizza night with no dough. Ready in 10 minutes in the air fryer or oven.",
+   "time": 20,
+   "hands": 10,
+   "family": "fakeaway",
+   "cuisine": "Italian",
+   "tags": [
+    "pizza",
+    "airfryer"
+   ],
+   "ingredients": [
+    {
+     "k": "naan",
+     "q": 1
+    },
+    {
+     "k": "passata",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "mozzarella",
+     "q": 70,
+     "u": "g"
+    },
+    {
+     "k": "cheddar",
+     "q": 15,
+     "u": "g"
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.25
+    },
+    {
+     "k": "sweetcorn",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "mushrooms",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "olives",
+     "q": 15,
+     "u": "g"
+    },
+    {
+     "k": "salad_leaves",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "oregano",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Spread the naans with passata and sprinkle with the oregano."
+    },
+    {
+     "t": "Make the baby's pizza now: a piece of naan with passata, a little mozzarella and some sweetcorn, before the olives and chilli.",
+     "baby": true
+    },
+    {
+     "t": "Top the rest with the torn mozzarella, grated cheddar, sliced pepper and mushrooms, the sweetcorn and the olives. Air fry at 190°C for 6 to 8 minutes (or bake at 220°C for 10) until bubbling. Add chilli and serve with salad."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the sauce with a little sweetcorn and cheese.",
+    "finger": "Pizza fingers from the baby's piece, cooled.",
+    "chopped": "The baby's pizza, cut small."
+   }
+  },
+  {
+   "id": "halloumi-burgers",
+   "name": "Halloumi burgers with air-fryer wedges",
+   "blurb": "Halloumi, roasted pepper and smoky yoghurt sauce in a bun, with crisp wedges.",
+   "time": 30,
+   "hands": 10,
+   "family": "fakeaway",
+   "cuisine": "British",
+   "tags": [
+    "burger",
+    "airfryer"
+   ],
+   "ingredients": [
+    {
+     "k": "halloumi",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "burger_buns",
+     "q": 1
+    },
+    {
+     "k": "potato",
+     "q": 200,
+     "u": "g"
+    },
+    {
+     "k": "roasted_peppers",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "salad_leaves",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "red_onion",
+     "q": 0.25
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "garlic",
+     "q": 0.5
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Cut the potatoes into wedges, toss with the oil and half the paprika, and air fry at 200°C for 20 to 22 minutes, shaking halfway."
+    },
+    {
+     "t": "Take a few wedges out for the baby now, before the salt and halloumi.",
+     "baby": true
+    },
+    {
+     "t": "Fry the halloumi slices in a dry pan until golden on both sides. Mix the yoghurt with the grated garlic and the rest of the paprika. Salt the wedges. Build the burgers: bun, sauce, salad, halloumi, roasted peppers and red onion."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash the potato with plain yoghurt.",
+    "finger": "Potato wedges, a strip of roasted pepper and toast-like bun fingers.",
+    "chopped": "Wedges and pepper, cut small, with yoghurt."
+   }
+  },
+  {
+   "id": "black-bean-burgers",
+   "name": "Black bean burgers with sweet potato fries",
+   "blurb": "Smoky bean burgers blitzed in a processor, with crisp fries.",
+   "time": 35,
+   "hands": 15,
+   "family": "fakeaway",
+   "cuisine": "Mexican",
+   "tags": [
+    "burger",
+    "airfryer",
+    "blender"
+   ],
+   "ingredients": [
+    {
+     "k": "black_beans",
+     "q": 0.6,
+     "u": "tin"
+    },
+    {
+     "k": "oats",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "cheddar",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "burger_buns",
+     "q": 1
+    },
+    {
+     "k": "sweet_potato",
+     "q": 0.6
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "salad_leaves",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 0.5
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "smoked_paprika",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "cumin",
+     "q": 0.5,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Cut the sweet potato into fries and toss with half the oil. Air fry at 200°C for 15 to 18 minutes, shaking twice."
+    },
+    {
+     "t": "Pat the drained beans dry. Pulse them in the processor with the oats, garlic, cumin and paprika until they hold together but still have some texture. Shape into burgers."
+    },
+    {
+     "t": "Shape a small patty for the baby now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Add the chilli and a pinch of salt to the rest, shape into burgers, then fry them all in the rest of the oil for 4 minutes a side, adding the cheese for the last minute. Serve in buns with yoghurt and salad."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash the patty and sweet potato with yoghurt.",
+    "finger": "Patty cut into fingers, plus soft fries.",
+    "chopped": "Patty and fries cut small."
+   }
+  },
+  {
+   "id": "salt-pepper-tofu",
+   "name": "Salt & pepper tofu",
+   "blurb": "The takeaway classic: crisp tofu with peppers, onion and spring onion.",
+   "time": 30,
+   "hands": 15,
+   "family": "fakeaway",
+   "cuisine": "East Asian",
+   "tags": [
+    "airfryer",
+    "fakeaway"
+   ],
+   "ingredients": [
+    {
+     "k": "tofu",
+     "q": 140,
+     "u": "g"
+    },
+    {
+     "k": "rice",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "edamame",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "spring_onion",
+     "q": 2
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "cornflour",
+     "q": 1.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "oil",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "ground_ginger",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "chilli",
+     "q": 0.25,
+     "u": "tsp"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Put the rice on, adding the edamame for the last 3 minutes. Pat the tofu dry, cube it, and toss with half the oil and the cornflour. Air fry at 200°C for 15 minutes, shaking halfway."
+    },
+    {
+     "t": "Stir-fry the sliced pepper and onion in the rest of the oil for 4 minutes, then add the garlic and ginger for 1 minute."
+    },
+    {
+     "t": "Take the baby's tofu, veg and rice out now, before the salt, pepper and chilli.",
+     "baby": true
+    },
+    {
+     "t": "Toss the tofu into the pan with a big pinch of salt, lots of black pepper, the chilli and the spring onions. Serve with the rice and edamame."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the tofu, peppers and rice with water.",
+    "finger": "Tofu fingers, soft pepper strips and rice balls.",
+    "chopped": "As yours before the seasoning, chopped."
+   }
+  },
+  {
+   "id": "potato-spinach-frittata",
+   "name": "Potato, spinach & feta frittata",
+   "blurb": "A thick frittata with a salad. Good the next day too.",
+   "time": 30,
+   "hands": 10,
+   "family": "brunch",
+   "cuisine": "Mediterranean",
+   "tags": [],
+   "ingredients": [
+    {
+     "k": "eggs",
+     "q": 3
+    },
+    {
+     "k": "potato",
+     "q": 120,
+     "u": "g"
+    },
+    {
+     "k": "spinach",
+     "q": 40,
+     "u": "g"
+    },
+    {
+     "k": "feta",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "spring_onion",
+     "q": 1
+    },
+    {
+     "k": "sourdough",
+     "q": 1
+    },
+    {
+     "k": "salad_leaves",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "oil",
+     "q": 0.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Slice the potato thinly and fry in the oil in an ovenproof non-stick pan, covered, for 10 minutes until tender. Add the spinach and spring onion to wilt."
+    },
+    {
+     "t": "Beat the eggs with pepper and pour over. Cook gently for 6 minutes until the edges are set. Heat the grill."
+    },
+    {
+     "t": "Scatter the feta over everything except one corner, which is the baby's piece.",
+     "baby": true
+    },
+    {
+     "t": "Grill for 4 to 5 minutes until set and golden. Rest for 2 minutes, cut into wedges and serve with salad and toasted sourdough."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the feta-free piece with a little milk.",
+    "finger": "Fingers of the feta-free piece, completely set.",
+    "chopped": "The feta-free piece, chopped."
+   }
+  },
+  {
+   "id": "falafel-halloumi-wraps",
+   "name": "Falafel & halloumi wraps",
+   "blurb": "Shop falafel and halloumi in warm wraps with houmous. Ready in 12 minutes.",
+   "time": 12,
+   "hands": 10,
+   "family": "mexican",
+   "cuisine": "Middle Eastern",
+   "tags": [
+    "airfryer"
+   ],
+   "ingredients": [
+    {
+     "k": "falafel",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "halloumi",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "tortillas",
+     "q": 2
+    },
+    {
+     "k": "hummus",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "cucumber",
+     "q": 0.2
+    },
+    {
+     "k": "salad_leaves",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 30,
+     "u": "g"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Air fry the falafel at 190°C for 8 minutes (or follow the pack)."
+    },
+    {
+     "t": "Take a falafel, some cucumber sticks and a tortilla spread with houmous out for the baby now, before the halloumi.",
+     "baby": true
+    },
+    {
+     "t": "Fry the halloumi slices in a dry pan until golden. Fill the warmed tortillas with houmous, salad, cucumber, falafel and halloumi, then add yoghurt and a squeeze of lemon."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend a falafel with houmous and water.",
+    "finger": "Falafel cut into fingers, cucumber sticks and tortilla strips with houmous.",
+    "chopped": "Falafel, tortilla and cucumber, chopped."
+   },
+   "emergency": true
   }
  ],
  "families": [
@@ -1132,20 +4011,26 @@
   {
    "id": "pasta",
    "name": "Pasta",
-   "plural": "Pasta",
+   "plural": "Pasta & gnocchi",
    "another": "Other pasta"
   },
   {
    "id": "mexican",
-   "name": "Mexican",
+   "name": "Mexican & wraps",
    "plural": "Mexican & wraps",
-   "another": "Another Mexican"
+   "another": "Another wrap"
   },
   {
    "id": "noodles",
-   "name": "Noodles",
+   "name": "Stir-fry",
    "plural": "Noodles & stir-fries",
-   "another": "Other noodles"
+   "another": "Another stir-fry"
+  },
+  {
+   "id": "rice",
+   "name": "Rice",
+   "plural": "Risotto & rice",
+   "another": "Another rice dish"
   },
   {
    "id": "traybake",
@@ -1156,26 +4041,286 @@
   {
    "id": "bake",
    "name": "Bake",
-   "plural": "Bakes & pies",
+   "plural": "Bakes, pies & jackets",
    "another": "Another bake"
   },
   {
    "id": "soup",
-   "name": "Soup",
+   "name": "Soup & stew",
    "plural": "Soups & stews",
    "another": "Another soup"
   },
   {
-   "id": "eggs",
-   "name": "Eggs",
-   "plural": "Eggs & brunch",
-   "another": "Another egg dish"
+   "id": "bowls",
+   "name": "Bowl",
+   "plural": "Bowls & salads",
+   "another": "Another bowl"
   },
   {
    "id": "fakeaway",
    "name": "Fakeaway",
-   "plural": "Fakeaways",
+   "plural": "Fakeaways, burgers & pizza",
    "another": "Another fakeaway"
+  },
+  {
+   "id": "brunch",
+   "name": "Brunch for dinner",
+   "plural": "Brunch for dinner",
+   "another": "Another brunch"
+  }
+ ],
+ "themes": [
+  {
+   "id": "curry",
+   "group": "Food",
+   "name": "Curry night",
+   "blurb": "Dhals, paneer and chickpea curries",
+   "match": {
+    "families": [
+     "curry"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "pasta",
+   "group": "Food",
+   "name": "Pasta night",
+   "blurb": "Pasta and gnocchi",
+   "match": {
+    "families": [
+     "pasta"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "mexican",
+   "group": "Food",
+   "name": "Taco & burrito night",
+   "blurb": "Burritos, tacos, fajitas and wraps",
+   "match": {
+    "families": [
+     "mexican"
+    ],
+    "cuisines": [
+     "Mexican"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "noodles",
+   "group": "Food",
+   "name": "Stir-fry night",
+   "blurb": "Noodles and stir-fries",
+   "match": {
+    "families": [
+     "noodles"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "fakeaway",
+   "group": "Food",
+   "name": "Fakeaway night",
+   "blurb": "Burgers, pizza and takeaway favourites",
+   "match": {
+    "families": [
+     "fakeaway"
+    ],
+    "tags": [
+     "fakeaway",
+     "pizza",
+     "burger"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "soup",
+   "group": "Food",
+   "name": "Soup & stew night",
+   "blurb": "Soups and stews with bread to dunk",
+   "match": {
+    "families": [
+     "soup"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "traybake",
+   "group": "Food",
+   "name": "One-tray night",
+   "blurb": "Traybakes: chop, roast, done",
+   "match": {
+    "families": [
+     "traybake"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "bake",
+   "group": "Food",
+   "name": "Pie & bake night",
+   "blurb": "Pies, pasta bakes and cottage pie",
+   "match": {
+    "families": [
+     "bake"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "rice",
+   "group": "Food",
+   "name": "Rice & risotto night",
+   "blurb": "Risotto, biryani and rice bowls",
+   "match": {
+    "families": [
+     "rice",
+     "bowls"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "brunch",
+   "group": "Food",
+   "name": "Brunch for dinner",
+   "blurb": "Shakshuka, frittata and huevos rancheros",
+   "match": {
+    "families": [
+     "brunch"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "italian",
+   "group": "Cuisine",
+   "name": "Italian night",
+   "blurb": "Pasta, risotto, gnocchi and minestrone",
+   "match": {
+    "cuisines": [
+     "Italian"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "indian",
+   "group": "Cuisine",
+   "name": "Indian night",
+   "blurb": "Curries, biryani and tandoori",
+   "match": {
+    "cuisines": [
+     "Indian"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "eastasian",
+   "group": "Cuisine",
+   "name": "East Asian night",
+   "blurb": "Noodles, fried rice and crispy tofu",
+   "match": {
+    "cuisines": [
+     "East Asian"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "med",
+   "group": "Cuisine",
+   "name": "Mediterranean night",
+   "blurb": "Greek, Middle Eastern and North African",
+   "match": {
+    "cuisines": [
+     "Mediterranean",
+     "Middle Eastern",
+     "Greek",
+     "North African"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "british",
+   "group": "Cuisine",
+   "name": "British comfort",
+   "blurb": "Pies, bakes and soup with toasties",
+   "match": {
+    "cuisines": [
+     "British"
+    ],
+    "tags": [
+     "comfort"
+    ]
+   },
+   "reserve": true
+  },
+  {
+   "id": "quick",
+   "group": "Other",
+   "name": "Quick night",
+   "blurb": "25 minutes or less, including emergency meals",
+   "match": {
+    "maxTime": 25,
+    "emergency": true
+   }
+  },
+  {
+   "id": "airfryer",
+   "group": "Other",
+   "name": "Air fryer night",
+   "blurb": "Most of the cooking happens in the air fryer",
+   "match": {
+    "tags": [
+     "airfryer"
+    ]
+   }
+  },
+  {
+   "id": "cheap",
+   "group": "Other",
+   "name": "Cheap & cheerful",
+   "blurb": "About £1.30 a portion or less",
+   "match": {
+    "maxCost": 1.3
+   }
+  },
+  {
+   "id": "protein",
+   "group": "Other",
+   "name": "Protein-packed",
+   "blurb": "32 g of protein or more per portion",
+   "match": {
+    "minProtein": 32
+   }
+  },
+  {
+   "id": "new",
+   "group": "Other",
+   "name": "Try something new",
+   "blurb": "Something you haven't cooked yet",
+   "match": {
+    "uncooked": true
+   }
+  },
+  {
+   "id": "favs",
+   "group": "Other",
+   "name": "Favourites night",
+   "blurb": "Only recipes you've starred",
+   "match": {
+    "fav": true
+   }
   }
  ]
 }
