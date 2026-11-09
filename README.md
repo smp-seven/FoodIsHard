@@ -3,10 +3,12 @@
 A vegetarian family dinner planner with a shared shopping list, built to run as a
 Home Assistant add-on.
 
-- **Week view:** "Plan my week" suggests seven dinners. Swap, lock or mark any night as leftovers or eating out.
+- **Tonight:** the home screen, with tonight's dinner, per-person protein (tap for full nutrition) and what's coming up.
+- **Week view:** "Plan my week" suggests seven dinners from meal families, with theme nights if you want them. Use Another curry, Swap or Skip on any day.
+- **Cooking mode:** one step at a time, with timers and the baby's step highlighted.
 - **Recipes:** scaled to everyone's portion sizes, with protein per person and a "take the baby's portion out here" step.
 - **Shopping list:** merged from the week's dinners plus weekly staples. Grouped by aisle or by shop, ticks sync between phones, and it exports as a copy/paste list, a .txt download or a printable PDF.
-- **Prices:** rough estimates per recipe and per week at your chosen supermarket, plus a rule-of-thumb comparison with the others. Tap any price to correct it.
+- **Prices:** rough estimates per recipe and per week, adjusted for food inflation using the ONS food price index, at your chosen supermarket, plus a rule-of-thumb comparison with the others. Tap any price to correct it.
 - **Swaps and budget mode:** fresh → frozen, fresh ginger → ground and so on. Emergency meals for nights you need something in 15 minutes.
 - **Food rules:** strictly vegetarian (no gelatine, anchovy or animal rennet), plus allergies and dislikes you set yourself.
 

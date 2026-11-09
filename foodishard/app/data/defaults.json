@@ -4,12 +4,14 @@
       {
         "id": "a1",
         "name": "Adult 1",
-        "portion": 1.0
+        "portion": 1.0,
+        "goal": 40
       },
       {
         "id": "a2",
         "name": "Adult 2",
-        "portion": 1.0
+        "portion": 1.0,
+        "goal": 40
       }
     ],
     "baby": {
@@ -65,7 +67,9 @@
         "price": 2.3,
         "note": "Check flavoured ones for gelatine"
       }
-    ]
+    ],
+    "themes": {},
+    "inflation": true
   },
   "plans": {},
   "prefs": {},
@@ -73,5 +77,7 @@
   "extras": {},
   "prices": {},
   "swaps": {},
-  "shopFor": {}
+  "shopFor": {},
+  "shopPref": {},
+  "inflation": {}
 }

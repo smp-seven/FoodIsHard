@@ -1,6 +1,6 @@
 {
  "version": 1,
- "notes": "Quantities are per ONE standard adult portion; the app scales by everyone's portion sizes. In steps, {{300|ml}} is scaled too. Protein is a rough estimate per standard portion. 'emergency' recipes use freezer and cupboard ingredients and take about 15 minutes.",
+ "notes": "Quantities are per ONE standard adult portion; the app scales by everyone's portion sizes. In steps, {{300|ml}} is scaled too. Nutrition is calculated from ingredients. 'emergency' recipes use freezer and cupboard ingredients and take about 15 minutes.",
  "recipes": [
   {
    "id": "dhal-spinach",
@@ -9,7 +9,6 @@
    "time": 35,
    "cuisine": "Indian",
    "protein_source": "lentils",
-   "protein": 32,
    "ingredients": [
     {
      "k": "red_lentils",
@@ -93,7 +92,8 @@
     "smooth": "Blend or mash the baby's portion until smooth and loosen it with their usual milk. Serve with a little plain yoghurt.",
     "finger": "Let it cool to warm and keep it thick. Offer chapati or toast fingers to scoop with, and a spoon of plain yoghurt.",
     "chopped": "Same as yours before the salt and chilli, with small torn pieces of chapati."
-   }
+   },
+   "family": "curry"
   },
   {
    "id": "bean-chilli",
@@ -102,7 +102,6 @@
    "time": 40,
    "cuisine": "Mexican",
    "protein_source": "beans",
-   "protein": 34,
    "ingredients": [
     {
      "k": "black_beans",
@@ -185,7 +184,8 @@
     "smooth": "Mash the beans and sweet potato smooth and stir in a little yoghurt.",
     "finger": "Squash the beans lightly with a fork. Offer soft sweet potato cubes to pick up, sticky rice, and a pinch of cheese.",
     "chopped": "As yours before the chilli, with a little cheese on top."
-   }
+   },
+   "family": "mexican"
   },
   {
    "id": "tofu-peanut-noodles",
@@ -194,7 +194,6 @@
    "time": 25,
    "cuisine": "Asian",
    "protein_source": "tofu",
-   "protein": 38,
    "ingredients": [
     {
      "k": "tofu",
@@ -270,7 +269,8 @@
     "smooth": "Blend the broccoli and a little tofu with a teaspoon of peanut sauce loosened with water.",
     "finger": "Tofu fingers, broccoli florets cooked soft, squashed edamame, and short noodles. If peanut is new to them, try it earlier in the day on a separate occasion first.",
     "chopped": "As yours before the soy and chilli, chopped small."
-   }
+   },
+   "family": "noodles"
   },
   {
    "id": "lentil-bolognese",
@@ -279,7 +279,6 @@
    "time": 40,
    "cuisine": "Italian",
    "protein_source": "lentils",
-   "protein": 30,
    "ingredients": [
     {
      "k": "green_lentils",
@@ -363,7 +362,8 @@
     "smooth": "Blend the baby's sauce with a few pieces of soft pasta.",
     "finger": "Big pasta shapes like fusilli or penne, cooked soft and coated in sauce, with a little grated cheese.",
     "chopped": "As yours before seasoning, with the pasta cut small."
-   }
+   },
+   "family": "pasta"
   },
   {
    "id": "mattar-paneer",
@@ -372,7 +372,6 @@
    "time": 35,
    "cuisine": "Indian",
    "protein_source": "paneer",
-   "protein": 34,
    "ingredients": [
     {
      "k": "paneer",
@@ -457,7 +456,8 @@
     "smooth": "Blend the sauce with the peas and a little paneer.",
     "finger": "Paneer cut into soft fingers, squashed peas, and rice they can grab in clumps.",
     "chopped": "As yours before the chilli and salt, with the paneer chopped small."
-   }
+   },
+   "family": "curry"
   },
   {
    "id": "shakshuka",
@@ -466,7 +466,6 @@
    "time": 30,
    "cuisine": "Middle Eastern",
    "protein_source": "eggs",
-   "protein": 32,
    "ingredients": [
     {
      "k": "eggs",
@@ -539,7 +538,8 @@
     "smooth": "Cook the baby's egg until firm and mash it into the blended sauce.",
     "finger": "Cook the baby's egg until set (British Lion eggs can be a little soft). Offer strips of egg, squashed chickpeas, and bread fingers to dip. No feta: it's salty.",
     "chopped": "As yours, with no feta and the egg chopped."
-   }
+   },
+   "family": "eggs"
   },
   {
    "id": "chickpea-traybake",
@@ -548,7 +548,6 @@
    "time": 40,
    "cuisine": "Mediterranean",
    "protein_source": "chickpeas",
-   "protein": 35,
    "ingredients": [
     {
      "k": "chickpeas",
@@ -627,7 +626,8 @@
     "smooth": "Mash the roast veg and chickpeas with plain yoghurt.",
     "finger": "Soft strips of roast pepper and courgette, squashed chickpeas, quartered cherry tomatoes, and flatbread fingers with plain yoghurt. No halloumi: it's very salty.",
     "chopped": "As yours, with a little halloumi at most."
-   }
+   },
+   "family": "traybake"
   },
   {
    "id": "cottage-pie",
@@ -636,7 +636,6 @@
    "time": 70,
    "cuisine": "British",
    "protein_source": "lentils",
-   "protein": 33,
    "ingredients": [
     {
      "k": "green_lentils",
@@ -719,7 +718,8 @@
     "smooth": "Mash the baby's filling and potato together until smooth.",
     "finger": "Soft forkfuls of filling and mash they can grab, with squashed peas.",
     "chopped": "As yours before the stock, with a little cheese."
-   }
+   },
+   "family": "bake"
   },
   {
    "id": "pesto-quorn-pasta",
@@ -728,7 +728,6 @@
    "time": 12,
    "cuisine": "Italian",
    "protein_source": "quorn",
-   "protein": 30,
    "emergency": true,
    "ingredients": [
     {
@@ -779,7 +778,8 @@
     "smooth": "Blend the pasta, peas and spinach with a little water and a tiny bit of pesto.",
     "finger": "Big pasta shapes, Quorn pieces cut into small strips, and squashed peas. If tree nuts are new to them, try pesto on its own earlier in the day first.",
     "chopped": "As yours, with the Quorn chopped small and only a little pesto."
-   }
+   },
+   "family": "pasta"
   },
   {
    "id": "egg-fried-rice",
@@ -788,7 +788,6 @@
    "time": 12,
    "cuisine": "Asian",
    "protein_source": "eggs",
-   "protein": 27,
    "emergency": true,
    "ingredients": [
     {
@@ -842,7 +841,8 @@
     "smooth": "Blend the rice, peas and egg with a little water.",
     "finger": "Clumps of rice, strips of well-cooked egg, and squashed peas and edamame.",
     "chopped": "As yours, before the soy sauce."
-   }
+   },
+   "family": "noodles"
   },
   {
    "id": "cheesy-beans-toast",
@@ -851,7 +851,6 @@
    "time": 10,
    "cuisine": "British",
    "protein_source": "beans",
-   "protein": 30,
    "emergency": true,
    "ingredients": [
     {
@@ -898,7 +897,8 @@
     "smooth": "Mash a few beans with soft-cooked egg.",
     "finger": "Toast fingers, a small spoonful of mashed beans (reduced-salt ones), and strips of egg cooked through. Go easy on the cheese.",
     "chopped": "As yours, cut small, with a little cheese."
-   }
+   },
+   "family": "eggs"
   },
   {
    "id": "chickpea-spinach-curry",
@@ -907,7 +907,6 @@
    "time": 15,
    "cuisine": "Indian",
    "protein_source": "chickpeas",
-   "protein": 31,
    "emergency": true,
    "ingredients": [
     {
@@ -976,7 +975,8 @@
     "smooth": "Blend the curry with yoghurt until smooth.",
     "finger": "Squashed chickpeas and spinach to scoop with rice, plus plain yoghurt.",
     "chopped": "As yours, before the chilli and salt."
-   }
+   },
+   "family": "curry"
   },
   {
    "id": "bean-quesadillas",
@@ -985,7 +985,6 @@
    "time": 12,
    "cuisine": "Mexican",
    "protein_source": "beans",
-   "protein": 30,
    "emergency": true,
    "ingredients": [
     {
@@ -1039,7 +1038,64 @@
     "smooth": "Mash the beans with yoghurt.",
     "finger": "Quesadilla cut into finger strips once it's cooled, with yoghurt to dip.",
     "chopped": "Small wedges of yours, without the chilli."
-   }
+   },
+   "family": "mexican"
+  }
+ ],
+ "families": [
+  {
+   "id": "curry",
+   "name": "Curry",
+   "plural": "Curries",
+   "another": "Another curry"
+  },
+  {
+   "id": "pasta",
+   "name": "Pasta",
+   "plural": "Pasta",
+   "another": "Other pasta"
+  },
+  {
+   "id": "mexican",
+   "name": "Mexican",
+   "plural": "Mexican & wraps",
+   "another": "Another Mexican"
+  },
+  {
+   "id": "noodles",
+   "name": "Noodles",
+   "plural": "Noodles & stir-fries",
+   "another": "Other noodles"
+  },
+  {
+   "id": "traybake",
+   "name": "Traybake",
+   "plural": "Traybakes",
+   "another": "Another traybake"
+  },
+  {
+   "id": "bake",
+   "name": "Bake",
+   "plural": "Bakes & pies",
+   "another": "Another bake"
+  },
+  {
+   "id": "soup",
+   "name": "Soup",
+   "plural": "Soups & stews",
+   "another": "Another soup"
+  },
+  {
+   "id": "eggs",
+   "name": "Eggs",
+   "plural": "Eggs & brunch",
+   "another": "Another egg dish"
+  },
+  {
+   "id": "fakeaway",
+   "name": "Fakeaway",
+   "plural": "Fakeaways",
+   "another": "Another fakeaway"
   }
  ]
 }

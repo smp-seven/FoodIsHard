@@ -11,6 +11,7 @@ import os
 import tempfile
 import threading
 import time
+import urllib.request
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -53,6 +54,8 @@ def _load():
             _state.setdefault(key, value)
         for key, value in base["settings"].items():
             _state["settings"].setdefault(key, value)
+        for person in _state["settings"].get("people", []):
+            person.setdefault("goal", 40)
     else:
         _state = _defaults()
         _save()
@@ -127,6 +130,16 @@ def apply_op(state, op, user):
             swaps.pop(op["key"], None)
         else:
             swaps[op["key"]] = str(op["alt"])
+
+    elif kind == "shop_pref":
+        prefs = state.setdefault("shopPref", {})
+        for key in op.get("keys") or [op.get("key")]:
+            if not key:
+                continue
+            if op.get("shop"):
+                prefs[key] = op["shop"]
+            else:
+                prefs.pop(key, None)
 
     elif kind == "shop_for":
         week = state.setdefault("shopFor", {}).setdefault(op["week"], {})
@@ -244,9 +257,74 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_json({"state": state, "user": user})
 
 
+# --------------------------------------------------------------------------
+# Food inflation: ONS CPI index 01 "Food and non-alcoholic beverages"
+# (series D7BU, 2015=100). One small public download, at most weekly.
+# --------------------------------------------------------------------------
+
+ONS_URL = os.environ.get(
+    "FOODISHARD_ONS_URL",
+    "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7bu/mm23/data",
+)
+CHECK_EVERY = 7 * 24 * 3600
+
+
+def parse_ons(doc, base_period):
+    """Return (latest_period, latest_value, base_value) from an ONS timeseries JSON."""
+    months = [m for m in doc.get("months", []) if str(m.get("value", "")).strip()]
+    if not months:
+        raise ValueError("no monthly values")
+    latest = months[-1]
+    base = next((m for m in months if m.get("date", "").upper() == base_period.upper()), None)
+    if base is None:
+        raise ValueError(f"base period {base_period} not found")
+    return latest["date"], float(latest["value"]), float(base["value"])
+
+
+def refresh_inflation(force=False):
+    with _lock:
+        state = _load()
+        if not state["settings"].get("inflation", True):
+            return
+        info = state.setdefault("inflation", {})
+        if not force and time.time() - info.get("checked", 0) < CHECK_EVERY:
+            return
+    with open(SEED_DIR / "ingredients.json", encoding="utf-8") as fh:
+        base_period = json.load(fh).get("prices_base_period", "2026 OCT")
+    result = {"checked": int(time.time()), "base": base_period}
+    try:
+        req = urllib.request.Request(ONS_URL, headers={"User-Agent": "FoodIsHard/0.3 (home meal planner)"})
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            doc = json.load(resp)
+        period, latest, base = parse_ons(doc, base_period)
+        result.update({"latest": period, "factor": round(latest / base, 4), "error": None})
+    except Exception as err:  # keep the last good factor
+        result["error"] = str(err)[:200]
+    with _lock:
+        state = _load()
+        info = state.setdefault("inflation", {})
+        if result.get("error"):
+            info.update({"checked": result["checked"], "error": result["error"]})
+        else:
+            info.update(result)
+        state["rev"] = int(state.get("rev", 0)) + 1
+        _save()
+
+
+def inflation_loop():
+    while True:
+        try:
+            refresh_inflation()
+        except Exception as err:
+            print("inflation check failed:", err, flush=True)
+        time.sleep(6 * 3600)
+
+
 def main():
     with _lock:
         _load()
+    if not os.environ.get("FOODISHARD_NO_INFLATION"):
+        threading.Thread(target=inflation_loop, daemon=True).start()
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"FoodIsHard listening on :{PORT}, data in {DATA_DIR}", flush=True)
     server.serve_forever()

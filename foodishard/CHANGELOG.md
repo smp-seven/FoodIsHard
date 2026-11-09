@@ -9,3 +9,13 @@
 - Emergency meals (about 15 minutes, from the freezer and cupboard).
 - All main supermarkets: pick a shop for anything you add, or change it for any item.
 - Food rules (allergies, dislikes) and household details now live in settings only.
+
+## 0.3.0
+- New "Kitchen table" design. Tonight is the home screen, with Week, Shop and Recipes alongside.
+- Meal families: "Another curry"-style swaps, theme nights, and recipes grouped by family.
+- Skip a day (eating out, at friends'), plus leftovers nights.
+- Cooking mode: one step at a time, timers, screen kept on, baby step highlighted.
+- Full nutrition per person (and salt for the baby's portion), from ingredient data.
+- In-shop mode: tabs per supermarket, press and hold to select items and move them to another shop (remembered), "Done shopping" summary, and ticks that queue up when there's no signal.
+- Food inflation tracking from the ONS food price index (weekly check, can be switched off).
+- Add or remove grown-ups, protein goals, and a "Cooking for a baby" switch.
