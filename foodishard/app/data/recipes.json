@@ -1,0 +1,1045 @@
+{
+ "version": 1,
+ "notes": "Quantities are per ONE standard adult portion; the app scales by everyone's portion sizes. In steps, {{300|ml}} is scaled too. Protein is a rough estimate per standard portion. 'emergency' recipes use freezer and cupboard ingredients and take about 15 minutes.",
+ "recipes": [
+  {
+   "id": "dhal-spinach",
+   "name": "Red lentil & spinach dhal",
+   "blurb": "Warming, cheap, and properly filling with yoghurt and chapatis.",
+   "time": 35,
+   "cuisine": "Indian",
+   "protein_source": "lentils",
+   "protein": 32,
+   "ingredients": [
+    {
+     "k": "red_lentils",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.33,
+     "u": "tin"
+    },
+    {
+     "k": "spinach",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "chapati",
+     "q": 1.5
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "cumin"
+    },
+    {
+     "k": "turmeric"
+    },
+    {
+     "k": "garam_masala"
+    },
+    {
+     "k": "chilli"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Soften the onion in a little oil for 8 minutes. Add the garlic, grated ginger, cumin and turmeric and cook for 1 minute."
+    },
+    {
+     "t": "Add the rinsed lentils, the tomatoes and {{300|ml}} water. Simmer for 20 minutes, stirring now and then, until thick and soft."
+    },
+    {
+     "t": "Take the baby's portion out now, before the salt, chilli and lemon go in. Stir a little spinach into the baby's so it wilts.",
+     "baby": true
+    },
+    {
+     "t": "Stir the spinach, garam masala, chilli and lemon juice into the rest, then season with salt."
+    },
+    {
+     "t": "Serve with a big spoon of yoghurt and warm chapatis."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend or mash the baby's portion until smooth and loosen it with their usual milk. Serve with a little plain yoghurt.",
+    "finger": "Let it cool to warm and keep it thick. Offer chapati or toast fingers to scoop with, and a spoon of plain yoghurt.",
+    "chopped": "Same as yours before the salt and chilli, with small torn pieces of chapati."
+   }
+  },
+  {
+   "id": "bean-chilli",
+   "name": "Black bean & sweet potato chilli",
+   "blurb": "Smoky beans and sweet potato with rice, cheese and yoghurt.",
+   "time": 40,
+   "cuisine": "Mexican",
+   "protein_source": "beans",
+   "protein": 34,
+   "ingredients": [
+    {
+     "k": "black_beans",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "kidney_beans",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "sweet_potato",
+     "q": 0.5
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "rice",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "cheddar",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "smoked_paprika"
+    },
+    {
+     "k": "cumin"
+    },
+    {
+     "k": "chilli"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Fry the onion, pepper and sweet potato (in 1.5 cm cubes) in oil for 8 minutes. Add the garlic, smoked paprika and cumin and cook for 1 minute."
+    },
+    {
+     "t": "Add the drained beans, the tomatoes and {{100|ml}} water. Simmer for 20 minutes until the sweet potato is soft. Cook the rice meanwhile."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli and salt.",
+     "baby": true
+    },
+    {
+     "t": "Add chilli and salt to taste. Serve over the rice with grated cheddar and yoghurt."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash the beans and sweet potato smooth and stir in a little yoghurt.",
+    "finger": "Squash the beans lightly with a fork. Offer soft sweet potato cubes to pick up, sticky rice, and a pinch of cheese.",
+    "chopped": "As yours before the chilli, with a little cheese on top."
+   }
+  },
+  {
+   "id": "tofu-peanut-noodles",
+   "name": "Tofu & broccoli peanut noodles",
+   "blurb": "Quick weeknight noodles with crispy tofu and a satay-style sauce. No coconut.",
+   "time": 25,
+   "cuisine": "Asian",
+   "protein_source": "tofu",
+   "protein": 38,
+   "ingredients": [
+    {
+     "k": "tofu",
+     "q": 140,
+     "u": "g"
+    },
+    {
+     "k": "noodles",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "broccoli",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "carrot",
+     "q": 0.5
+    },
+    {
+     "k": "edamame",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "peanut_butter",
+     "q": 1.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "lime",
+     "q": 0.25
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "soy_sauce"
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "chilli"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Press the tofu dry and cut it into fingers. Fry in oil until golden on all sides, then set aside."
+    },
+    {
+     "t": "Cook the noodles, adding the broccoli and edamame for the last 3 minutes. Drain, keeping a mugful of the water."
+    },
+    {
+     "t": "Make the sauce: whisk the peanut butter with the grated garlic and ginger, lime juice and a splash of the noodle water."
+    },
+    {
+     "t": "Take the baby's portion out now: tofu fingers, soft broccoli and noodles with a little of the peanut sauce, before any soy sauce or chilli.",
+     "baby": true
+    },
+    {
+     "t": "Add soy sauce and chilli to the rest of the sauce. Toss everything with the grated carrot and tofu."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the broccoli and a little tofu with a teaspoon of peanut sauce loosened with water.",
+    "finger": "Tofu fingers, broccoli florets cooked soft, squashed edamame, and short noodles. If peanut is new to them, try it earlier in the day on a separate occasion first.",
+    "chopped": "As yours before the soy and chilli, chopped small."
+   }
+  },
+  {
+   "id": "lentil-bolognese",
+   "name": "Lentil & mushroom bolognese",
+   "blurb": "The family classic, with lentils and mushrooms instead of mince.",
+   "time": 40,
+   "cuisine": "Italian",
+   "protein_source": "lentils",
+   "protein": 30,
+   "ingredients": [
+    {
+     "k": "green_lentils",
+     "q": 0.75,
+     "u": "tin"
+    },
+    {
+     "k": "pasta",
+     "q": 90,
+     "u": "g"
+    },
+    {
+     "k": "mushrooms",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "carrot",
+     "q": 0.5
+    },
+    {
+     "k": "celery",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "hard_cheese",
+     "q": 20,
+     "u": "g"
+    },
+    {
+     "k": "tomato_puree"
+    },
+    {
+     "k": "oregano"
+    },
+    {
+     "k": "hendersons"
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Finely chop the onion, carrot, celery and mushrooms (a food processor is quickest). Fry in oil for 10 minutes until soft and starting to brown."
+    },
+    {
+     "t": "Add the garlic, tomato purée and oregano and cook for 1 minute. Add the drained lentils, the tomatoes and {{75|ml}} water. Simmer for 15 minutes."
+    },
+    {
+     "t": "Cook the pasta meanwhile."
+    },
+    {
+     "t": "Take the baby's sauce and pasta out now, before any salt or Henderson's.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest with salt, pepper and a dash of Henderson's. Serve with the hard cheese grated over."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the baby's sauce with a few pieces of soft pasta.",
+    "finger": "Big pasta shapes like fusilli or penne, cooked soft and coated in sauce, with a little grated cheese.",
+    "chopped": "As yours before seasoning, with the pasta cut small."
+   }
+  },
+  {
+   "id": "mattar-paneer",
+   "name": "Paneer & pea curry",
+   "blurb": "Mild tomato curry with soft paneer cubes, peas and basmati. No cream or coconut.",
+   "time": 35,
+   "cuisine": "Indian",
+   "protein_source": "paneer",
+   "protein": 34,
+   "ingredients": [
+    {
+     "k": "paneer",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "peas",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "ginger",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "rice",
+     "q": 75,
+     "u": "g"
+    },
+    {
+     "k": "coriander",
+     "q": 0.25
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "cumin"
+    },
+    {
+     "k": "turmeric"
+    },
+    {
+     "k": "garam_masala"
+    },
+    {
+     "k": "chilli"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Cube the paneer and fry it in oil until lightly golden, then set aside."
+    },
+    {
+     "t": "Fry the onion for 8 minutes. Add the garlic, ginger, cumin and turmeric for 1 minute, then the tomatoes and {{75|ml}} water. Simmer for 10 minutes. Cook the rice meanwhile."
+    },
+    {
+     "t": "Add the peas and paneer and simmer for 5 minutes. Take the pan off the heat and stir in the yoghurt."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli, garam masala heat and salt.",
+     "baby": true
+    },
+    {
+     "t": "Add garam masala, chilli and salt to the rest. Scatter over the coriander."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the sauce with the peas and a little paneer.",
+    "finger": "Paneer cut into soft fingers, squashed peas, and rice they can grab in clumps.",
+    "chopped": "As yours before the chilli and salt, with the paneer chopped small."
+   }
+  },
+  {
+   "id": "shakshuka",
+   "name": "Chickpea shakshuka with feta",
+   "blurb": "Eggs baked in a spiced pepper and tomato sauce, with bread for dipping.",
+   "time": 30,
+   "cuisine": "Middle Eastern",
+   "protein_source": "eggs",
+   "protein": 32,
+   "ingredients": [
+    {
+     "k": "eggs",
+     "q": 2
+    },
+    {
+     "k": "chickpeas",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "feta",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "sourdough",
+     "q": 2,
+     "u": "slices"
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "cumin"
+    },
+    {
+     "k": "smoked_paprika"
+    },
+    {
+     "k": "chilli"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Fry the onion and sliced pepper for 10 minutes until soft. Add the garlic, cumin and paprika for 1 minute."
+    },
+    {
+     "t": "Add the tomatoes and drained chickpeas and simmer for 8 minutes until thick."
+    },
+    {
+     "t": "Spoon the baby's sauce and one egg into a small ovenproof dish or a corner of the pan now, before any salt, chilli or feta.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest. Make wells in the sauce, crack in the eggs, cover and cook gently for 6–8 minutes. Crumble over the feta and serve with the bread."
+    }
+   ],
+   "baby": {
+    "smooth": "Cook the baby's egg until firm and mash it into the blended sauce.",
+    "finger": "Cook the baby's egg until set (British Lion eggs can be a little soft). Offer strips of egg, squashed chickpeas, and bread fingers to dip. No feta: it's salty.",
+    "chopped": "As yours, with no feta and the egg chopped."
+   }
+  },
+  {
+   "id": "chickpea-traybake",
+   "name": "Smoky chickpea & halloumi traybake",
+   "blurb": "One tray of roast veg, chickpeas and halloumi, with tahini yoghurt.",
+   "time": 40,
+   "cuisine": "Mediterranean",
+   "protein_source": "chickpeas",
+   "protein": 35,
+   "ingredients": [
+    {
+     "k": "chickpeas",
+     "q": 0.75,
+     "u": "tin"
+    },
+    {
+     "k": "halloumi",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "red_onion",
+     "q": 0.5
+    },
+    {
+     "k": "courgette",
+     "q": 0.5
+    },
+    {
+     "k": "red_pepper",
+     "q": 0.5
+    },
+    {
+     "k": "cherry_tomatoes",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "tahini",
+     "q": 1,
+     "u": "tbsp"
+    },
+    {
+     "k": "lemon",
+     "q": 0.25
+    },
+    {
+     "k": "flatbread",
+     "q": 1
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "smoked_paprika"
+    },
+    {
+     "k": "cumin"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Heat the oven to 200°C fan. Toss the chopped veg and drained chickpeas with oil, paprika and cumin. Roast for 20 minutes."
+    },
+    {
+     "t": "Take the baby's veg and chickpeas off the tray now, before the salt and halloumi go on.",
+     "baby": true
+    },
+    {
+     "t": "Add the sliced halloumi and tomatoes to the tray, season, and roast for 12 minutes more."
+    },
+    {
+     "t": "Mix the yoghurt with the tahini, lemon juice and a splash of water. Serve with warm flatbreads."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash the roast veg and chickpeas with plain yoghurt.",
+    "finger": "Soft strips of roast pepper and courgette, squashed chickpeas, quartered cherry tomatoes, and flatbread fingers with plain yoghurt. No halloumi: it's very salty.",
+    "chopped": "As yours, with a little halloumi at most."
+   }
+  },
+  {
+   "id": "cottage-pie",
+   "name": "Mushroom & lentil cottage pie",
+   "blurb": "A weekend bake. Make a big one, because it reheats brilliantly.",
+   "time": 70,
+   "cuisine": "British",
+   "protein_source": "lentils",
+   "protein": 33,
+   "ingredients": [
+    {
+     "k": "green_lentils",
+     "q": 0.75,
+     "u": "tin"
+    },
+    {
+     "k": "mushrooms",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "q": 0.5
+    },
+    {
+     "k": "carrot",
+     "q": 0.5
+    },
+    {
+     "k": "potato",
+     "q": 300,
+     "u": "g"
+    },
+    {
+     "k": "cheddar",
+     "q": 25,
+     "u": "g"
+    },
+    {
+     "k": "milk",
+     "q": 30,
+     "u": "ml"
+    },
+    {
+     "k": "butter",
+     "q": 10,
+     "u": "g"
+    },
+    {
+     "k": "peas",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "tomato_puree"
+    },
+    {
+     "k": "stock"
+    },
+    {
+     "k": "hendersons"
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "salt"
+    },
+    {
+     "k": "pepper"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Boil the peeled, chunked potatoes for 15–18 minutes until soft. Drain and mash with the milk and butter, without salt."
+    },
+    {
+     "t": "Fry the onion, diced carrot and chopped mushrooms for 10 minutes. Stir in the tomato purée, the drained lentils and {{100|ml}} water. Simmer for 10 minutes."
+    },
+    {
+     "t": "Spoon the baby's filling and some mash into a small dish now, before the stock, salt and Henderson's.",
+     "baby": true
+    },
+    {
+     "t": "Add the stock, Henderson's and seasoning to the rest. Top with the mash and cheese, then bake at 200°C fan for 25 minutes. Serve with peas."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash the baby's filling and potato together until smooth.",
+    "finger": "Soft forkfuls of filling and mash they can grab, with squashed peas.",
+    "chopped": "As yours before the stock, with a little cheese."
+   }
+  },
+  {
+   "id": "pesto-quorn-pasta",
+   "name": "Pesto pasta with Quorn & spinach",
+   "blurb": "A ten-minute rescue dinner from the freezer and cupboard.",
+   "time": 12,
+   "cuisine": "Italian",
+   "protein_source": "quorn",
+   "protein": 30,
+   "emergency": true,
+   "ingredients": [
+    {
+     "k": "pasta",
+     "q": 90,
+     "u": "g"
+    },
+    {
+     "k": "quorn_pieces",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "vegan_pesto",
+     "q": 1.5,
+     "u": "tbsp"
+    },
+    {
+     "k": "spinach",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "peas",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "oil"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Boil the pasta. Add the Quorn pieces and peas for the last 5 minutes."
+    },
+    {
+     "t": "Drain, keeping a splash of the water, then stir the spinach through so it wilts."
+    },
+    {
+     "t": "Take the baby's portion out now, with just a little pesto (it's salty and has nuts in).",
+     "baby": true
+    },
+    {
+     "t": "Stir the pesto and a splash of pasta water through the rest."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the pasta, peas and spinach with a little water and a tiny bit of pesto.",
+    "finger": "Big pasta shapes, Quorn pieces cut into small strips, and squashed peas. If tree nuts are new to them, try pesto on its own earlier in the day first.",
+    "chopped": "As yours, with the Quorn chopped small and only a little pesto."
+   }
+  },
+  {
+   "id": "egg-fried-rice",
+   "name": "Egg fried rice with peas & edamame",
+   "blurb": "Microwave rice, frozen veg and eggs. On the table in 12 minutes.",
+   "time": 12,
+   "cuisine": "Asian",
+   "protein_source": "eggs",
+   "protein": 27,
+   "emergency": true,
+   "ingredients": [
+    {
+     "k": "rice_pouch",
+     "q": 0.6
+    },
+    {
+     "k": "eggs",
+     "q": 2
+    },
+    {
+     "k": "peas",
+     "q": 60,
+     "u": "g"
+    },
+    {
+     "k": "edamame",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "soy_sauce"
+    },
+    {
+     "k": "oil"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Fry the garlic in a little oil for 30 seconds. Add the frozen peas and edamame and cook for 3 minutes."
+    },
+    {
+     "t": "Squeeze the rice pouches to break them up, add them to the pan, and stir-fry for 3 minutes."
+    },
+    {
+     "t": "Push the rice to one side, scramble the beaten eggs in the gap, then mix through."
+    },
+    {
+     "t": "Take the baby's portion out now, before the soy sauce.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest with reduced-salt soy sauce."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the rice, peas and egg with a little water.",
+    "finger": "Clumps of rice, strips of well-cooked egg, and squashed peas and edamame.",
+    "chopped": "As yours, before the soy sauce."
+   }
+  },
+  {
+   "id": "cheesy-beans-toast",
+   "name": "Cheesy beans on toast with an egg",
+   "blurb": "The classic emergency dinner, with enough protein to count.",
+   "time": 10,
+   "cuisine": "British",
+   "protein_source": "beans",
+   "protein": 30,
+   "emergency": true,
+   "ingredients": [
+    {
+     "k": "baked_beans",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "bread",
+     "q": 2,
+     "u": "slices"
+    },
+    {
+     "k": "cheddar",
+     "q": 25,
+     "u": "g"
+    },
+    {
+     "k": "eggs",
+     "q": 1
+    },
+    {
+     "k": "butter",
+     "q": 5,
+     "u": "g"
+    },
+    {
+     "k": "oil"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Warm the beans. Toast and butter the bread. Fry or poach the eggs."
+    },
+    {
+     "t": "Take the baby's portion out now: toast fingers, a spoonful of mashed beans and a well-cooked egg.",
+     "baby": true
+    },
+    {
+     "t": "Pile the beans on the toast, grate the cheese over, and top with the egg."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash a few beans with soft-cooked egg.",
+    "finger": "Toast fingers, a small spoonful of mashed beans (reduced-salt ones), and strips of egg cooked through. Go easy on the cheese.",
+    "chopped": "As yours, cut small, with a little cheese."
+   }
+  },
+  {
+   "id": "chickpea-spinach-curry",
+   "name": "15-minute chickpea & spinach curry",
+   "blurb": "Tins, frozen spinach and the spice rack. No curry paste, so no hidden coconut.",
+   "time": 15,
+   "cuisine": "Indian",
+   "protein_source": "chickpeas",
+   "protein": 31,
+   "emergency": true,
+   "ingredients": [
+    {
+     "k": "chickpeas",
+     "q": 0.8,
+     "u": "tin"
+    },
+    {
+     "k": "chopped_tomatoes",
+     "q": 0.33,
+     "u": "tin"
+    },
+    {
+     "k": "frozen_spinach",
+     "q": 80,
+     "u": "g"
+    },
+    {
+     "k": "garlic",
+     "q": 1
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 100,
+     "u": "g"
+    },
+    {
+     "k": "rice_pouch",
+     "q": 0.6
+    },
+    {
+     "k": "oil"
+    },
+    {
+     "k": "cumin"
+    },
+    {
+     "k": "turmeric"
+    },
+    {
+     "k": "garam_masala"
+    },
+    {
+     "k": "chilli"
+    },
+    {
+     "k": "salt"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Fry the garlic, cumin and turmeric in oil for 1 minute. Add the tomatoes, the drained chickpeas and the frozen spinach."
+    },
+    {
+     "t": "Simmer for 8 minutes, squashing some of the chickpeas to thicken it. Heat the rice meanwhile."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli, garam masala and salt.",
+     "baby": true
+    },
+    {
+     "t": "Season the rest with garam masala, chilli and salt. Serve with rice and a big spoon of yoghurt."
+    }
+   ],
+   "baby": {
+    "smooth": "Blend the curry with yoghurt until smooth.",
+    "finger": "Squashed chickpeas and spinach to scoop with rice, plus plain yoghurt.",
+    "chopped": "As yours, before the chilli and salt."
+   }
+  },
+  {
+   "id": "bean-quesadillas",
+   "name": "Bean & cheese quesadillas",
+   "blurb": "Crispy wraps with smoky beans and melted cheese. Great for little hands.",
+   "time": 12,
+   "cuisine": "Mexican",
+   "protein_source": "beans",
+   "protein": 30,
+   "emergency": true,
+   "ingredients": [
+    {
+     "k": "tortillas",
+     "q": 2
+    },
+    {
+     "k": "kidney_beans",
+     "q": 0.5,
+     "u": "tin"
+    },
+    {
+     "k": "cheddar",
+     "q": 30,
+     "u": "g"
+    },
+    {
+     "k": "greek_yoghurt",
+     "q": 50,
+     "u": "g"
+    },
+    {
+     "k": "smoked_paprika"
+    },
+    {
+     "k": "cumin"
+    },
+    {
+     "k": "chilli"
+    },
+    {
+     "k": "oil"
+    }
+   ],
+   "steps": [
+    {
+     "t": "Mash the drained beans with the paprika and cumin."
+    },
+    {
+     "t": "Make the baby's quesadilla first: a thin layer of beans and a little cheese, with no chilli.",
+     "baby": true
+    },
+    {
+     "t": "Add chilli to the rest of the beans. Spread them over half of each wrap, add the cheese, and fold."
+    },
+    {
+     "t": "Dry-fry for 2 minutes on each side until crisp. Cut into wedges and serve with yoghurt."
+    }
+   ],
+   "baby": {
+    "smooth": "Mash the beans with yoghurt.",
+    "finger": "Quesadilla cut into finger strips once it's cooled, with yoghurt to dip.",
+    "chopped": "Small wedges of yours, without the chilli."
+   }
+  }
+ ]
+}

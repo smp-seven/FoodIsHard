@@ -1,0 +1,77 @@
+{
+  "settings": {
+    "people": [
+      {
+        "id": "a1",
+        "name": "Adult 1",
+        "portion": 1.0
+      },
+      {
+        "id": "a2",
+        "name": "Adult 2",
+        "portion": 1.0
+      }
+    ],
+    "baby": {
+      "name": "Baby",
+      "born": "",
+      "due": "",
+      "stage": "finger",
+      "portion": 0.25,
+      "include": false
+    },
+    "weekStartDay": 0,
+    "weeknightMax": 40,
+    "weekendMax": 90,
+    "avoid": [],
+    "dislikes": "",
+    "budget": false,
+    "priceShop": "aldi",
+    "shops": [
+      "aldi",
+      "lidl",
+      "tesco",
+      "sainsburys",
+      "asda",
+      "ms",
+      "waitrose"
+    ],
+    "staples": [
+      {
+        "id": "s1",
+        "name": "Porridge oats",
+        "amount": "1 kg bag",
+        "aisle": "dry",
+        "shop": "aldi",
+        "on": true,
+        "price": 0.89
+      },
+      {
+        "id": "s2",
+        "name": "Milk",
+        "amount": "4 pints",
+        "aisle": "dairy",
+        "shop": "aldi",
+        "on": true,
+        "price": 1.65
+      },
+      {
+        "id": "s3",
+        "name": "Yoghurts for lunch",
+        "amount": "7 pots",
+        "aisle": "dairy",
+        "shop": "aldi",
+        "on": true,
+        "price": 2.3,
+        "note": "Check flavoured ones for gelatine"
+      }
+    ]
+  },
+  "plans": {},
+  "prefs": {},
+  "checks": {},
+  "extras": {},
+  "prices": {},
+  "swaps": {},
+  "shopFor": {}
+}

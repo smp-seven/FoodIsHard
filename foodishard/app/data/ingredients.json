@@ -1,0 +1,1065 @@
+{
+ "prices_checked": "November 2026",
+ "prices_note": "Rough UK prices at Aldi/Lidl level, per pack. Other shops are estimated with a multiplier based on Which?'s monthly cheapest-supermarket basket (Oct 2026). Update any price in the app when you spot the real one.",
+ "aisles": [
+  {
+   "id": "veg",
+   "name": "Fruit & veg"
+  },
+  {
+   "id": "bakery",
+   "name": "Bread & bakery"
+  },
+  {
+   "id": "dairy",
+   "name": "Dairy & eggs"
+  },
+  {
+   "id": "chilled",
+   "name": "Chilled: tofu, paneer, halloumi"
+  },
+  {
+   "id": "tins",
+   "name": "Tins & jars"
+  },
+  {
+   "id": "dry",
+   "name": "Rice, pasta, pulses & cereal"
+  },
+  {
+   "id": "world",
+   "name": "World foods & sauces"
+  },
+  {
+   "id": "frozen",
+   "name": "Frozen"
+  },
+  {
+   "id": "baby",
+   "name": "Baby & household"
+  },
+  {
+   "id": "other",
+   "name": "Other"
+  },
+  {
+   "id": "cupboard",
+   "name": "Check the cupboard"
+  }
+ ],
+ "shops": {
+  "aldi": {
+   "name": "Aldi",
+   "short": "Aldi",
+   "m": 1.0
+  },
+  "lidl": {
+   "name": "Lidl",
+   "short": "Lidl",
+   "m": 1.02
+  },
+  "asda": {
+   "name": "Asda",
+   "short": "Asda",
+   "m": 1.15
+  },
+  "tesco": {
+   "name": "Tesco",
+   "short": "Tesco",
+   "m": 1.22,
+   "loyalty": "about 3% less with Clubcard"
+  },
+  "sainsburys": {
+   "name": "Sainsbury's",
+   "short": "Sainsbury's",
+   "m": 1.24,
+   "loyalty": "about 3% less with Nectar"
+  },
+  "waitrose": {
+   "name": "Waitrose",
+   "short": "Waitrose",
+   "m": 1.42
+  },
+  "ms": {
+   "name": "M&S",
+   "short": "M&S",
+   "m": 1.45,
+   "estimate": true
+  },
+  "any": {
+   "name": "Anywhere",
+   "short": "Any",
+   "m": 1.1
+  }
+ },
+ "allergens": {
+  "coconut": "Coconut",
+  "peanuts": "Peanuts",
+  "nuts": "Tree nuts",
+  "sesame": "Sesame",
+  "soya": "Soya",
+  "gluten": "Gluten",
+  "milk": "Milk",
+  "egg": "Egg",
+  "celery": "Celery",
+  "mustard": "Mustard",
+  "sulphites": "Sulphites",
+  "lupin": "Lupin"
+ },
+ "flags": {
+  "veg": "Check for the V symbol: some brands use animal rennet or gelatine",
+  "welfare": "Free-range / high welfare",
+  "salt": "Salty: the baby's portion comes out before this goes in"
+ },
+ "items": {
+  "onion": {
+   "n": "Onions",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.15,
+   "sw": [
+    {
+     "k": "frozen_onion",
+     "r": 150,
+     "why": "Pre-chopped and frozen: saves 5 minutes",
+     "budget": false
+    }
+   ]
+  },
+  "red_onion": {
+   "n": "Red onions",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.2
+  },
+  "garlic": {
+   "n": "Garlic (cloves)",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    10,
+    ""
+   ],
+   "p": 0.4,
+   "sw": [
+    {
+     "k": "garlic_paste",
+     "r": 1,
+     "why": "No peeling, and a jar lasts weeks",
+     "budget": true
+    }
+   ]
+  },
+  "ginger": {
+   "n": "Fresh ginger",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    100,
+    "g"
+   ],
+   "p": 0.45,
+   "sw": [
+    {
+     "k": "ground_ginger",
+     "r": 0.05,
+     "why": "Cupboard staple. Milder, but fine in curries",
+     "budget": true
+    }
+   ]
+  },
+  "spinach": {
+   "n": "Spinach",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    240,
+    "g"
+   ],
+   "p": 0.99,
+   "sw": [
+    {
+     "k": "frozen_spinach",
+     "r": 1,
+     "why": "Cheaper and keeps for months",
+     "budget": true
+    }
+   ]
+  },
+  "sweet_potato": {
+   "n": "Sweet potatoes",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.3
+  },
+  "potato": {
+   "n": "Potatoes (floury)",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    2500,
+    "g"
+   ],
+   "p": 1.35
+  },
+  "carrot": {
+   "n": "Carrots",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    10,
+    ""
+   ],
+   "p": 0.55
+  },
+  "celery": {
+   "n": "Celery (sticks)",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    8,
+    ""
+   ],
+   "p": 0.75,
+   "al": [
+    "celery"
+   ]
+  },
+  "red_pepper": {
+   "n": "Red peppers",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.55,
+   "sw": [
+    {
+     "k": "frozen_peppers",
+     "r": 150,
+     "why": "Frozen sliced peppers: cheaper, pre-chopped",
+     "budget": true
+    }
+   ]
+  },
+  "courgette": {
+   "n": "Courgettes",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.45
+  },
+  "broccoli": {
+   "n": "Broccoli",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    350,
+    "g"
+   ],
+   "p": 0.69,
+   "sw": [
+    {
+     "k": "frozen_broccoli",
+     "r": 1,
+     "why": "Frozen florets: no waste",
+     "budget": true
+    }
+   ]
+  },
+  "mushrooms": {
+   "n": "Mushrooms",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    300,
+    "g"
+   ],
+   "p": 0.89
+  },
+  "cherry_tomatoes": {
+   "n": "Cherry tomatoes",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    250,
+    "g"
+   ],
+   "p": 0.79,
+   "note": "Quarter them for the baby"
+  },
+  "lemon": {
+   "n": "Lemons",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.3,
+   "sw": [
+    {
+     "k": "lemon_juice",
+     "r": 3,
+     "why": "A bottle lasts for weeks",
+     "budget": true
+    }
+   ]
+  },
+  "lime": {
+   "n": "Limes",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.25,
+   "sw": [
+    {
+     "k": "lime_juice",
+     "r": 2,
+     "why": "A bottle lasts for weeks",
+     "budget": true
+    }
+   ]
+  },
+  "coriander": {
+   "n": "Fresh coriander",
+   "a": "veg",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.59
+  },
+  "chapati": {
+   "n": "Chapatis (or naan)",
+   "a": "bakery",
+   "s": "tesco",
+   "pk": [
+    6,
+    ""
+   ],
+   "p": 1.25,
+   "al": [
+    "gluten"
+   ],
+   "note": "Aldi does naan if there are no chapatis",
+   "sw": [
+    {
+     "k": "flatbread",
+     "r": 1,
+     "why": "Pittas or flatbreads are cheaper",
+     "budget": true
+    }
+   ]
+  },
+  "flatbread": {
+   "n": "Flatbreads / pittas",
+   "a": "bakery",
+   "s": "aldi",
+   "pk": [
+    6,
+    ""
+   ],
+   "p": 0.65,
+   "al": [
+    "gluten"
+   ]
+  },
+  "sourdough": {
+   "n": "Crusty bread / sourdough",
+   "a": "bakery",
+   "s": "aldi",
+   "pk": [
+    10,
+    "slices"
+   ],
+   "p": 1.39,
+   "al": [
+    "gluten"
+   ],
+   "sw": [
+    {
+     "k": "bread",
+     "r": 1,
+     "why": "A sliced loaf is half the price",
+     "budget": true
+    }
+   ]
+  },
+  "bread": {
+   "n": "Sliced bread (wholemeal)",
+   "a": "bakery",
+   "s": "aldi",
+   "pk": [
+    20,
+    "slices"
+   ],
+   "p": 0.79,
+   "al": [
+    "gluten"
+   ]
+  },
+  "tortillas": {
+   "n": "Tortilla wraps",
+   "a": "bakery",
+   "s": "aldi",
+   "pk": [
+    8,
+    ""
+   ],
+   "p": 0.89,
+   "al": [
+    "gluten"
+   ]
+  },
+  "eggs": {
+   "n": "Eggs",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    6,
+    ""
+   ],
+   "p": 1.79,
+   "al": [
+    "egg"
+   ],
+   "f": [
+    "welfare"
+   ],
+   "note": "Free-range, British Lion stamp"
+  },
+  "greek_yoghurt": {
+   "n": "Greek-style yoghurt",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    1000,
+    "g"
+   ],
+   "p": 1.79,
+   "al": [
+    "milk"
+   ],
+   "f": [
+    "veg"
+   ],
+   "sw": [
+    {
+     "k": "natural_yoghurt",
+     "r": 1,
+     "why": "Cheaper, but less protein",
+     "budget": true
+    }
+   ]
+  },
+  "natural_yoghurt": {
+   "n": "Natural yoghurt",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    500,
+    "g"
+   ],
+   "p": 0.55,
+   "al": [
+    "milk"
+   ],
+   "f": [
+    "veg"
+   ]
+  },
+  "cheddar": {
+   "n": "Mature cheddar",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    400,
+    "g"
+   ],
+   "p": 2.89,
+   "al": [
+    "milk"
+   ],
+   "f": [
+    "veg"
+   ]
+  },
+  "hard_cheese": {
+   "n": "Italian-style hard cheese (vegetarian)",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    150,
+    "g"
+   ],
+   "p": 1.99,
+   "al": [
+    "milk"
+   ],
+   "f": [
+    "veg"
+   ],
+   "note": "Not Parmesan or Grana Padano: those always use animal rennet",
+   "sw": [
+    {
+     "k": "cheddar",
+     "r": 1,
+     "why": "Use the cheddar you already have",
+     "budget": true
+    }
+   ]
+  },
+  "feta": {
+   "n": "Feta / Greek-style salad cheese",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    200,
+    "g"
+   ],
+   "p": 0.99,
+   "al": [
+    "milk"
+   ],
+   "f": [
+    "veg"
+   ]
+  },
+  "milk": {
+   "n": "Milk",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    2272,
+    "ml"
+   ],
+   "p": 1.65,
+   "al": [
+    "milk"
+   ]
+  },
+  "butter": {
+   "n": "Butter",
+   "a": "dairy",
+   "s": "aldi",
+   "pk": [
+    250,
+    "g"
+   ],
+   "p": 1.99,
+   "al": [
+    "milk"
+   ]
+  },
+  "tofu": {
+   "n": "Firm tofu",
+   "a": "chilled",
+   "s": "aldi",
+   "pk": [
+    280,
+    "g"
+   ],
+   "p": 1.39,
+   "al": [
+    "soya"
+   ],
+   "note": "Tesco or Sainsbury's if Aldi's out"
+  },
+  "paneer": {
+   "n": "Paneer",
+   "a": "chilled",
+   "s": "tesco",
+   "pk": [
+    226,
+    "g"
+   ],
+   "p": 1.89,
+   "al": [
+    "milk"
+   ],
+   "f": [
+    "veg"
+   ],
+   "note": "Aldi doesn't always stock it",
+   "sw": [
+    {
+     "k": "tofu",
+     "r": 1,
+     "why": "Cheaper, and similar when fried",
+     "budget": true
+    }
+   ]
+  },
+  "halloumi": {
+   "n": "Halloumi",
+   "a": "chilled",
+   "s": "aldi",
+   "pk": [
+    225,
+    "g"
+   ],
+   "p": 1.89,
+   "al": [
+    "milk"
+   ],
+   "f": [
+    "veg",
+    "salt"
+   ]
+  },
+  "chopped_tomatoes": {
+   "n": "Chopped tomatoes",
+   "a": "tins",
+   "s": "aldi",
+   "u": "tin",
+   "pk": [
+    1,
+    "tin"
+   ],
+   "p": 0.42
+  },
+  "black_beans": {
+   "n": "Black beans",
+   "a": "tins",
+   "s": "tesco",
+   "u": "tin",
+   "pk": [
+    1,
+    "tin"
+   ],
+   "p": 0.55,
+   "note": "Aldi sometimes; Tesco always",
+   "sw": [
+    {
+     "k": "kidney_beans",
+     "r": 1,
+     "why": "Always at Aldi, and cheaper",
+     "budget": true
+    }
+   ]
+  },
+  "kidney_beans": {
+   "n": "Kidney beans",
+   "a": "tins",
+   "s": "aldi",
+   "u": "tin",
+   "pk": [
+    1,
+    "tin"
+   ],
+   "p": 0.49
+  },
+  "chickpeas": {
+   "n": "Chickpeas",
+   "a": "tins",
+   "s": "aldi",
+   "u": "tin",
+   "pk": [
+    1,
+    "tin"
+   ],
+   "p": 0.45
+  },
+  "green_lentils": {
+   "n": "Green lentils (tinned)",
+   "a": "tins",
+   "s": "aldi",
+   "u": "tin",
+   "pk": [
+    1,
+    "tin"
+   ],
+   "p": 0.55
+  },
+  "baked_beans": {
+   "n": "Baked beans (reduced salt & sugar)",
+   "a": "tins",
+   "s": "aldi",
+   "u": "tin",
+   "pk": [
+    1,
+    "tin"
+   ],
+   "p": 0.45
+  },
+  "peanut_butter": {
+   "n": "Smooth peanut butter",
+   "a": "tins",
+   "s": "aldi",
+   "pk": [
+    22,
+    "tbsp"
+   ],
+   "p": 1.15,
+   "al": [
+    "peanuts"
+   ],
+   "note": "100% peanut or no-added-salt is best for the baby"
+  },
+  "vegan_pesto": {
+   "n": "Vegan green pesto",
+   "a": "tins",
+   "s": "aldi",
+   "pk": [
+    12,
+    "tbsp"
+   ],
+   "p": 1.29,
+   "al": [
+    "nuts"
+   ],
+   "mc": [
+    "coconut"
+   ],
+   "note": "Vegan pesto is the easy veggie option: no Parmesan"
+  },
+  "tahini": {
+   "n": "Tahini",
+   "a": "world",
+   "s": "tesco",
+   "pk": [
+    20,
+    "tbsp"
+   ],
+   "p": 2.2,
+   "al": [
+    "sesame"
+   ]
+  },
+  "tomato_puree": {
+   "n": "Tomato purée",
+   "a": "tins",
+   "s": "aldi",
+   "c": true,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.59
+  },
+  "red_lentils": {
+   "n": "Red lentils (dried)",
+   "a": "dry",
+   "s": "aldi",
+   "pk": [
+    500,
+    "g"
+   ],
+   "p": 0.99
+  },
+  "rice": {
+   "n": "Basmati rice",
+   "a": "dry",
+   "s": "aldi",
+   "pk": [
+    1000,
+    "g"
+   ],
+   "p": 1.79
+  },
+  "rice_pouch": {
+   "n": "Microwave rice pouches (250 g)",
+   "a": "dry",
+   "s": "aldi",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.59
+  },
+  "pasta": {
+   "n": "Pasta (fusilli or similar)",
+   "a": "dry",
+   "s": "aldi",
+   "pk": [
+    500,
+    "g"
+   ],
+   "p": 0.55,
+   "al": [
+    "gluten"
+   ]
+  },
+  "noodles": {
+   "n": "Wholewheat noodles",
+   "a": "dry",
+   "s": "aldi",
+   "pk": [
+    250,
+    "g"
+   ],
+   "p": 0.99,
+   "al": [
+    "gluten"
+   ]
+  },
+  "oats": {
+   "n": "Porridge oats",
+   "a": "dry",
+   "s": "aldi",
+   "pk": [
+    1000,
+    "g"
+   ],
+   "p": 0.89,
+   "al": [
+    "gluten"
+   ]
+  },
+  "soy_sauce": {
+   "n": "Reduced-salt soy sauce",
+   "a": "world",
+   "s": "aldi",
+   "f": [
+    "salt"
+   ],
+   "c": true,
+   "al": [
+    "soya",
+    "gluten"
+   ]
+  },
+  "stock": {
+   "n": "Low-salt veg stock cubes",
+   "a": "world",
+   "s": "tesco",
+   "f": [
+    "salt"
+   ],
+   "c": true,
+   "mc": [
+    "celery"
+   ],
+   "note": "Kallo low-salt, or a baby stock cube"
+  },
+  "hendersons": {
+   "n": "Henderson's Relish",
+   "a": "world",
+   "s": "tesco",
+   "c": true,
+   "note": "Veggie stand-in for Worcestershire sauce, which contains anchovies"
+  },
+  "garlic_paste": {
+   "n": "Garlic paste",
+   "a": "world",
+   "s": "aldi",
+   "pk": [
+    18,
+    "tsp"
+   ],
+   "p": 0.85
+  },
+  "lemon_juice": {
+   "n": "Bottled lemon juice",
+   "a": "world",
+   "s": "aldi",
+   "pk": [
+    16,
+    "tbsp"
+   ],
+   "p": 0.49
+  },
+  "lime_juice": {
+   "n": "Bottled lime juice",
+   "a": "world",
+   "s": "aldi",
+   "pk": [
+    16,
+    "tbsp"
+   ],
+   "p": 0.59
+  },
+  "peas": {
+   "n": "Frozen peas",
+   "a": "frozen",
+   "s": "aldi",
+   "pk": [
+    1000,
+    "g"
+   ],
+   "p": 1.09
+  },
+  "edamame": {
+   "n": "Frozen edamame / soya beans",
+   "a": "frozen",
+   "s": "tesco",
+   "pk": [
+    500,
+    "g"
+   ],
+   "p": 1.99,
+   "al": [
+    "soya"
+   ],
+   "note": "Squash them for the baby",
+   "sw": [
+    {
+     "k": "peas",
+     "r": 1,
+     "why": "Much cheaper, but less protein",
+     "budget": true
+    }
+   ]
+  },
+  "frozen_spinach": {
+   "n": "Frozen spinach",
+   "a": "frozen",
+   "s": "aldi",
+   "pk": [
+    1000,
+    "g"
+   ],
+   "p": 1.29
+  },
+  "frozen_peppers": {
+   "n": "Frozen sliced peppers",
+   "a": "frozen",
+   "s": "aldi",
+   "pk": [
+    500,
+    "g"
+   ],
+   "p": 1.19
+  },
+  "frozen_broccoli": {
+   "n": "Frozen broccoli",
+   "a": "frozen",
+   "s": "aldi",
+   "pk": [
+    1000,
+    "g"
+   ],
+   "p": 1.09
+  },
+  "frozen_onion": {
+   "n": "Frozen chopped onion",
+   "a": "frozen",
+   "s": "aldi",
+   "pk": [
+    500,
+    "g"
+   ],
+   "p": 0.99
+  },
+  "quorn_pieces": {
+   "n": "Quorn pieces (frozen)",
+   "a": "frozen",
+   "s": "tesco",
+   "pk": [
+    500,
+    "g"
+   ],
+   "p": 3.5,
+   "al": [
+    "egg"
+   ],
+   "mc": [
+    "gluten"
+   ],
+   "f": [
+    "welfare"
+   ],
+   "note": "Contains free-range egg white",
+   "sw": [
+    {
+     "k": "chickpeas",
+     "r": 0.004,
+     "why": "A tin of chickpeas is much cheaper",
+     "budget": true
+    }
+   ]
+  },
+  "ground_ginger": {
+   "n": "Ground ginger",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true,
+   "pk": [
+    12,
+    "tsp"
+   ],
+   "p": 0.69
+  },
+  "oil": {
+   "n": "Oil (olive / rapeseed)",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true,
+   "mc": [
+    "coconut"
+   ]
+  },
+  "salt": {
+   "n": "Salt",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true
+  },
+  "pepper": {
+   "n": "Black pepper",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true
+  },
+  "cumin": {
+   "n": "Ground cumin / cumin seeds",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true
+  },
+  "turmeric": {
+   "n": "Turmeric",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true
+  },
+  "garam_masala": {
+   "n": "Garam masala",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true,
+   "mc": [
+    "mustard"
+   ]
+  },
+  "chilli": {
+   "n": "Chilli powder / flakes",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true
+  },
+  "smoked_paprika": {
+   "n": "Smoked paprika",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true
+  },
+  "oregano": {
+   "n": "Dried oregano",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true
+  }
+ }
+}
