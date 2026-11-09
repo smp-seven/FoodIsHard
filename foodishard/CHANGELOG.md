@@ -32,3 +32,8 @@
 
 ## 0.4.2
 - Fonts (Fraunces and Inter, SIL Open Font License) are now bundled, so the app makes no requests to Google or anywhere else from your phones.
+
+## 0.4.3
+- Every pull-up panel has a close (X) button that stays visible as you scroll.
+- The phone's Back button now closes panels and cooking mode instead of leaving the page underneath.
+- Panels stand out more in dark mode.

@@ -166,7 +166,16 @@ details.fold summary::-webkit-details-marker { display: none; }
 .sheet { position: fixed; inset: 0; z-index: 40; }
 .sheet-backdrop { position: absolute; inset: 0; background: rgba(20, 18, 14, .45); animation: fade .2s; }
 .sheet-panel { position: absolute; left: 0; right: 0; bottom: 0; max-height: 92vh; overflow-y: auto; max-width: 640px; margin: 0 auto; background: var(--bg); border-radius: 28px 28px 0 0; padding: 10px 18px calc(26px + env(safe-area-inset-bottom)); animation: up .25s cubic-bezier(.2,.8,.2,1); }
-.grab { display: block; width: 40px; height: 5px; border-radius: 5px; background: var(--line); margin: 0 auto 10px; }
+.sheet-top { position: sticky; top: -10px; z-index: 2; display: flex; justify-content: center; align-items: center; margin: -10px -18px 4px; padding: 10px 12px 6px; background: var(--bg); min-height: 52px; }
+.grab { display: block; width: 40px; height: 5px; border-radius: 5px; background: var(--line); }
+.sheet-x { position: absolute; right: 12px; top: 8px; border-radius: 999px; background: var(--surface); border-color: var(--line); color: var(--ink); }
+.sheet-x [data-icon] { width: 20px; height: 20px; }
+@media (prefers-color-scheme: dark) {
+  .sheet-backdrop { background: rgba(0, 0, 0, .65); }
+  .sheet-panel, .sheet-top { background: #1D211C; }
+  .sheet-panel { border-top: 1px solid var(--line); box-shadow: 0 -12px 40px rgba(0,0,0,.5); }
+  .grab { background: #5A6157; }
+}
 @keyframes up { from { transform: translateY(40px); opacity: 0; } }
 @keyframes fade { from { opacity: 0; } }
 .ing-list li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; }

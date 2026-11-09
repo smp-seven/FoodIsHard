@@ -383,14 +383,34 @@ function viewSettings() {
     ${catalogue}
     <p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.4.2</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.4.3</p>`;
 }
 
 // ---------------------------------------------------------------------------
 // Sheets
 // ---------------------------------------------------------------------------
-function openSheet(html) { $("#sheetBody").innerHTML = html; hydrateIcons($("#sheetBody")); $("#sheet").hidden = false; $(".sheet-panel").scrollTop = 0; document.body.style.overflow = "hidden"; }
-function closeSheet() { $("#sheet").hidden = true; document.body.style.overflow = ""; }
+// Panels and cooking mode add a history entry, so the phone's Back button closes them
+// instead of leaving the page underneath.
+let sheetPushed = false, cookPushed = false;
+function openSheet(html) {
+  $("#sheetBody").innerHTML = html; hydrateIcons($("#sheetBody"));
+  $("#sheet").hidden = false; $(".sheet-panel").scrollTop = 0; document.body.style.overflow = "hidden";
+  if (!sheetPushed) { history.pushState({ panel: "sheet" }, ""); sheetPushed = true; }
+}
+/** Close the panel. fromBack: Back was pressed. navigating: we're about to change page, so don't step history back. */
+function closeSheet({ fromBack = false, navigating = false } = {}) {
+  if ($("#sheet").hidden) return;
+  $("#sheet").hidden = true; document.body.style.overflow = "";
+  if (sheetPushed) {
+    sheetPushed = false;
+    if (navigating) history.replaceState(null, "");
+    else if (!fromBack) history.back();
+  }
+}
+window.addEventListener("popstate", () => {
+  if (!$("#sheet").hidden) closeSheet({ fromBack: true });
+  else if (app.cook) stopCooking({ fromBack: true });
+});
 
 function openRecipe(id, { pickDay = null } = {}) {
   const r = app.byId[id]; if (!r) return;
@@ -599,17 +619,25 @@ function feedbackText() {
 // ---------------------------------------------------------------------------
 let cookTick = null, wakeLock = null;
 function startCooking(id) {
-  closeSheet();
+  if (!$("#sheet").hidden) { // hand the panel's history entry over to cooking mode
+    $("#sheet").hidden = true; document.body.style.overflow = "";
+    if (sheetPushed) { sheetPushed = false; cookPushed = true; }
+  }
   app.cook = { id, step: 0, timers: [], showIng: false };
   $("#cook").hidden = false;
   try { navigator.wakeLock && navigator.wakeLock.request("screen").then((l) => { wakeLock = l; }).catch(() => {}); } catch { /* not supported */ }
   clearInterval(cookTick);
   cookTick = setInterval(tickTimers, 1000);
+  if (!cookPushed) { history.pushState({ panel: "cook" }, ""); cookPushed = true; }
   renderCook();
 }
-function stopCooking() {
+function stopCooking({ fromBack = false, handOver = false } = {}) {
   $("#cook").hidden = true; $("#cook").innerHTML = ""; app.cook = null; clearInterval(cookTick);
   try { wakeLock && wakeLock.release(); } catch { /* fine */ }
+  if (!cookPushed) return;
+  cookPushed = false;
+  if (handOver) sheetPushed = true; // the next panel reuses this history entry
+  else if (!fromBack) history.back();
 }
 function stepMinutes(text) { const m = text.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*min(?:ute)?s?/i); return m ? +(m[2] || m[1]) : null; }
 function renderCook() {
@@ -705,7 +733,7 @@ function printList() {
 function dayUpdate(i, patch, week = app.weekStart) { const days = planFor(week); send({ op: "day", week, i, day: { ...days[i], ...patch } }); }
 
 const ACTIONS = {
-  go: (d) => { closeSheet(); go(d.to); },
+  go: (d) => { closeSheet({ navigating: true }); go(d.to); },
   week: (d) => { app.weekStart = iso(addDays(parseISO(app.weekStart), 7 * +d.d)); render(); },
   shuffle: () => { send({ op: "plan", week: app.weekStart, plan: suggestWeek(app.weekStart) }); toast("Here's a plan. Swap anything you don't fancy."); },
   recipe: (d) => openRecipe(d.id),
@@ -797,7 +825,7 @@ const ACTIONS = {
   cookIng: () => { app.cook.showIng = !app.cook.showIng; renderCook(); },
   cookStep: (d) => {
     const c = app.cook, n = visibleSteps(app.byId[c.id]).length;
-    if (+d.d > 0 && c.step === n - 1) { const id = c.id; stopCooking(); openFeedback(id); return; }
+    if (+d.d > 0 && c.step === n - 1) { const id = c.id; stopCooking({ handOver: true }); openFeedback(id); return; }
     c.step = Math.max(0, Math.min(n - 1, c.step + +d.d)); renderCook();
   },
   timerStart: (d) => { app.cook.timers.push({ label: `${d.m}-minute timer`, end: Date.now() + d.m * 60000 }); renderCook(); },
@@ -821,7 +849,7 @@ const ACTIONS = {
 function onClick(e) {
   if (e.target.closest("[data-close]") && !e.target.closest("[data-act]")) { closeSheet(); return; }
   const tab = e.target.closest(".nav button");
-  if (tab) { closeSheet(); go(tab.dataset.tab); return; }
+  if (tab) { closeSheet({ navigating: true }); go(tab.dataset.tab); return; }
   if (!e.target.closest(".menu") && !e.target.closest("[data-act=dayMenu],[data-act=shopMenu]")) closeMenus();
   const el = e.target.closest("[data-act]");
   if (!el || longPressFired) { longPressFired = false; return; }
