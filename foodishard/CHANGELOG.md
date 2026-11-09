@@ -45,3 +45,7 @@
 - Staples and things you add yourself: you set the price for one, plus an optional size (e.g. "1 carton"). No more automatic matching.
 - On the shopping list: a − / + counter for buying several (the cost multiplies) and an × to remove an item. Removing a recipe item or staple moves it to "Not needed this week", where you can bring it back.
 - A staple that matches a recipe ingredient (like Milk) now covers it instead of appearing twice.
+
+## 0.5.1
+- Budget mode only makes like-for-like swaps (frozen veg, garlic paste, bottled lemon and so on) and never changes the ingredient a dish is named after.
+- Swapping an ingredient from a recipe now applies to that recipe only. The week card and Tonight show "with firm tofu" (or similar) so it is obvious.

@@ -74,7 +74,7 @@ a { color: var(--accent); }
 .icon-btn.plain { border-color: transparent; background: transparent; color: var(--muted); }
 .icon-btn.on { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
 .icon-btn.sm { width: 36px; height: 36px; border-radius: 999px; }
-.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.pill { font-family: var(--sans); display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
 .pill.accent { background: var(--accent-soft); color: var(--accent-dark); }
 .pill.warm { background: var(--warm-soft); color: var(--warm); }
 .pill.warn { background: var(--warn-soft); color: var(--warn-ink); }

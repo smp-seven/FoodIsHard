@@ -98,6 +98,7 @@ function viewTonight() {
     hero = `<section class="hero">
       <div class="row wrap" style="gap:8px"><span class="tag">${esc(r.emergency ? "Quick meal" : family(r.family).name)}</span><span class="tag">${r.time} min</span><span class="tag">≈ ${money(cost)}</span></div>
       <h1>${esc(r.name)}</h1>
+      ${headlineSwaps(r).length ? `<span class="tag" style="align-self:flex-start">Made with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}
       <div class="tiles">${proteinTiles(r, true)}</div>
       ${baby.include && babyStep >= 0 ? `<div class="baby-note">${icon("baby")}<span>${esc(babyName())}'s portion comes out at <b>step ${babyStep + 1}</b></span></div>` : ""}
       <div class="row"><button class="btn lg white grow" data-act="cook" data-id="${r.id}">${icon("play", 18)}Start cooking</button>
@@ -159,7 +160,7 @@ function viewWeek() {
         <button class="icon-btn sm ${d.locked ? "on" : "plain"}" data-act="lock" data-i="${i}" aria-label="${d.locked ? "Unlock" : "Keep this one"}">${icon(d.locked ? "lock" : "unlock", 17)}</button>
         <button class="icon-btn sm plain" data-act="dayMenu" data-i="${i}" aria-label="More">${icon("dots", 17)}</button></span></div>`;
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
-      <button class="name" data-act="recipe" data-id="${r.id}">${esc(r.name)}</button>
+      <button class="name" data-act="recipe" data-id="${r.id}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
       <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${proteinShort(r)}</div>
       <div class="actions">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
@@ -378,7 +379,7 @@ function viewSettings() {
         <div class="chips wrap">${SHOP_ORDER.map((k) => `<button class="chip ${shopsOn.includes(k) ? "on" : ""}" data-act="shopToggle" data-k="${k}">${esc(shopName(k))}</button>`).join("")}</div></div>
       <label class="stack" style="padding:14px 16px;gap:6px"><b>Estimate prices at</b><select class="input" data-set="text" data-f="priceShop">${enabledShops().map((k) => `<option value="${k}" ${priceShop() === k ? "selected" : ""}>${esc(shopName(k, false))}</option>`).join("")}</select>
         <span class="small muted">${esc(app.ing.prices_note || "")}</span></label>
-      <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Frozen veg, pastes and cheaper swaps${saving > 0.05 ? ` · about ${money(saving)} ${s.budget ? "saved" : "cheaper"} this week` : ""}</span></span>
+      <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Like-for-like savings: frozen veg, garlic paste, bottled lemon. Never changes the ingredient a dish is named after${saving > 0.05 ? ` · about ${money(saving)} ${s.budget ? "saved" : "cheaper"} this week` : ""}</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="budget" ${s.budget ? "checked" : ""}><i></i></span></label>
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Track food inflation</b><br><span class="small muted">${infLine}</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="inflation" ${s.inflation !== false ? "checked" : ""}><i></i></span></label>
@@ -392,7 +393,7 @@ function viewSettings() {
     ${catalogue}
     <p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.5.0</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.5.1</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -515,16 +516,17 @@ function openSkip(i) {
 }
 
 function openSwap(k, reopen) {
-  const m = ingMeta(k), current = resolveIng(k).k;
+  const m = ingMeta(k), r = reopen ? app.byId[reopen] : null, current = resolveIng(k, r).k;
+  const scope = r ? `${r.id}:${k}` : k;
   const row = (altKey, why, isOrig) => {
     const am = ingMeta(altKey), bp = basePrice(altKey), on = current === altKey;
-    return `<button class="rrow" data-act="setSwap" data-k="${esc(k)}" data-alt="${isOrig ? "" : esc(altKey)}" ${reopen ? `data-reopen="${esc(reopen)}"` : ""}>
+    return `<button class="rrow" data-act="setSwap" data-k="${esc(scope)}" data-alt="${isOrig ? "" : esc(altKey)}" ${reopen ? `data-reopen="${esc(reopen)}"` : ""}>
       <span class="grow"><b>${on ? "✓ " : ""}${esc(am.n)}</b>${isOrig ? ` <span class="small muted">(original)</span>` : ""}<br><span class="small muted">${esc(why)}${bp && am.pk ? ` · ${money(bp.p * shopMult(priceShop()))} per ${esc(fmtQty(am.pk[0], am.pk[1]))}` : ""}</span></span></button>`;
   };
-  openSheet(`<h1 class="title" style="font-size:26px">Swap ${esc(m.n.toLowerCase())}</h1><p class="muted">Applies to every recipe, for everyone. Budget mode picks the cheaper option automatically.</p>
+  openSheet(`<h1 class="title" style="font-size:26px">Swap ${esc(m.n.toLowerCase())}</h1>
+    <p class="muted">${r ? `Just for ${esc(r.name)}. Other recipes keep ${esc(m.n.toLowerCase())}.` : "For every recipe that uses it."}</p>
     <div class="list">${row(k, "As the recipe says", true)}${(m.sw || []).map((o) => row(o.k, o.why, false)).join("")}</div>`);
 }
-
 function openItem(key) {
   const it = buildList(currentWeek()).find((i) => i.key === key); if (!it) return;
   const bp = it.k ? basePrice(it.k) : null, m = it.k ? ingMeta(it.k) : null;

@@ -126,7 +126,8 @@
      "k": "frozen_onion",
      "r": 150,
      "why": "Pre-chopped and frozen: saves 5 minutes",
-     "budget": false
+     "budget": false,
+     "auto": false
     }
    ],
    "nu": [
@@ -176,7 +177,8 @@
      "k": "garlic_paste",
      "r": 1,
      "why": "No peeling, and a jar lasts weeks",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -205,7 +207,8 @@
      "k": "ground_ginger",
      "r": 0.05,
      "why": "Cupboard staple. Milder, but fine in curries",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -234,7 +237,8 @@
      "k": "frozen_spinach",
      "r": 1,
      "why": "Cheaper and keeps for months",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -350,7 +354,8 @@
      "k": "frozen_peppers",
      "r": 150,
      "why": "Frozen sliced peppers: cheaper, pre-chopped",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -400,7 +405,8 @@
      "k": "frozen_broccoli",
      "r": 1,
      "why": "Frozen florets: no waste",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -472,7 +478,8 @@
      "k": "lemon_juice",
      "r": 3,
      "why": "A bottle lasts for weeks",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -501,7 +508,8 @@
      "k": "lime_juice",
      "r": 2,
      "why": "A bottle lasts for weeks",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -555,7 +563,8 @@
      "k": "flatbread",
      "r": 1,
      "why": "Pittas or flatbreads are cheaper",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -611,7 +620,8 @@
      "k": "bread",
      "r": 1,
      "why": "A sliced loaf is half the price",
-     "budget": true
+     "budget": true,
+     "auto": true
     }
    ],
    "nu": [
@@ -722,7 +732,8 @@
      "k": "natural_yoghurt",
      "r": 1,
      "why": "Cheaper, but less protein",
-     "budget": true
+     "budget": true,
+     "auto": false
     }
    ],
    "nu": [
@@ -812,7 +823,8 @@
      "k": "cheddar",
      "r": 1,
      "why": "Use the cheddar you already have",
-     "budget": true
+     "budget": true,
+     "auto": false
     }
    ],
    "nu": [
@@ -948,7 +960,8 @@
      "k": "tofu",
      "r": 1,
      "why": "Cheaper, and similar when fried",
-     "budget": true
+     "budget": true,
+     "auto": false
     }
    ],
    "nu": [
@@ -1029,7 +1042,8 @@
      "k": "kidney_beans",
      "r": 1,
      "why": "Always at Aldi, and cheaper",
-     "budget": true
+     "budget": true,
+     "auto": false
     }
    ],
    "nu": [
@@ -1547,7 +1561,8 @@
      "k": "peas",
      "r": 1,
      "why": "Much cheaper, but less protein",
-     "budget": true
+     "budget": true,
+     "auto": false
     }
    ],
    "nu": [
@@ -1670,7 +1685,8 @@
      "k": "chickpeas",
      "r": 0.004,
      "why": "A tin of chickpeas is much cheaper",
-     "budget": true
+     "budget": true,
+     "auto": false
     }
    ],
    "nu": [

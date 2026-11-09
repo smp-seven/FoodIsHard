@@ -246,17 +246,30 @@ function family(id) { return app.famById[id] || { id, name: id, plural: id }; }
 // Ingredients, swaps and food rules
 // ---------------------------------------------------------------------------
 function ingMeta(k) { return app.ing.items[k] || { n: k, a: "other", s: "any" }; }
-function resolveIng(k) {
-  const m = ingMeta(k), options = m.sw || [];
-  const chosen = (app.state.swaps || {})[k];
+/** Is this ingredient what the dish is named after? ("Paneer & pea curry" -> paneer, peas) */
+function isHeadline(k, r) {
+  if (!r) return false;
+  const name = r.name.toLowerCase();
+  return ingMeta(k).n.toLowerCase().split(" (")[0].split(/[^a-z]+/).some((w) => w.length > 3 && name.includes(w.replace(/e?s$/, "")));
+}
+/** The ingredient actually used: a swap chosen for this recipe, then one chosen everywhere,
+ *  then budget mode (like-for-like swaps only, never the ingredient the dish is named after). */
+function resolveIng(k, r = null) {
+  const m = ingMeta(k), options = m.sw || [], swaps = app.state.swaps || {};
+  const local = r ? swaps[`${r.id}:${k}`] : undefined, global = swaps[k];
+  const chosen = local !== undefined ? local : global;
   let alt = null;
   if (chosen !== undefined) alt = options.find((o) => o.k === chosen) || null;
-  else if (settings().budget) alt = options.find((o) => o.budget) || null;
-  return alt ? { k: alt.k, r: alt.r, from: k } : { k, r: 1, from: null };
+  else if (settings().budget && !isHeadline(k, r)) alt = options.find((o) => o.auto) || null;
+  return alt ? { k: alt.k, r: alt.r, from: k, local: local !== undefined } : { k, r: 1, from: null };
+}
+/** Swaps that change what the dish is (shown on the week card), e.g. "with firm tofu". */
+function headlineSwaps(r) {
+  return effectiveIngredients(r).filter((i) => i.from && isHeadline(i.from, r)).map((i) => ingMeta(i.k).n.split(" (")[0].toLowerCase());
 }
 function effectiveIngredients(r) {
   return r.ingredients.map((i) => {
-    const res = resolveIng(i.k), m = ingMeta(res.k);
+    const res = resolveIng(i.k, r), m = ingMeta(res.k);
     const u = res.from ? (m.pk ? m.pk[1] : (i.u || "")) : (i.u || m.u || "");
     return { ...i, k: res.k, q: i.q == null ? null : i.q * res.r, u, from: res.from, orig: i.k };
   });
