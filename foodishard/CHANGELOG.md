@@ -56,3 +56,7 @@
 - "Eggs" family is now "Brunch for dinner" (old settings carry over). New families: Risotto & rice, Bowls & salads.
 - The dinner picker has a search box, and dinners that fit the day's theme come first.
 - Recipe checker also checks tags and theme rules.
+
+## 0.6.1
+- Baked risotto: less water, so it comes out creamy rather than soupy.
+- Black bean burgers: more oats, blitzed first, and a 10-minute chill so they hold together.

@@ -3219,7 +3219,7 @@
      "t": "Heat the oven to 200°C. In an ovenproof pan with a lid, soften the chopped onion in the butter for 5 minutes. Add the garlic and the rice and stir for 1 minute."
     },
     {
-     "t": "Pour in {{250|ml}} boiling water, cover and bake for 18 minutes. Stir in the peas, edamame, spinach and another {{50|ml}} boiling water. Bake for 5 more minutes."
+     "t": "Pour in {{250|ml}} boiling water, cover and bake for 18 minutes. Stir in the peas, edamame and spinach (they add a little water as they thaw) and bake for 5 more minutes."
     },
     {
      "t": "Spoon the baby's portion out now, before the stock and cheese.",
@@ -3675,7 +3675,7 @@
    "id": "black-bean-burgers",
    "name": "Black bean burgers with sweet potato fries",
    "blurb": "Smoky bean burgers blitzed in a processor, with crisp fries.",
-   "time": 35,
+   "time": 45,
    "hands": 15,
    "family": "fakeaway",
    "cuisine": "Mexican",
@@ -3692,7 +3692,7 @@
     },
     {
      "k": "oats",
-     "q": 20,
+     "q": 30,
      "u": "g"
     },
     {
@@ -3751,7 +3751,7 @@
      "t": "Cut the sweet potato into fries and toss with half the oil. Air fry at 200°C for 15 to 18 minutes, shaking twice."
     },
     {
-     "t": "Pat the drained beans dry. Pulse them in the processor with the oats, garlic, cumin and paprika until they hold together but still have some texture. Shape into burgers."
+     "t": "Pat the drained beans really dry. Blitz the oats to a coarse flour in the processor, then add the beans, garlic, cumin and paprika and pulse until they hold together but still have some texture. Shape into burgers and chill for 10 minutes so they firm up."
     },
     {
      "t": "Shape a small patty for the baby now, before the chilli and salt.",
