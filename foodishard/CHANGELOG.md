@@ -19,3 +19,10 @@
 - In-shop mode: tabs per supermarket, press and hold to select items and move them to another shop (remembered), "Done shopping" summary, and ticks that queue up when there's no signal.
 - Food inflation tracking from the ONS food price index (weekly check, can be switched off).
 - Add or remove grown-ups, protein goals, and a "Cooking for a baby" switch.
+
+## 0.4.0
+- Spice rack & cupboard: mark items Got it / Low / Out; low and out items go on the list, and ticking them off restocks them. A starter-rack button adds the basic spices in one go.
+- All 13 recipes rewritten: every ingredient has an amount (spices included), shorter steps for confident cooks, and hands-on time shown.
+- "How was it?" after cooking, with a "Cooked it" badge and copyable feedback for recipe fixes.
+- tools/check_recipes.py checks every recipe against the house standard.
+- Fix: changes made in quick succession could be lost while syncing.

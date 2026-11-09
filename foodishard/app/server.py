@@ -141,6 +141,19 @@ def apply_op(state, op, user):
             else:
                 prefs.pop(key, None)
 
+    elif kind == "pantry":
+        pantry = state.setdefault("pantry", {})
+        for key in op.get("keys") or [op.get("key")]:
+            if key and op.get("status"):
+                pantry[key] = op["status"]
+            elif key:
+                pantry.pop(key, None)
+
+    elif kind == "feedback":
+        fb = state.setdefault("feedback", {}).setdefault(op["recipe"], [])
+        fb.append({"rating": op.get("rating"), "tags": op.get("tags") or [], "note": (op.get("note") or "")[:500], "at": now, "by": user})
+        del fb[:-20]
+
     elif kind == "shop_for":
         week = state.setdefault("shopFor", {}).setdefault(op["week"], {})
         if op.get("shop"):

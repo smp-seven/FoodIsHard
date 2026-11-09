@@ -44,7 +44,7 @@
   },
   {
    "id": "cupboard",
-   "name": "Check the cupboard"
+   "name": "Spices & cupboard"
   }
  ],
  "shops": {
@@ -1218,7 +1218,20 @@
     1,
     ""
    ],
-   "p": 0.59
+   "p": 0.59,
+   "rack": "cupboard",
+   "u": "tbsp",
+   "g": 16,
+   "nu": [
+    76,
+    4.5,
+    13,
+    11,
+    0.3,
+    0.1,
+    3,
+    0.3
+   ]
   },
   "red_lentils": {
    "n": "Red lentils (dried)",
@@ -1377,7 +1390,14 @@
     0,
     9
    ],
-   "nq": 5
+   "rack": "cupboard",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.89,
+   "u": "tbsp",
+   "g": 16
   },
   "stock": {
    "n": "Low-salt veg stock cubes",
@@ -1390,14 +1410,40 @@
    "mc": [
     "celery"
    ],
-   "note": "Kallo low-salt, or a baby stock cube"
+   "note": "Kallo low-salt, or a baby stock cube",
+   "rack": "cupboard",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 1.75,
+   "u": "",
+   "g": 10,
+   "nu": [
+    250,
+    5,
+    30,
+    10,
+    10,
+    5,
+    1,
+    10
+   ]
   },
   "hendersons": {
    "n": "Henderson's Relish",
    "a": "world",
    "s": "tesco",
    "c": true,
-   "note": "Veggie stand-in for Worcestershire sauce, which contains anchovies"
+   "note": "Veggie stand-in for Worcestershire sauce, which contains anchovies",
+   "rack": "cupboard",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 1.6,
+   "u": "tsp",
+   "g": 5
   },
   "garlic_paste": {
    "n": "Garlic paste",
@@ -1659,10 +1705,12 @@
     14,
     0.07
    ],
-   "g": 2
+   "g": 2,
+   "rack": "spices",
+   "u": "tsp"
   },
   "oil": {
-   "n": "Oil (olive / rapeseed)",
+   "n": "Rapeseed or olive oil",
    "a": "cupboard",
    "s": "aldi",
    "c": true,
@@ -1679,7 +1727,15 @@
     0,
     0
    ],
-   "nq": 7
+   "nq": 7,
+   "rack": "cupboard",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 1.79,
+   "u": "tbsp",
+   "g": 13.6
   },
   "salt": {
    "n": "Salt",
@@ -1696,52 +1752,142 @@
     0,
     100
    ],
-   "nq": 0.4
+   "nq": 0.4,
+   "rack": "cupboard",
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.65
   },
   "pepper": {
    "n": "Black pepper",
    "a": "cupboard",
    "s": "aldi",
-   "c": true
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.99
   },
   "cumin": {
-   "n": "Ground cumin / cumin seeds",
+   "n": "Ground cumin",
    "a": "cupboard",
    "s": "aldi",
-   "c": true
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.79
   },
   "turmeric": {
-   "n": "Turmeric",
+   "n": "Ground turmeric",
    "a": "cupboard",
    "s": "aldi",
-   "c": true
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.79
   },
   "garam_masala": {
    "n": "Garam masala",
    "a": "cupboard",
    "s": "aldi",
    "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.89,
    "mc": [
     "mustard"
    ]
   },
   "chilli": {
-   "n": "Chilli powder / flakes",
+   "n": "Chilli flakes",
    "a": "cupboard",
    "s": "aldi",
-   "c": true
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.79
   },
   "smoked_paprika": {
    "n": "Smoked paprika",
    "a": "cupboard",
    "s": "aldi",
-   "c": true
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.89
   },
   "oregano": {
    "n": "Dried oregano",
    "a": "cupboard",
    "s": "aldi",
-   "c": true
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.69
+  },
+  "ground_coriander": {
+   "n": "Ground coriander",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.79
+  },
+  "mixed_herbs": {
+   "n": "Mixed dried herbs",
+   "a": "cupboard",
+   "s": "aldi",
+   "c": true,
+   "rack": "spices",
+   "u": "tsp",
+   "g": 2,
+   "pk": [
+    1,
+    ""
+   ],
+   "p": 0.69
   }
  },
  "prices_base_period": "2026 OCT",

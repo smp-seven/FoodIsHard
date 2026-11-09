@@ -37,6 +37,7 @@ in this repository.
 - `foodishard/app/static/`: the web app (plain HTML, CSS and JavaScript, no build step).
 - `foodishard/app/data/recipes.json`: the recipe library. Quantities are per standard
   adult portion, and `{{300|ml}}` in a step is scaled automatically.
+- `tools/check_recipes.py`: run after editing recipes. It checks every recipe has amounts, a baby step before any seasoning, nutrition data and nothing from the banned list.
 - `foodishard/app/data/ingredients.json`: aisle, suggested shop and label warnings
   for every ingredient.
 

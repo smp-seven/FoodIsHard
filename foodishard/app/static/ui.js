@@ -160,7 +160,7 @@ function viewWeek() {
         <button class="icon-btn sm plain" data-act="dayMenu" data-i="${i}" aria-label="More">${icon("dots", 17)}</button></span></div>`;
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}">${esc(r.name)}</button>
-      <div class="small muted" style="margin-top:2px">${r.time} min · ${money(c)} · ${proteinShort(r)}</div>
+      <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${proteinShort(r)}</div>
       <div class="actions">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
         <button class="btn sm soft" data-act="swapDay" data-i="${i}">Swap</button>
@@ -205,7 +205,8 @@ function viewShop() {
   const total = toGet.reduce((t, i) => t + (i.cost || 0), 0);
   const base = toGet.reduce((t, i) => t + (i.cost ? i.cost / shopMult(i.shop === "any" ? priceShop() : i.shop) : 0), 0);
   const compare = enabledShops().slice(0, 4).map((s) => `${esc(shopName(s))} ≈${money(base * shopMult(s))}`).join(" · ");
-  const have = all.filter((i) => !i.cupboard && i.have), cupboard = all.filter((i) => i.cupboard && !i.need);
+  const have = all.filter((i) => !i.cupboard && i.have);
+  const usedRack = rackUsedThisWeek(week), unchecked = [...usedRack].filter((k) => !(app.state.pantry || {})[k]).length;
 
   return `${header(`Week of ${niceDate(parseISO(week))}`, title, right)}
     <div class="stack" style="gap:12px;margin-bottom:6px">
@@ -215,7 +216,9 @@ function viewShop() {
     </div>
     ${body}
     ${have.length ? `<details class="fold"><summary class="section-label">Already got · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
-    ${cupboard.length ? `<details class="fold"><summary class="section-label">Check the cupboard · ${cupboard.length}</summary><div class="list">${cupboard.map(itemRow).join("")}</div></details>` : ""}
+    <button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="rack">
+      <span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">${unchecked ? `${unchecked} thing${unchecked === 1 ? "" : "s"} this week's dinners use ${unchecked === 1 ? "hasn't" : "haven't"} been checked` : "Mark anything running low and it goes on the list"}</span></span>
+      ${unchecked ? `<span class="pill warn">Check</span>` : ""}<span aria-hidden="true">›</span></button>
     <p class="small muted" style="margin:20px 4px 0">Same list everywhere: ${compare}. Prices are estimates${inflationFactor() !== 1 ? ", adjusted for food inflation" : ""}. Tap an item to correct its price, swap it or move it to another shop. Press and hold to select several.</p>`;
 }
 function itemRow(i) {
@@ -233,8 +236,7 @@ function itemRow(i) {
   if (i.done && i.checkedBy) sub.push(`✓ ${esc(i.checkedBy)}`);
   const selected = app.selecting.has(i.key);
   let lead;
-  if (i.cupboard && !i.need) lead = `<button class="btn sm" data-act="flag" data-key="${esc(i.key)}" data-f="need" data-v="1">Need it</button>`;
-  else if (i.have) lead = `<button class="btn sm" data-act="flag" data-key="${esc(i.key)}" data-f="have" data-v="0">Need it</button>`;
+  if (i.have) lead = `<button class="btn sm" data-act="flag" data-key="${esc(i.key)}" data-f="have" data-v="0">Need it</button>`;
   else lead = `<input type="checkbox" class="check-input" data-act="tick" data-key="${esc(i.key)}" ${i.done ? "checked" : ""} aria-label="Got ${esc(i.name)}">`;
   return `<div class="item ${i.done ? "done" : ""} ${selected ? "sel" : ""}" data-key="${esc(i.key)}">
     ${lead}
@@ -267,9 +269,9 @@ function viewRecipes() {
   const row = (r) => {
     const p = prefsFor(r.id), blocked = blockedBy(r);
     return `<button class="rrow ${p.ban || blocked.length ? "off" : ""}" data-act="recipe" data-id="${r.id}"><span class="grow"><b>${esc(r.name)}</b><br>
-      <span class="small muted">${r.time} min · ${money(recipeCost(r))} a portion · ${Math.round(nutritionPerPortion(r).protein)} g protein</span>
+      <span class="small muted">${r.time} min (${r.hands || r.time} hands-on) · ${money(recipeCost(r))} a portion · ${Math.round(nutritionPerPortion(r).protein)} g protein</span>
       ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : ""}</span>
-      ${p.fav ? `<span style="color:var(--warm)" aria-label="Favourite">♥</span>` : ""}${r.time <= 15 ? `<span class="pill warm">Quick</span>` : ""}</button>`;
+      ${cookedIt(r.id) ? `<span class="pill accent" title="Cooked it">✓</span>` : ""}${p.fav ? `<span style="color:var(--warm)" aria-label="Favourite">♥</span>` : ""}${r.time <= 15 ? `<span class="pill warm">Quick</span>` : ""}</button>`;
   };
   const flat = q || f !== "all";
   const sections = [];
@@ -371,6 +373,7 @@ function viewSettings() {
         <span class="switch"><input type="checkbox" data-set="bool" data-f="budget" ${s.budget ? "checked" : ""}><i></i></span></label>
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Track food inflation</b><br><span class="small muted">${infLine}</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="inflation" ${s.inflation !== false ? "checked" : ""}><i></i></span></label>
+      <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="rack"><span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">What you've got, what's running low</span></span><span aria-hidden="true">›</span></button>
       <div class="row" style="padding:13px 16px"><span class="grow"><b>Receipt reader</b><br><span class="small muted">Coming later: scan receipts to update prices, read on your own PC.</span></span></div>
     </div>
 
@@ -378,7 +381,9 @@ function viewSettings() {
     <div class="list">${staples}<div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="stapleAdd">${icon("plus", 16)}Add a staple</button>
       <span class="small muted">Breakfasts, lunches and anything you buy every week. Pick a name from the suggestions and it's priced for you.</span></div></div>
     ${catalogue}
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.3.0</p>`;
+    <p class="section-label">Recipe feedback</p>
+    <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.4.0</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -390,7 +395,8 @@ function closeSheet() { $("#sheet").hidden = true; document.body.style.overflow 
 function openRecipe(id, { pickDay = null } = {}) {
   const r = app.byId[id]; if (!r) return;
   const { factor, baby } = household(), p = prefsFor(id), bi = babyInfo();
-  const ings = effectiveIngredients(r), main = ings.filter((i) => i.q != null), cupboard = ings.filter((i) => i.q == null);
+  const ings = effectiveIngredients(r), main = ings.filter((i) => i.q != null && !ingMeta(i.k).c), rack = ings.filter((i) => i.q != null && ingMeta(i.k).c), cupboard = ings.filter((i) => i.q == null);
+  const fb = feedbackFor(id), lastFb = fb[fb.length - 1];
   const blocked = blockedBy(r), cost = recipeCost(r), avoid = avoidList().map((a) => app.ing.allergens[a] || a);
   const ingHTML = main.map((i) => {
     const m = ingMeta(i.k), chips = [];
@@ -409,7 +415,8 @@ function openRecipe(id, { pickDay = null } = {}) {
     <h1 class="title" style="font-size:27px">${esc(r.name)}</h1>
     <p class="muted" style="margin:6px 0 10px">${esc(r.blurb)}</p>
     ${blocked.length ? `<p class="pill warm" style="white-space:normal;padding:8px 12px">Contains ${esc(blocked.join(", ").toLowerCase())}, so it's hidden from your plans.</p>` : ""}
-    <div class="row wrap" style="gap:6px;margin-bottom:12px"><span class="pill">${r.time} min</span><span class="pill">${money(cost)} a portion · ${money(cost * factor)} in all</span>
+    ${lastFb ? `<p class="small muted" style="margin:0 0 8px">Cooked ${fb.length}× · last time: ${({ loved: "loved it", fine: "fine", never: "not again" })[lastFb.rating] || ""}${lastFb.tags.length ? ` (${esc(lastFb.tags.join(", ").toLowerCase())})` : ""}${lastFb.note ? `, "${esc(lastFb.note)}"` : ""}</p>` : ""}
+    <div class="row wrap" style="gap:6px;margin-bottom:12px">${cookedIt(id) ? `<span class="pill accent">✓ Cooked it</span>` : ""}<span class="pill">${r.time} min · ${r.hands || r.time} hands-on</span><span class="pill">${money(cost)} a portion · ${money(cost * factor)} in all</span>
       ${avoid.length && !blocked.length ? `<span class="pill warm">No ${esc(avoid.join(", ").toLowerCase())}</span>` : ""}</div>
     <div class="tiles" style="margin-bottom:12px">${household().adults.map((pp, idx) => `<button class="tile card" style="background:var(--surface)" data-act="macros" data-id="${id}" data-who="${idx}"><span class="k muted"><span>${esc(pp.name)}</span><span>›</span></span><span class="v">${proteinFor(r, pp.portion)} g protein</span></button>`).join("")}</div>
     <div class="row wrap" style="margin-bottom:6px">
@@ -419,7 +426,8 @@ function openRecipe(id, { pickDay = null } = {}) {
       ${pickDay == null ? `<select class="input" style="width:auto;min-height:44px" data-set="putDay" data-id="${id}"><option value="">Add to this week…</option>${dayOpts}</select>` : ""}
     </div>
     <p class="section-label">Ingredients · for ${niceNumber(factor)} portions</p>
-    <div class="card"><ul class="ing-list">${ingHTML}</ul>${cupboard.length ? `<p class="small muted" style="margin:0;padding:10px 16px 14px">Plus from the cupboard: ${cupboard.map((i) => esc(ingMeta(i.k).n.toLowerCase())).join(", ")}.</p>` : ""}</div>
+    <div class="card"><ul class="ing-list">${ingHTML}</ul></div>
+    ${rack.length || cupboard.length ? `<p class="section-label">From the spice rack &amp; cupboard</p><div class="card"><ul class="ing-list">${rack.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted" style="white-space:nowrap">${esc(fmtQty(i.q * factor, i.u))}</span></li>`).join("")}${cupboard.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted">to taste</span></li>`).join("")}</ul></div>` : ""}
     ${baby.include ? `<p class="section-label">${esc(babyName())} · ${esc(STAGES[baby.stage]?.name || "")}</p><div class="baby-box"><p style="margin:0">${esc(personaliseStep((r.baby || {})[baby.stage] || "") || "Take their portion out before salt, stock or chilli, and cut it to a size they can manage.")}</p>
       <ul><li>No added salt or stock in their portion.</li>${bi.underOne ? `<li>No honey until ${bi.firstBirthday ? `${niceDate(bi.firstBirthday)} ${bi.firstBirthday.getFullYear()}` : "their first birthday"}.</li>` : ""}<li>Quarter cherry tomatoes and grapes. Nuts ground or smooth only.</li></ul></div>` : ""}
     <p class="section-label">Method</p>
@@ -507,7 +515,8 @@ function openItem(key) {
         <div class="shop-grid">${shopOrder().map((s) => `<button class="${it.shop === s ? "on" : ""}" data-act="moveTo" data-keys="${esc(key)}" data-s="${s}">${esc(shopName(s))}</button>`).join("")}</div>
         <span class="small muted">Remembered for next time. Change it again whenever you like.</span></div>
       <div class="row wrap">
-        ${!it.cupboard ? `<button class="btn" data-act="flag" data-key="${esc(key)}" data-f="have" data-v="${it.have ? 0 : 1}" data-close="1">${icon("home", 16)}${it.have ? "Need it after all" : "Already got it"}</button>` : `<button class="btn" data-act="flag" data-key="${esc(key)}" data-f="need" data-v="${it.need ? 0 : 1}" data-close="1">${it.need ? "Don't need it" : "Need it"}</button>`}
+        ${it.cupboard ? `<button class="btn" data-act="rack">Open the spice rack</button>` : ""}
+        ${!it.cupboard ? `<button class="btn" data-act="flag" data-key="${esc(key)}" data-f="have" data-v="${it.have ? 0 : 1}" data-close="1">${icon("home", 16)}${it.have ? "Need it after all" : "Already got it"}</button>` : ""}
         ${it.extra ? `<button class="btn" data-act="removeExtra" data-id="${esc(it.id)}">${icon("trash", 16)}Remove</button>` : ""}
       </div></div>`);
 }
@@ -547,6 +556,44 @@ function openDone() {
     <div class="stack"><button class="btn lg primary" data-act="confirmMove" disabled id="moveGo">Pick a shop</button><button class="btn lg" data-close>Leave them on the list</button></div>`);
 }
 
+function openRack() {
+  const used = rackUsedThisWeek(currentWeek());
+  const row = (m) => {
+    const seg = [["ok", "Got it"], ["low", "Low"], ["out", "Out"]].map(([s, l]) => `<button class="${m.status === s ? "on" : ""}" data-act="rackSet" data-k="${m.k}" data-s="${s}">${l}</button>`).join("");
+    return `<div class="stack" style="padding:12px 16px;gap:8px"><div class="row between"><b>${esc(m.n)}</b>${used.has(m.k) ? `<span class="pill accent">This week</span>` : ""}</div><div class="seg">${seg}</div></div>`;
+  };
+  const items = rackItems();
+  const spices = items.filter((m) => m.rack === "spices"), cupboard = items.filter((m) => m.rack !== "spices");
+  const missing = spices.filter((m) => m.status !== "ok");
+  const starterCost = missing.reduce((t, m) => t + (basePrice(m.k) || { p: 0 }).p * shopMult(priceShop()), 0);
+  openSheet(`<h1 class="title" style="font-size:26px">Spice rack &amp; cupboard</h1>
+    <p class="muted">Low or Out goes on the shopping list. Ticking it off in the shop marks it Got it again.</p>
+    ${missing.length ? `<button class="btn primary block" style="margin:6px 0 4px" data-act="rackStarter">Starter rack: add ${missing.length} spices to the list (≈ ${money(starterCost)})</button>` : ""}
+    <p class="section-label">Spices</p><div class="list">${spices.map(row).join("")}</div>
+    <p class="section-label">Cupboard</p><div class="list">${cupboard.map(row).join("")}</div>`);
+}
+
+const FEEDBACK_TAGS = ["Too bland", "Too spicy", "Too salty", "Took longer", "Too fiddly", "Too much food", "Not enough", "Baby loved it", "Baby wasn't keen"];
+function openFeedback(id) {
+  const r = app.byId[id]; app.fbRating = null;
+  openSheet(`<p class="eyebrow">${esc(r.name)}</p><h1 class="title" style="font-size:26px">How was it?</h1>
+    <form data-form="feedback" data-id="${id}" class="stack" style="margin-top:12px">
+      <div class="seg"><button type="button" data-act="feedbackRate" data-r="loved">Loved it</button><button type="button" data-act="feedbackRate" data-r="fine">Fine</button><button type="button" data-act="feedbackRate" data-r="never">Not again</button></div>
+      <div class="chips wrap">${FEEDBACK_TAGS.filter((t) => household().baby.include || !t.startsWith("Baby")).map((t) => `<button type="button" class="chip" data-act="feedbackTag" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+      <input class="input" name="note" placeholder="Anything else? e.g. needed more salt" autocomplete="off">
+      <button class="btn lg primary" id="fbSave" disabled>Save</button><button type="button" class="btn" data-close>Skip</button></form>`);
+}
+function feedbackText() {
+  const lines = ["FoodIsHard recipe feedback", ""];
+  Object.entries(app.state.feedback || {}).forEach(([id, list]) => {
+    const r = app.byId[id]; if (!r || !list.length) return;
+    lines.push(`${r.name} (${id})`);
+    list.forEach((f) => lines.push(`- ${new Date(f.at * 1000).toISOString().slice(0, 10)} ${f.rating}${f.tags.length ? ` [${f.tags.join(", ")}]` : ""}${f.note ? `: ${f.note}` : ""}`));
+    lines.push("");
+  });
+  return lines.length > 2 ? lines.join("\n") : "No feedback yet.";
+}
+
 // ---------------------------------------------------------------------------
 // Cooking mode
 // ---------------------------------------------------------------------------
@@ -561,7 +608,7 @@ function startCooking(id) {
   renderCook();
 }
 function stopCooking() {
-  $("#cook").hidden = true; app.cook = null; clearInterval(cookTick);
+  $("#cook").hidden = true; $("#cook").innerHTML = ""; app.cook = null; clearInterval(cookTick);
   try { wakeLock && wakeLock.release(); } catch { /* fine */ }
 }
 function stepMinutes(text) { const m = text.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*min(?:ute)?s?/i); return m ? +(m[2] || m[1]) : null; }
@@ -704,7 +751,21 @@ const ACTIONS = {
   setSwap: (d) => { send({ op: "swap", key: d.k, alt: d.alt }); if (d.reopen) openRecipe(d.reopen); else { closeSheet(); toast(d.alt ? `Swapped for ${ingMeta(d.alt).n.toLowerCase()}` : "Back to the original"); } },
   // shop
   shopTab: (d) => { app.shopTab = d.s; render(); },
-  tick: (d, el) => { send({ op: "check", week: currentWeek(), key: d.key, field: "done", value: el.checked }); },
+  tick: (d, el) => {
+    send({ op: "check", week: currentWeek(), key: d.key, field: "done", value: el.checked }, { rerender: false });
+    const k = d.key.startsWith("i:") ? d.key.slice(2) : null;
+    if (k && ingMeta(k).c) send({ op: "pantry", key: k, status: el.checked ? "ok" : "out" }, { rerender: false });
+    render();
+  },
+  rack: () => openRack(),
+  rackSet: (d) => { send({ op: "pantry", key: d.k, status: d.s }); openRack(); },
+  rackStarter: () => {
+    const keys = rackItems().filter((m) => m.rack === "spices" && m.status !== "ok").map((m) => m.k);
+    send({ op: "pantry", keys, status: "out" }); closeSheet(); toast(`Added ${keys.length} spices to the list`);
+  },
+  feedbackRate: (d, el) => { $$("#sheetBody [data-act=feedbackRate]").forEach((b) => b.classList.toggle("on", b === el)); app.fbRating = d.r; $("#fbSave").disabled = false; },
+  feedbackTag: (d, el) => { el.classList.toggle("on"); },
+  copyFeedback: () => copyText(feedbackText()),
   flag: (d) => { send({ op: "check", week: currentWeek(), key: d.key, field: d.f, value: d.v === "1" }); if (d.close) closeSheet(); },
   itemOpen: (d) => { if (app.selecting.size) return toggleSelect(d.key); openItem(d.key); },
   moveOne: (d) => { if (app.selecting.size) return toggleSelect(d.key); openMove([d.key]); },
@@ -736,7 +797,7 @@ const ACTIONS = {
   cookIng: () => { app.cook.showIng = !app.cook.showIng; renderCook(); },
   cookStep: (d) => {
     const c = app.cook, n = visibleSteps(app.byId[c.id]).length;
-    if (+d.d > 0 && c.step === n - 1) { stopCooking(); toast("Enjoy your dinner!"); return; }
+    if (+d.d > 0 && c.step === n - 1) { const id = c.id; stopCooking(); openFeedback(id); return; }
     c.step = Math.max(0, Math.min(n - 1, c.step + +d.d)); renderCook();
   },
   timerStart: (d) => { app.cook.timers.push({ label: `${d.m}-minute timer`, end: Date.now() + d.m * 60000 }); renderCook(); },
@@ -809,6 +870,16 @@ function onSubmit(e) {
     const price = parseFloat(val("price").replace(/[£,\s]/g, ""));
     if (!(price >= 0)) return toast("Enter a price, like 1.25");
     send({ op: "price", key: f.dataset.k, price, shop: val("shop") }); closeSheet(); toast("Price saved for everyone"); return;
+  }
+  if (f.dataset.form === "feedback") {
+    if (!app.fbRating) return;
+    const tags = $$("#sheetBody [data-act=feedbackTag].on").map((b) => b.dataset.t);
+    send({ op: "feedback", recipe: f.dataset.id, rating: app.fbRating, tags, note: val("note").trim() }, { rerender: false });
+    if (app.fbRating === "loved") send({ op: "pref", recipe: f.dataset.id, patch: { fav: true } }, { rerender: false });
+    if (app.fbRating === "never") send({ op: "pref", recipe: f.dataset.id, patch: { ban: true } }, { rerender: false });
+    closeSheet(); render();
+    toast(app.fbRating === "never" ? "Won't suggest that again. It's under Recipes → Hidden." : "Thanks. Saved.");
+    return;
   }
   if (f.dataset.form === "add") {
     const name = val("name").trim(); if (!name) return;

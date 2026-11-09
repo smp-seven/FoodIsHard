@@ -79,5 +79,7 @@
   "swaps": {},
   "shopFor": {},
   "shopPref": {},
-  "inflation": {}
+  "inflation": {},
+  "pantry": {},
+  "feedback": {}
 }

@@ -128,6 +128,13 @@ function applyOp(state, op, user) {
     case "price": if (op.price == null) delete bag("prices")[op.key]; else bag("prices")[op.key] = { p: +op.price, shop: op.shop || "aldi", at: now, by: user }; break;
     case "swap": if (op.alt == null) delete bag("swaps")[op.key]; else bag("swaps")[op.key] = String(op.alt); break;
     case "shop_pref": (op.keys || [op.key]).forEach((k) => { if (!k) return; if (op.shop) bag("shopPref")[k] = op.shop; else delete bag("shopPref")[k]; }); break;
+    case "pantry": (op.keys || [op.key]).forEach((k) => { if (!k) return; if (op.status) bag("pantry")[k] = op.status; else delete bag("pantry")[k]; }); break;
+    case "feedback": {
+      const fb = bag("feedback")[op.recipe] || (state.feedback[op.recipe] = []);
+      fb.push({ rating: op.rating, tags: op.tags || [], note: (op.note || "").slice(0, 500), at: now, by: user });
+      fb.splice(0, Math.max(0, fb.length - 20));
+      break;
+    }
     case "shop_for": {
       const wk = bag("shopFor")[op.week] || (state.shopFor[op.week] = {});
       if (op.shop) wk[op.key] = op.shop; else delete wk[op.key];
@@ -158,18 +165,22 @@ async function send(op, { rerender = true } = {}) {
 }
 async function flushQueue() {
   if (sending) return;
-  let queue = load(QUEUE_KEY, []);
-  if (!queue.length) return;
+  if (!load(QUEUE_KEY, []).length) return;
   sending++;
   try {
-    while (queue.length) {
+    for (;;) {
+      const queue = load(QUEUE_KEY, []); // re-read: new ops may have been queued meanwhile
+      if (!queue.length) break;
       const r = await fetch("api/op", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(queue[0]) });
       if (r.status >= 400 && r.status < 500) console.warn("op rejected", queue[0], await r.text());
       else if (!r.ok) throw new Error(r.status);
-      else { const res = await r.json(); app.state = res.state; store(CACHE_KEY, app.state); }
-      queue.shift();
-      store(QUEUE_KEY, queue);
+      else { const res = await r.json(); app.state = res.state; }
+      const now = load(QUEUE_KEY, []);
+      now.shift();
+      store(QUEUE_KEY, now);
     }
+    // replay anything still queued locally on top of the server's state
+    store(CACHE_KEY, app.state);
     setOffline(false);
   } catch {
     setOffline(true);
@@ -433,6 +444,13 @@ function buildList(week) {
       if ((ingMeta(ing.orig).sw || []).length) it.swappable.add(ing.orig);
     });
   });
+  // spice rack and cupboard: anything marked low or out goes on the list
+  Object.entries(app.state.pantry || {}).forEach(([k, st]) => {
+    if ((st === "low" || st === "out") && app.ing.items[k] && !items.has("i:" + k)) {
+      const m = ingMeta(k);
+      items.set("i:" + k, { key: "i:" + k, k, name: m.n, aisle: m.a, shop: m.s, flags: m.f || [], note: null, cupboard: true, qty: {}, recipes: [], from: new Set(), swappable: new Set() });
+    }
+  });
   (settings().staples || []).filter((s) => s.on).forEach((s) => {
     const sk = s.k !== undefined ? s.k : catalogueMatch(s.name || "");
     if (sk && items.has("i:" + sk)) { // already needed for a recipe: fold the staple into it
@@ -463,11 +481,27 @@ function buildList(week) {
     else if (it.k) { const e = Object.entries(it.qty || {}); it.cost = e.length === 1 ? costOf(it.k, e[0][1], e[0][0], { wholePacks: true, shop: costShop }) : null; }
     const bp = it.k ? basePrice(it.k) : null;
     it.stale = !!(bp && bp.stale);
-    it.active = it.cupboard ? it.need : !it.have;
+    if (it.cupboard) {
+      it.rack = ingMeta(it.k).rack || "cupboard";
+      it.pantry = (app.state.pantry || {})[it.k] || null;
+      it.qtyText = it.pantry === "out" ? "out" : it.pantry === "low" ? "running low" : "";
+      const bp = basePrice(it.k); it.cost = bp ? bp.p * shopMult(costShop) : null;
+      it.active = it.pantry === "low" || it.pantry === "out" || it.need || it.done;
+    } else it.active = !it.have;
     out.push(it);
   });
   return out;
 }
+function rackItems() {
+  return Object.entries(app.ing.items).filter(([, m]) => m.c).map(([k, m]) => ({ k, ...m, status: (app.state.pantry || {})[k] || null }));
+}
+function rackUsedThisWeek(week) {
+  const used = new Set();
+  planFor(week).forEach((d) => { if (d.status === "cook" && d.recipe && app.byId[d.recipe]) effectiveIngredients(app.byId[d.recipe]).forEach((i) => { if (ingMeta(i.k).c) used.add(i.k); }); });
+  return used;
+}
+function feedbackFor(id) { return (app.state.feedback || {})[id] || []; }
+function cookedIt(id) { return feedbackFor(id).some((f) => f.rating !== "never"); }
 function aisleOrder() { return app.ing.aisles.map((a) => a.id); }
 function aisleName(id) { return (app.ing.aisles.find((a) => a.id === id) || { name: "Other" }).name; }
 
