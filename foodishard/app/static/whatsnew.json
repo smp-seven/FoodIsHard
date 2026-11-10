@@ -2,6 +2,15 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.10.5",
+   "notes": [
+    "Cooking mode shows the ingredients and amounts each step uses, so there's no scrolling back with messy hands.",
+    "Set your usual dinner time in Settings and the Today card says when to start.",
+    "Changed your mind after 'Shuffle'? There's now an Undo.",
+    "The planner avoids repeats from the last 3 weeks and suggests meals you loved more often."
+   ]
+  },
+  {
    "version": "0.10.4",
    "notes": [
     "New households are asked about allergies on first use.",

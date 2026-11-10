@@ -438,13 +438,22 @@ function themeMatch(t, r) {
 function themeRecipes(t) { return app.recipes.filter((r) => usable(r) && themeMatch(t, r)); }
 /** Themes set on other days that "reserve" their recipes, so a curry night isn't undercut by a curry on Tuesday. */
 function reservedThemes() { return Object.values(settings().themes || {}).map(themeById).filter((t) => t && t.reserve); }
-function previousWeekRecipes(week) { return new Set(planFor(iso(addDays(parseISO(week), -7))).map((d) => d.recipe).filter(Boolean)); }
+function previousWeekRecipes(week, weeks = 1) {
+  const out = new Set();
+  for (let w = 1; w <= weeks; w++) planFor(iso(addDays(parseISO(week), -7 * w))).forEach((d) => { if (d.recipe) out.add(d.recipe); });
+  return out;
+}
+/** How likely the planner is to pick a recipe: favourites and meals you loved come up more, "not again" hardly ever. */
+function recipeWeight(id) {
+  const last = feedbackFor(id).slice(-1)[0];
+  return (prefsFor(id).fav ? 3 : 1) * (last && last.rating === "loved" ? 2 : last && last.rating === "never" ? 0.1 : 1);
+}
 function maxTimeFor(week, i) {
   const s = settings(), weekend = mondayIndex(addDays(parseISO(week), i)) >= 5;
   return weekend ? (s.weekendMax || 90) : (s.weeknightMax || 40);
 }
 function pickRecipe(week, i, days, { exclude = new Set(), emergency = false, fam = null } = {}) {
-  const recent = previousWeekRecipes(week);
+  const recent = previousWeekRecipes(week), recent3 = previousWeekRecipes(week, 3); // try to avoid the last 3 weeks, at least the last 1
   const others = days.map((d, j) => (j !== i && d.status === "cook" ? d.recipe : null)).filter(Boolean);
   const used = new Set(others);
   const famCount = {};
@@ -461,6 +470,7 @@ function pickRecipe(week, i, days, { exclude = new Set(), emergency = false, fam
   if (!pool.length && fam) pool = base.filter((r) => r.family === fam);
   if (!pool.length && theme) pool = base.filter((r) => !r.emergency); // nothing fits the theme any more
   const tiers = [
+    (r) => r.time <= maxT && !used.has(r.id) && !recent3.has(r.id) && !famCount[r.family] && !neighbours.includes(r.family) && free(r),
     (r) => r.time <= maxT && !used.has(r.id) && !recent.has(r.id) && !famCount[r.family] && !neighbours.includes(r.family) && free(r),
     (r) => r.time <= maxT && !used.has(r.id) && (famCount[r.family] || 0) < 2 && !neighbours.includes(r.family) && free(r),
     (r) => r.time <= maxT && !used.has(r.id) && !recent.has(r.id),
@@ -471,7 +481,7 @@ function pickRecipe(week, i, days, { exclude = new Set(), emergency = false, fam
   for (const ok of tiers) {
     const options = pool.filter(ok);
     if (!options.length) continue;
-    const weights = options.map((r) => (prefsFor(r.id).fav ? 3 : 1));
+    const weights = options.map((r) => recipeWeight(r.id));
     let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
     for (let k = 0; k < options.length; k++) { roll -= weights[k]; if (roll <= 0) return options[k].id; }
     return options[options.length - 1].id;
@@ -507,6 +517,42 @@ function fmtQty(q, u, { forShopping = false } = {}) {
   if (u === "tbsp" || u === "tsp") return `${niceNumber(q)} ${u}`;
   if (u === "slices") { const n = Math.ceil(q); return `${n} slice${n === 1 ? "" : "s"}`; }
   return forShopping ? String(Math.ceil(q - 0.05)) : niceNumber(q);
+}
+// ---- Which ingredients a step mentions (for cooking mode) ----
+const GENERIC_WORDS = new Set(["sauce", "cube", "paste", "leave", "pouch", "piece", "stick", "relish", "flake", "wrap"]);
+const STEP_ALIASES = {
+  soy_sauce: ["soy sauce", "soy"], sweet_chilli: ["sweet chilli sauce", "sweet chilli"], chilli: ["chilli flakes", "chilli"],
+  hendersons: ["henderson's"], stock: ["stock cube", "stock"], sourdough: ["sourdough", "bread"], salad_leaves: ["salad"],
+  rice_pouch: ["rice pouch", "rice"], tortillas: ["tortilla", "wrap"], hard_cheese: ["cheese"], cheddar: ["cheddar", "cheese"],
+  greek_yoghurt: ["yoghurt"], natural_yoghurt: ["yoghurt"], quorn_pieces: ["quorn"], pepper: ["black pepper", "salt and pepper", "salt, pepper"], oil: ["oil"],
+  ground_coriander: ["ground coriander"], ground_ginger: ["ground ginger"], chapati: ["chapati"], frozen_spinach: ["spinach"],
+  filo: ["filo"], mixed_veg: ["frozen veg", "veg"],
+};
+const singular = (w) => w.replace(/(oes|ches|shes|xes)$/, (m) => m.slice(0, -2)).replace(/s$/, "");
+function stepTerms(k) {
+  if (STEP_ALIASES[k]) return STEP_ALIASES[k];
+  const base = ingMeta(k).n.toLowerCase().split(/\s*[(/]/)[0].replace(/^(frozen|fresh|dried|plain|mature|pitted|smooth|reduced-salt|low-salt|wholewheat|sliced|crusty|firm|microwave)\s+/, "").trim();
+  const words = base.split(/\s+/), head = singular(words[words.length - 1]);
+  const terms = [singular(base)];
+  if (words.length > 1 && head.length >= 3 && !GENERIC_WORDS.has(head)) terms.push(head);
+  return terms;
+}
+/** The recipe's ingredients that a step's text names. The longest, most specific name wins ("black pepper" over "pepper"). */
+function stepIngredients(text, ings) {
+  const low = text.toLowerCase(), taken = [], found = []; // taken: [start, end, term]
+  const cands = ings.flatMap((i, idx) => stepTerms(i.orig || i.k).map((t) => ({ t, idx }))).sort((a, b) => b.t.length - a.t.length);
+  for (const { t, idx } of cands) {
+    const re = new RegExp(`\\b${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:e?s)?\\b`, "g");
+    let m;
+    while ((m = re.exec(low))) {
+      const a = m.index, b = a + m[0].length;
+      const clash = taken.find(([x, y]) => a < y && b > x);
+      if (clash && !(clash[0] === a && clash[2] === t)) continue; // "the beans" can mean both kinds of bean
+      if (!clash) taken.push([a, b, t]);
+      if (!found.includes(idx)) found.push(idx);
+    }
+  }
+  return found.sort((a, b) => a - b).map((idx) => ings[idx]);
 }
 function scaleStep(text, factor) { return text.replace(/\{\{(\d+(?:\.\d+)?)\|(\w+)\}\}/g, (_, n, u) => fmtQty(+n * factor, u)); }
 /** Shopping notes that mention "the baby": named for your children, or dropped if you have none. */

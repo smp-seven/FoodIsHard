@@ -289,3 +289,8 @@ body.admin-only .view { padding-bottom: 32px; }
 .update-card { background: var(--info-soft); border: 1px solid var(--info); border-radius: 18px; padding: 14px 16px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
 .update-card ul { margin: 0; padding-left: 20px; }
 .update-card li { margin: 2px 0; }
+
+.toast-undo { margin-left: 10px; background: none; border: 0; color: var(--accent-soft); font-weight: 800; text-decoration: underline; padding: 2px 4px; }
+.step-ings { list-style: none; margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line-soft); display: grid; gap: 6px; font-size: 15px; }
+.step-ings li { display: flex; justify-content: space-between; gap: 12px; }
+.step-ings li span { color: var(--muted); }

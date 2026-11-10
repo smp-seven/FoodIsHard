@@ -161,3 +161,9 @@
 - **Recipe fixes:** the paneer curry takes the baby's portion before the (0% fat) yoghurt goes in. Cheesy beans on toast says to fry the baby's egg until the yolk is firm. The traybake's chopped-stage note no longer suggests halloumi.
 - **Security:** both versions refuse keys named after JavaScript's built-in object properties, and cap the length of shopping items and feedback tags. The online version adds a full content security policy, so only the app's own files can run, including on error pages and recipe data.
 - Local test server: passes the Worker's headers through, so it behaves like the real thing.
+
+## 0.10.5
+- **Amounts in cooking mode:** each step lists the ingredients it names, with amounts for your household. The most specific name wins, e.g. "black pepper" isn't confused with red peppers, and "the beans" lists both kinds when a recipe uses two.
+- **Start-by time:** set a usual dinner time in Settings (Week & planning). The Today card then says "Start by 17:25", or suggests Quicker if it's already too late.
+- **Undo after Shuffle:** the toast after reshuffling the week has an Undo button for 6 seconds.
+- **Longer memory:** the planner tries to avoid anything from the last 3 weeks (at least the last 1). Meals you rated "loved it" come up twice as often, and "not again" hardly ever.

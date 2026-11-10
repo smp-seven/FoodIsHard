@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.10.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.10.5"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -198,6 +198,15 @@ function allergyPrompt() {
     <div class="row" style="gap:8px"><button class="btn primary" data-act="allergyDone">Done</button><button class="btn" data-act="allergyDone">No allergies</button></div>
   </div>`;
 }
+/** "Start by 17:25", from the household's usual dinner time and the recipe's total time. */
+function startByTag(r) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(settings().dinnerTime || "");
+  if (!m) return "";
+  const start = new Date(); start.setHours(+m[1], +m[2] - r.time, 0, 0);
+  const late = Date.now() > start.getTime();
+  const hhmm = `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
+  return `<span class="tag" style="align-self:flex-start">${icon("clock", 14)} ${late ? `Should have started at ${hhmm}: try Quicker?` : `Start by ${hhmm} for dinner at ${esc(settings().dinnerTime)}`}</span>`;
+}
 /** Where today sits in the plan. */
 function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date()) - (settings().weekStartDay || 0) + 7) % 7 }; }
 /** Today's rating for this recipe, if someone has left one. */
@@ -223,7 +232,7 @@ function viewTonight() {
       ${little.length && babyStep >= 0 ? `<div class="baby-note">${icon("baby")}<span>${kidChips(little)} ${little.length > 1 ? "portions come" : "portion comes"} out at <b>step ${babyStep + 1}</b></span></div>` : ""}
       ${(() => {
         const rated = ratedToday(r.id);
-        if (d.cooked !== r.id && !rated) return `<div class="row"><button class="btn lg white grow" data-act="cook" data-id="${r.id}">${icon("play", 18)}Start cooking</button>
+        if (d.cooked !== r.id && !rated) return `${startByTag(r)}<div class="row"><button class="btn lg white grow" data-act="cook" data-id="${r.id}">${icon("play", 18)}Start cooking</button>
           <button class="btn lg outline" data-act="quicker" data-i="${i}">${icon("bolt", 18)}Quicker</button></div>`;
         if (!rated) return `<div class="row"><button class="btn lg white grow" style="white-space:nowrap" data-act="rateMeal" data-id="${r.id}">Leave feedback</button>
           <button class="btn lg outline" style="white-space:nowrap;flex:0 0 auto" data-act="cook" data-id="${r.id}" aria-label="Cook again">${icon("refresh", 18)}Again</button></div>`;
@@ -529,6 +538,7 @@ function viewSettings() {
       <div class="stack" style="padding:14px 16px 8px;gap:4px"><b>Theme nights</b><span class="small muted">Optional. Days without a theme stay random.</span></div>
       <div style="padding-bottom:8px">${themeRows}</div>
       <div class="stack" style="padding:14px 16px;gap:10px">
+        <label><span class="small muted">Usual dinner time (the Today card says when to start)</span><input class="input" type="time" value="${esc(s.dinnerTime || "")}" data-set="text" data-f="dinnerTime"></label>
         <label><span class="small muted">Weeknight time limit</span><select class="input" data-set="num" data-f="weeknightMax">${[20, 30, 40, 50, 60].map((m) => `<option value="${m}" ${+s.weeknightMax === m ? "selected" : ""}>${m} minutes</option>`).join("")}</select></label>
         <label><span class="small muted">Weekend time limit</span><select class="input" data-set="num" data-f="weekendMax">${[40, 60, 90, 120].map((m) => `<option value="${m}" ${+s.weekendMax === m ? "selected" : ""}>${m} minutes</option>`).join("")}</select></label>
         <label><span class="small muted">Week starts on (the day after your big shop)</span><select class="input" data-set="num" data-f="weekStartDay">${DOW_LONG.map((d, i) => `<option value="${i}" ${(+s.weekStartDay || 0) === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
@@ -880,6 +890,7 @@ function renderCook() {
       ${c.showIng ? `<div class="card"><ul class="ing-list">${ingList}</ul></div>` : ""}
       <p class="eyebrow" style="color:${s.baby ? "var(--baby)" : "var(--muted)"}">Step ${c.step + 1} of ${steps.length}${s.baby ? ` · ${esc(kidNames())}'s ${kids().length > 1 ? "portions" : "portion"}` : ""}</p>
       <section class="cook-panel ${s.baby ? "baby" : ""}"><p class="cook-step">${esc(text)}</p>
+        ${(() => { const used = s.baby ? [] : stepIngredients(text, effectiveIngredients(r)).filter((i) => i.q != null); /* salt and pepper still claim their words, but have no amount to show */ return used.length ? `<ul class="step-ings">${used.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><b>${esc(fmtQty(i.q * factor, i.u))}</b></li>`).join("")}</ul>` : ""; })()}
         ${s.baby && kids().length ? `<div class="stack" style="gap:8px;margin-top:12px">${kidNotes(r)}</div>` : ""}</section>
       ${mins ? `<button class="btn" data-act="timerStart" data-m="${mins}">${icon("clock", 18)}Start a ${mins}-minute timer</button>` : ""}
       ${timers}
@@ -925,7 +936,13 @@ function openMenu(btn, items) {
 }
 function closeMenus() { $$(".menu").forEach((m) => m.remove()); }
 let toastTimer;
-function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800); }
+function toast(msg, { undo = null } = {}) {
+  const t = $("#toast");
+  app.toastUndo = undo;
+  t.innerHTML = `${esc(msg)}${undo ? ` <button class="toast-undo" data-act="toastUndo">Undo</button>` : ""}`;
+  t.hidden = false; clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; app.toastUndo = null; }, undo ? 6000 : 2800);
+}
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); toast("List copied. Paste it anywhere."); }
   catch { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
@@ -954,7 +971,12 @@ function dayUpdate(i, patch, week = app.weekStart) { const days = planFor(week);
 const ACTIONS = {
   go: (d) => { closeSheet({ navigating: true }); go(d.to); },
   week: (d) => { app.weekStart = iso(addDays(parseISO(app.weekStart), 7 * +d.d)); render(); },
-  shuffle: () => { send({ op: "plan", week: app.weekStart, plan: suggestWeek(app.weekStart) }); toast("Here's a plan. Swap anything you don't fancy."); },
+  shuffle: () => {
+    const week = app.weekStart, before = clone({ days: planFor(week) });
+    send({ op: "plan", week, plan: suggestWeek(week) });
+    toast("Here's a plan. Swap anything you don't fancy.", { undo: () => { send({ op: "plan", week, plan: before }); toast("Put back as it was"); } });
+  },
+  toastUndo: () => { const u = app.toastUndo; app.toastUndo = null; $("#toast").hidden = true; if (u) u(); },
   recipe: (d) => openRecipe(d.id),
   macros: (d) => openMacros(d.id, d.who),
   cook: (d) => startCooking(d.id),
