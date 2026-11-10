@@ -15,7 +15,7 @@ async function boot() {
   try {
     const res = await getJSON("api/state");
     if (!res.state) throw new Error("no state");
-    app.mode = "live"; app.state = res.state; app.user = res.user || "";
+    app.mode = "live"; app.state = res.state; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.pollMs = (res.poll || 4) * 1000;
     store(CACHE_KEY, app.state);
   } catch {
     const cached = load(CACHE_KEY, null);
@@ -391,9 +391,12 @@ function viewSettings() {
     <div class="list">${staples}<div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="stapleAdd">${icon("plus", 16)}Add a staple</button>
       <span class="small muted">Breakfasts, lunches and anything you buy every week, with the price for one and how many you usually get.</span></div></div>
     ${catalogue}
+    <p class="section-label">Your data</p>
+    <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Download a backup</b><br><span class="small muted">Everything: plans, prices, staples, settings and feedback, as one file</span></span><button class="btn sm" data-act="exportData">${icon("download", 16)}Save</button></div>
+      <div class="row" style="padding:13px 16px"><span class="grow"><b>Restore from a backup</b><br><span class="small muted">Replaces everything here, for everyone in your household</span></span><label class="btn sm">Choose file<input type="file" accept="application/json,.json" data-set="importFile" hidden></label></div></div>
     <p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through Home Assistant${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.6.1</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.7.0</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -834,6 +837,15 @@ const ACTIONS = {
   feedbackRate: (d, el) => { $$("#sheetBody [data-act=feedbackRate]").forEach((b) => b.classList.toggle("on", b === el)); app.fbRating = d.r; $("#fbSave").disabled = false; },
   feedbackTag: (d, el) => { el.classList.toggle("on"); },
   copyFeedback: () => copyText(feedbackText()),
+  exportData: () => {
+    const doc = { foodishard: 1, exported: new Date().toISOString(), state: app.state };
+    const blob = new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `foodishard-backup-${iso(new Date())}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast("Backup saved to your downloads");
+  },
   flag: (d) => { send({ op: "check", week: currentWeek(), key: d.key, field: d.f, value: d.v === "1" }); if (d.close) closeSheet(); },
   itemOpen: (d) => { if (app.selecting.size) return toggleSelect(d.key); openItem(d.key); },
   moveOne: (d) => { if (app.selecting.size) return toggleSelect(d.key); openMove([d.key]); },
@@ -923,6 +935,7 @@ function onChange(e) {
       return;
     }
     case "bool": return send({ op: "settings", patch: { [d.f]: el.checked } });
+    case "importFile": { const f = el.files && el.files[0]; el.value = ""; if (f) importBackup(f); return; }
     case "theme": { const t = { ...(s.themes || {}) }; if (el.value) t[d.i] = el.value; else delete t[d.i]; return send({ op: "settings", patch: { themes: t } }); }
     case "stapleName": { const st = staples(); st[+d.i] = { ...st[+d.i], name: el.value.trim() }; delete st[+d.i].k; return send({ op: "settings", patch: { staples: st } }); }
     case "stapleShop": { const st = staples(); st[+d.i].shop = el.value; return send({ op: "settings", patch: { staples: st } }); }
@@ -973,6 +986,27 @@ function onSubmit(e) {
 }
 
 let searchTimer;
+async function importBackup(file) {
+  let doc;
+  try { doc = JSON.parse(await file.text()); } catch { return toast("That file isn't a FoodIsHard backup"); }
+  const state = doc && doc.foodishard ? doc.state : doc;
+  if (!state || !state.settings || !Array.isArray(state.settings.people)) return toast("That file isn't a FoodIsHard backup");
+  const when = doc.exported ? ` from ${niceDate(new Date(doc.exported))}` : "";
+  if (!confirmReplace(when)) return;
+  if (app.mode !== "live") {
+    app.state = { ...state, rev: (app.state.rev || 0) + 1 }; store(DEMO_KEY, app.state); render(); return toast("Backup restored");
+  }
+  try {
+    const r = await fetch("api/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(doc) });
+    const res = await r.json();
+    if (!r.ok) throw new Error(res.error || r.status);
+    store(QUEUE_KEY, []); app.state = res.state; store(CACHE_KEY, app.state); render(); toast("Backup restored");
+  } catch (err) { toast(`Couldn't restore: ${err.message}`); }
+}
+function confirmReplace(when) {
+  return window.confirm(`Restore this backup${when}? It replaces all FoodIsHard data for your household.`);
+}
+
 function onInput(e) {
   if (e.target.dataset.input === "sfilter") {
     const q = e.target.value.trim().toLowerCase(), body = $("#sheetBody");

@@ -24,6 +24,7 @@ DATA_DIR = Path(os.environ.get("FOODISHARD_DATA", "/data"))
 STATE_FILE = DATA_DIR / "state.json"
 PORT = int(os.environ.get("PORT", "8099"))
 MAX_BODY = 512 * 1024
+MAX_IMPORT = 4 * 1024 * 1024
 mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("font/woff", ".woff")
 # Only Home Assistant's Ingress proxy may talk to us. Set FOODISHARD_ALLOW_ALL=1 when running locally.
@@ -52,19 +53,23 @@ def _load():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     if STATE_FILE.exists():
         with open(STATE_FILE, encoding="utf-8") as fh:
-            _state = json.load(fh)
-        # fill in any keys added in newer versions
-        base = _defaults()
-        for key, value in base.items():
-            _state.setdefault(key, value)
-        for key, value in base["settings"].items():
-            _state["settings"].setdefault(key, value)
-        for person in _state["settings"].get("people", []):
-            person.setdefault("goal", 40)
+            _state = _load_merge(json.load(fh))
     else:
         _state = _defaults()
         _save()
     return _state
+
+
+def _load_merge(state):
+    """Fill in any keys added in newer versions."""
+    base = _defaults()
+    for key, value in base.items():
+        state.setdefault(key, value)
+    for key, value in base["settings"].items():
+        state["settings"].setdefault(key, value)
+    for person in state["settings"].get("people", []):
+        person.setdefault("goal", 40)
+    return state
 
 
 def _save():
@@ -275,6 +280,8 @@ class Handler(BaseHTTPRequestHandler):
         if not self._allowed():
             return
         path = self._route_path()
+        if path.endswith("/api/import"):
+            return self._import()
         if not path.endswith("/api/op"):
             return self._send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
         length = int(self.headers.get("Content-Length") or 0)
@@ -296,6 +303,30 @@ class Handler(BaseHTTPRequestHandler):
                 globals()["_state"] = backup
                 return self._send_json({"error": str(err)}, HTTPStatus.BAD_REQUEST)
             return self._send_json({"state": state, "user": user})
+
+
+    def _import(self):
+        """Replace everything with a backup downloaded from Settings (same checks as the Worker)."""
+        length = int(self.headers.get("Content-Length") or 0)
+        if length <= 0 or length > MAX_IMPORT:
+            return self._send_json({"error": "That backup is too big"}, HTTPStatus.BAD_REQUEST)
+        try:
+            doc = json.loads(self.rfile.read(length))
+            state = doc.get("state") if isinstance(doc, dict) and doc.get("foodishard") else doc
+            if not isinstance(state, dict) or not isinstance(state.get("settings"), dict) \
+                    or not isinstance(state["settings"].get("people"), list):
+                raise ValueError("That file isn't a FoodIsHard backup")
+            for key in ("plans", "prefs", "checks", "extras", "prices", "swaps", "shopFor", "shopPref", "pantry", "feedback"):
+                if key in state and not isinstance(state[key], dict):
+                    raise ValueError(f'Backup has a damaged "{key}" section')
+        except (json.JSONDecodeError, ValueError, AttributeError) as err:
+            return self._send_json({"error": str(err) or "bad backup"}, HTTPStatus.BAD_REQUEST)
+        with _lock:
+            current = _load()
+            state["rev"] = max(int(current.get("rev") or 0), int(state.get("rev") or 0)) + 1
+            globals()["_state"] = _load_merge(state)
+            _save()
+            return self._send_json({"state": _state, "user": _user_from(self.headers)})
 
 
 # --------------------------------------------------------------------------

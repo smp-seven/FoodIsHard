@@ -1,0 +1,14 @@
+{
+  "name": "foodishard",
+  "private": true,
+  "type": "module",
+  "description": "FoodIsHard meal planner: Cloudflare Workers version (the Home Assistant app doesn't use this)",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "node cloudflare/test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": ">=4"
+  }
+}

@@ -60,3 +60,8 @@
 ## 0.6.1
 - Baked risotto: less water, so it comes out creamy rather than soupy.
 - Black bean burgers: more oats, blitzed first, and a 10-minute chill so they hold together.
+
+## 0.7.0
+- New: FoodIsHard can also run online on Cloudflare's free plan for friends without Home Assistant. Each household has its own private data and people sign in with their email (see CLOUDFLARE.md).
+- New: Settings → Your data: download a backup of everything, or restore one. Backups move between the Home Assistant and online versions.
+- The app's data changes now live in one shared file (ops.js) used by both versions.

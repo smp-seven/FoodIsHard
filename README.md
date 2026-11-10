@@ -31,6 +31,15 @@ Your household details, plans, ticks, prices and settings are stored in the app'
 `/data` folder, so they're included in Home Assistant backups. Nothing personal is kept
 in this repository.
 
+## Run it online for friends (Cloudflare)
+
+For people without Home Assistant, FoodIsHard can also run on Cloudflare's free plan, with
+separate households and email sign-in. See **[CLOUDFLARE.md](CLOUDFLARE.md)** for the steps.
+
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/smp-seven/FoodIsHard"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"></a>
+
+Backups made in **Settings → Your data** move between the Home Assistant and Cloudflare versions.
+
 ## How it's built
 
 - `foodishard/app/server.py`: a single-file Python server (standard library only)
