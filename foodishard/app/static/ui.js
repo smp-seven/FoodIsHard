@@ -400,7 +400,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.3</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.4</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1014,12 +1014,12 @@ function onSubmit(e) {
 
 let searchTimer;
 // ---------------------------------------------------------------------------
-// About: what's stored and the safety notes. Written so anyone running their own copy can use it.
+// About: what's stored and the safety notes.
 // ---------------------------------------------------------------------------
 function openAbout() {
   const online = app.host === "Cloudflare", ha = app.mode === "live" && !online;
   const where = online
-    ? `<p>This copy runs on a Cloudflare account belonging to whoever invited you (or invited your household). They run it as a favour, not as a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data${app.region === "eu" ? " in its EU data centres" : ""} and sends the sign-in codes.</p>
+    ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data${app.region === "eu" ? " in its EU data centres" : ""} and sends the sign-in codes.</p>
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name and who invited you.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you turn baby mode on, your baby's name and birth date) and recipe feedback.</li>
@@ -1044,7 +1044,7 @@ function openAbout() {
       <h2 class="h2">Your data</h2>
       ${where}
       <p>Once a week the app looks up the UK food price index from the Office for National Statistics. That request contains no personal data.</p>
-      <p class="small muted">FoodIsHard is open source: <a href="https://github.com/smp-seven/FoodIsHard" target="_blank" rel="noopener">github.com/smp-seven/FoodIsHard</a>. Anyone can run their own copy. If you do, you're responsible for your copy and the people you invite.</p>
+      <p class="small muted">More detail: <a href="https://foodishard.uk/privacy.html" target="_blank" rel="noopener">privacy policy</a> and <a href="https://foodishard.uk/terms.html" target="_blank" rel="noopener">terms of use</a>.</p>
     </div>`);
 }
 

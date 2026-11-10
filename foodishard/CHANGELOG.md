@@ -80,3 +80,6 @@
 
 ## 0.8.3
 - Online version: invite messages mention signing in with Google or an email code. Set-up guide covers adding Google sign-in.
+
+## 0.8.4
+- All rights reserved licence. About page links to the privacy policy and terms on foodishard.uk.

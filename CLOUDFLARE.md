@@ -50,8 +50,7 @@ these steps.
 ### 2. Deploy the app
 
 1. Go to **Workers & Pages → Create → Import a repository**, connect GitHub, and pick
-   `smp-seven/FoodIsHard`. Alternatively, use the **Deploy to Cloudflare** button in the
-   README.
+   `smp-seven/FoodIsHard`.
 2. Keep the suggested build settings: root directory `/`, deploy command `npx wrangler deploy`.
 3. You'll get `https://foodishard.<your-subdomain>.workers.dev`. Until step 5 is done it shows
    an **"Almost there"** page and nothing else.

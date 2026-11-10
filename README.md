@@ -36,8 +36,6 @@ in this repository.
 For people without Home Assistant, FoodIsHard can also run on Cloudflare's free plan, with
 separate households, email sign-in and in-app invites. See **[CLOUDFLARE.md](CLOUDFLARE.md)** for the steps.
 
-<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/smp-seven/FoodIsHard"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"></a>
-
 Backups made in **Settings → Your data** move between the Home Assistant and Cloudflare versions.
 
 ## How it's built
@@ -60,3 +58,12 @@ FOODISHARD_ALLOW_ALL=1 FOODISHARD_DATA=./dev-data PORT=8099 python3 foodishard/a
 
 If the server isn't reachable (for example, opening the static files on their own),
 the app runs in preview mode and saves to the browser instead.
+
+## Licence and safety
+
+**All rights reserved.** This code is public so it can be viewed and installed by its author.
+It isn't licensed for use, copying or hosting by anyone else (see [LICENSE](LICENSE)).
+
+It's provided as-is, with no warranty. Recipes, nutrition figures, prices and baby-feeding notes
+are general guidance only and haven't been reviewed by a professional. Always check food labels
+for allergens, and follow NHS weaning guidance.
