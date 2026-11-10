@@ -184,3 +184,14 @@
 ## 0.10.8
 - **Weekly staples** have their own panel, opened from the shopping list's ⋯ menu ("Weekly staples…") or from Settings. Adding a staple puts the cursor straight in its name.
 - **Undo shuffle** is now a button next to "Shuffle again", replacing the toast's short-lived Undo. It stays until you change something else in that week, since undoing then would lose that change.
+
+## 0.10.9
+Fixes from a review of the new features:
+- **Pack rounding:** up to 15% over the packs you're buying no longer buys another (e.g. 1⅛ tins for two adults and a baby is 1 tin, 2¼ is 2). Applies to the list, prices and left-over notes.
+- **Cook double** leaves a night off or a locked day as it is (the extra keeps for lunch). Turning it off restores the next day exactly as it was, including an empty day.
+- **A day's amounts everywhere:** opening a recipe from the week or the Today list shows that day's guests or cook-double amounts ("for 4¼ portions (Sunday: +2 guests)"), and its Cook button uses them.
+- **Undo shuffle** disappears when anyone changes the week, including a partner on another phone.
+- **Cooking mode:** "half the oil" and "the rest of the oil" show half the amount. A short name no longer pulls in a similar ingredient ("onion" no longer lists the spring onions).
+- **Use up the rest:** suggestions are ranked by what they'd do to the week's part-packs, and ones that would open more than they use are dropped. Putting one on a leftovers night switches off cook double on the day the leftovers came from.
+- **Start-by wording:** when it's later than planned: "Dinner around 18:50 if you start now". It no longer shows after midnight.
+- **Tidy-ups:** dishes with rice or couscous mixed through are marked `grainsMixed` in recipes.json, checked by the recipe checker. The old allergy card code is removed.

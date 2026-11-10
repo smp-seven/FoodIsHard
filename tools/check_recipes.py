@@ -106,6 +106,8 @@ for r in recipes["recipes"]:
         for aside in re.findall(r"\[\[(.*?)\]\]", s["t"]):
             if "baby" not in aside.lower():
                 err(r, f"[[...]] is for baby-only text, but this doesn't mention the baby: {aside[:50]!r}")
+    if r.get("grainsMixed") and not any(i.get("k") in ("rice", "rice_pouch", "arborio", "couscous") for i in r.get("ingredients", [])):
+        err(r, "grainsMixed is set but there's no rice or couscous in it")
     for stage in STAGES:
         if not r.get("baby", {}).get(stage):
             err(r, f"missing baby note for stage '{stage}'")

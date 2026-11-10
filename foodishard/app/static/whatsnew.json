@@ -2,6 +2,15 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.10.9",
+   "notes": [
+    "A little one's share no longer buys a whole extra tin or pack.",
+    "Cook double leaves a night off as a night off.",
+    "Opening a day's recipe from the week shows that day's amounts, guests and all.",
+    "'Half the oil' in cooking mode now shows half."
+   ]
+  },
+  {
    "version": "0.10.8",
    "notes": [
     "Weekly staples are now in the shopping list's ⋯ menu (and still reachable from Settings).",

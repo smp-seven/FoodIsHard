@@ -1007,7 +1007,8 @@
    },
    "tags": [
     "fakeaway"
-   ]
+   ],
+   "grainsMixed": true
   },
   {
    "id": "cheesy-beans-toast",
@@ -3489,7 +3490,8 @@
     "smooth": "Blend with a spoon of ricotta.",
     "finger": "Squeeze into small soft balls, with peas squashed.",
     "chopped": "As yours before the stock, with a little ricotta."
-   }
+   },
+   "grainsMixed": true
   },
   {
    "id": "egg-veg-biryani",
@@ -3601,7 +3603,8 @@
     "smooth": "Blend the rice and veg with a little full-fat plain yoghurt and egg.",
     "finger": "Squashed rice balls, soft veg and egg quarters (fully set).",
     "chopped": "As yours before the chilli and salt, with chopped egg."
-   }
+   },
+   "grainsMixed": true
   },
   {
    "id": "greek-chickpea-bowls",
@@ -3698,7 +3701,8 @@
     "smooth": "Blend the couscous and chickpeas with houmous and water.",
     "finger": "Couscous pressed into balls, squashed chickpeas, and peeled cucumber sticks.",
     "chopped": "Couscous, squashed chickpeas and chopped cucumber."
-   }
+   },
+   "grainsMixed": true
   },
   {
    "id": "halloumi-chickpea-couscous",
@@ -3779,7 +3783,8 @@
     "finger": "Couscous balls, squashed chickpeas and soft tomatoes.",
     "chopped": "As yours before the halloumi, chopped."
    },
-   "emergency": true
+   "emergency": true,
+   "grainsMixed": true
   },
   {
    "id": "naan-pizzas",
