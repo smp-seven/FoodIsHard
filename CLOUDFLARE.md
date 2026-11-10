@@ -38,10 +38,14 @@ these steps.
 
 ### 1. Zero Trust (the sign-in)
 
-1. In the dashboard, open **Zero Trust**, pick a **team name** (this becomes
-   `yourteam.cloudflareaccess.com`) and choose the **Free** plan.
-2. Under **Settings → Authentication → Login methods**, check that **One-time PIN** is
-   listed.
+1. In the dashboard, open **Zero Trust**, pick a **team name** and choose the **Free** plan.
+   - The team name becomes `yourteam.cloudflareaccess.com`.
+   - It's shared by everything in this Cloudflare account, so pick something neutral.
+   - You can change it later under **Settings → Team domain**, but then update
+     `ACCESS_TEAM` to match.
+2. Go to **Integrations → Identity providers → Add new identity provider** and choose
+   **One-time PIN**. New Zero Trust accounts only offer "Sign in with Cloudflare" by default,
+   which your friends can't use.
 
 ### 2. Deploy the app
 
@@ -68,18 +72,26 @@ these steps.
 1. Open the Worker and go to the **Access** tab.
 2. Choose **Protect this Worker behind Access**, then **All traffic**.
 3. Pick the **FoodIsHard people** policy and click **Apply Access**.
-4. Open the new Access application and copy its **Application Audience (AUD) Tag**.
+4. Open the new Access application, then:
+   - under **Login methods**, tick **One-time PIN** and untick **Cloudflare**
+   - turn on **Instant Auth** if it's offered
+   - copy the **Application Audience (AUD) Tag**
 
 ### 5. The basic settings
 
-Open the Worker, go to **Settings → Variables and Secrets**, add these as **Text**, then
-**Deploy**:
+Open the Worker's **Settings** and find **Runtime variables and secrets**, with
+**Production** selected.
 
-| Name | Value |
-|---|---|
-| `ACCESS_TEAM` | `yourteam.cloudflareaccess.com` |
-| `ACCESS_AUD` | the AUD tag from step 4 |
-| `ADMINS` | your email; separate several with commas |
+> **Not** the "Variables and secrets" under *Build*: the running app can't see those. The
+> resource list under **Bindings → Add a binding** isn't it either.
+
+Click **Add variable** for each of these, then **Deploy**:
+
+| Type | Name | Value |
+|---|---|---|
+| Text | `ACCESS_TEAM` | `yourteam.cloudflareaccess.com` (no `https://`) |
+| Secret | `ACCESS_AUD` | the AUD tag from step 4 |
+| Secret | `ADMINS` | the exact email you sign in with, with no quotes; separate several with commas |
 
 Optional: `DATA_REGION` = `auto` lets Cloudflare choose where to store data instead of the EU.
 Only use it if the EU option fails on your plan, and decide before anyone uses the app: changing
@@ -97,17 +109,21 @@ This gives the app a key that can only edit Access policies, so inviting someone
 all it takes.
 
 1. **Create the token.**
-   1. Click the person icon (top right), then **Profile → API Tokens → Create Token →
-      Create Custom Token**.
-   2. Fill it in:
-      - **Name:** `FoodIsHard sign-in list`
-      - **Permissions:** **Account** · **Access: Apps and Policies** · **Edit**. The wording
-        may differ slightly; pick the Access *policies* permission with edit rights.
-      - **Account Resources:** Include · your account
-   3. Click **Continue → Create Token** and copy the token. It's shown only once.
+   1. Click the person icon (top right), then **Profile → API Tokens → Create Token**.
+   2. **Name:** `FoodIsHard sign-in list`.
+   3. **Policies:** choose **Start from scratch (Custom)**. Don't use a template; they all
+      give far more access than this needs.
+   4. Set **Include** to **your account**, not "All accounts".
+   5. Search for **Access: Apps and Policies** and tick **Edit**. Nothing else should be
+      ticked (the counter shows 1 of the available permissions).
+   6. **Token expiration:** No expiration. An expiry date would quietly stop invites
+      working.
+   7. **Client IP address filtering:** leave empty.
+   8. Create the token and copy it. It's shown only once.
 2. **Find your Account ID.** It's on the Workers & Pages overview or the account home page,
    usually in the right-hand column. Copy it.
-3. **Add the settings.** On the Worker, go to **Settings → Variables and Secrets** and add:
+3. **Add the settings.** On the Worker, go to **Settings → Runtime variables and secrets**
+   (Production) and add:
 
    | Name | Type | Value |
    |---|---|---|
@@ -177,7 +193,9 @@ anything. After that it's ignored, and you can delete it.
 |---|---|
 | "Almost there" | `ACCESS_TEAM` or `ACCESS_AUD` isn't set, or the Worker wasn't redeployed after adding them. |
 | "Please sign in" | The sign-in has expired or isn't valid for this app. Reload the page. If it keeps happening, check that `ACCESS_AUD` matches the AUD tag. |
-| "Not set up yet" | They signed in, but nobody has invited that email. Invite it from Settings. |
+| "Not set up yet" | They signed in, but nobody has invited that email. Invite it from Settings. If it's **you**, `ADMINS` doesn't exactly match the email you signed in with. |
+| Only "Sign in with Cloudflare" is offered | Add **One-time PIN** under Integrations → Identity providers, and tick it in the application's Login methods (steps 1 and 4). |
+| The sign-in page shows an old team name | Changes take a few minutes. Try a private window. |
 | The code email never arrives | That email isn't in the **FoodIsHard people** policy. Cloudflare silently ignores unknown addresses. Press **Update sign-in list now**, or add the email to the policy by hand. |
 | Invite says "add their email to your Access policy" | Step 6 isn't set up yet, so add the email to the policy by hand. |
 | An error mentioning "jurisdiction" on first sign-in | Your plan doesn't allow the EU restriction. Add `DATA_REGION` = `auto` and Deploy. |
