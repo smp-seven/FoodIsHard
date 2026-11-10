@@ -104,6 +104,7 @@ const app = {
 const DEMO_KEY = "foodishard-demo-v3";
 const CACHE_KEY = "foodishard-cache-v3";
 const QUEUE_KEY = "foodishard-queue-v1";
+const HOST_KEY = "foodishard-host-v1";
 
 function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage blocked */ } }
 function load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } }
@@ -138,7 +139,8 @@ async function flushQueue() {
     for (;;) {
       const queue = load(QUEUE_KEY, []); // re-read: new ops may have been queued meanwhile
       if (!queue.length) break;
-      const r = await fetch("api/op", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(queue[0]) });
+      const r = await appFetch("api/op", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(queue[0]) });
+      if (r.status === 403 && app.host === "Cloudflare") throw new SignedOutError("not in a household"); // keep the queue
       if (r.status >= 400 && r.status < 500) console.warn("op rejected", queue[0], await r.text());
       else if (!r.ok) throw new Error(r.status);
       else { const res = await r.json(); app.state = res.state; }
@@ -148,9 +150,9 @@ async function flushQueue() {
     }
     // replay anything still queued locally on top of the server's state
     store(CACHE_KEY, app.state);
-    setOffline(false);
-  } catch {
-    setOffline(true);
+    setOffline(false); setSignedOut(false);
+  } catch (err) {
+    if (!(err instanceof SignedOutError)) setOffline(true);
   } finally {
     sending--;
   }
@@ -176,13 +178,35 @@ function startPolling() {
         const typing = document.activeElement && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
         if (!typing && !app.selecting.size) render();
       }
-    } catch { setOffline(true); }
+    } catch (err) { if (!(err instanceof SignedOutError)) setOffline(true); }
   }, app.pollMs || 4000);
 }
+/** Thrown when the online version's sign-in has expired (Cloudflare Access redirects to its login page). */
+class SignedOutError extends Error {}
+/** fetch() for the app's own files and API. Notices an expired sign-in instead of mistaking it for no signal. */
+async function appFetch(url, opts = {}) {
+  const r = await fetch(url, { cache: "no-store", redirect: "manual", ...opts });
+  if (r.type === "opaqueredirect" || r.status === 401) { setSignedOut(true); throw new SignedOutError("signed out"); }
+  return r;
+}
 async function getJSON(url) {
-  const r = await fetch(url, { cache: "no-store" });
+  const r = await appFetch(url);
   if (!r.ok) throw new Error(`${url}: ${r.status}`);
+  if (url.startsWith("api/")) setSignedOut(false);
   return r.json();
+}
+function setSignedOut(v) {
+  if (app.signedOut === v) return;
+  app.signedOut = v;
+  const b = typeof document !== "undefined" && document.getElementById("banner");
+  if (!b) return;
+  if (v) {
+    if (app.offline) setOffline(false);
+    b.innerHTML = `Your sign-in has expired. Your changes are saved on this phone. <button class="btn sm" style="margin-left:8px" data-act="signInAgain">Sign in again</button>`;
+    b.classList.add("signed-out"); b.hidden = false;
+  } else if (b.classList.contains("signed-out")) {
+    b.classList.remove("signed-out"); b.hidden = true; b.innerHTML = "";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -476,6 +500,13 @@ function fmtQty(q, u, { forShopping = false } = {}) {
   return forShopping ? String(Math.ceil(q - 0.05)) : niceNumber(q);
 }
 function scaleStep(text, factor) { return text.replace(/\{\{(\d+(?:\.\d+)?)\|(\w+)\}\}/g, (_, n, u) => fmtQty(+n * factor, u)); }
+/** Shopping notes that mention "the baby": named for your children, or dropped if you have none. */
+function kidNote(note) {
+  if (!note || !/\bbaby\b/i.test(note)) return note || null;
+  if (kids().length) return personaliseStep(note);
+  const plain = note.replace(/,?\s*or a baby stock cube/i, "");
+  return /\bbaby\b/i.test(plain) ? null : plain;
+}
 function personaliseStep(text) {
   const little = kids();
   if (!little.length) return text;
@@ -507,7 +538,7 @@ function buildList(week) {
     const r = app.byId[d.recipe]; if (!r) return;
     effectiveIngredients(r).forEach((ing) => {
       const m = ingMeta(ing.k), key = "i:" + ing.k;
-      if (!items.has(key)) items.set(key, { key, k: ing.k, name: m.n, aisle: m.a, shop: m.s, flags: m.f || [], note: m.note, cupboard: !!m.c, qty: {}, recipes: [], from: new Set(), swappable: new Set() });
+      if (!items.has(key)) items.set(key, { key, k: ing.k, name: m.n, aisle: m.a, shop: m.s, flags: m.f || [], note: kidNote(m.note), cupboard: !!m.c, qty: {}, recipes: [], from: new Set(), swappable: new Set() });
       const it = items.get(key);
       if (ing.q != null) it.qty[ing.u] = (it.qty[ing.u] || 0) + ing.q * factor;
       if (!it.recipes.includes(r.name)) it.recipes.push(r.name);

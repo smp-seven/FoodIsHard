@@ -195,6 +195,12 @@ someone**.
 admin can delete a whole household from **Settings → Admin**. That permanently deletes its
 data, so ask them to download a backup first.
 
+**No signal:**
+- Once someone has opened the app online, their phone keeps a copy. It opens without signal
+  and shows their latest plan and list.
+- Ticks are saved on the phone and sent when they're back online.
+- If their sign-in expires, a banner offers "Sign in again", and nothing they changed is lost.
+
 **Updates:** every push to the GitHub repo redeploys automatically. All data and settings
 are kept.
 

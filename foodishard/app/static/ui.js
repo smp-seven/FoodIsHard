@@ -17,11 +17,19 @@ async function boot() {
     if (res.adminOnly) return bootAdmin(res);
     if (!res.state) throw new Error("no state");
     app.mode = "live"; app.state = res.state; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
-    store(CACHE_KEY, app.state);
-  } catch {
-    const cached = load(CACHE_KEY, null);
+    store(CACHE_KEY, app.state); store(HOST_KEY, { host: app.host, user: app.user, poll: app.pollMs });
+  } catch (err) {
+    const cached = load(CACHE_KEY, null), seenHost = load(HOST_KEY, {});
+    if (!cached && seenHost.adminOnly) {
+      $("#view").innerHTML = `<div class="empty" style="margin-top:20vh">${err instanceof SignedOutError ? "Your sign-in has expired." : "The admin dashboard needs a connection."}<br><br><button class="btn primary" data-act="signInAgain">Try again</button></div>`;
+      document.body.classList.add("admin-only"); document.addEventListener("click", onClick);
+      return;
+    }
     if (cached && location.protocol !== "file:" && !/claude|artifact/.test(location.hostname)) {
-      app.mode = "live"; app.state = cached; app.offline = true; // opened with no signal
+      // opened with no signal (or an expired sign-in): use this phone's copy
+      const seen = load(HOST_KEY, {});
+      app.mode = "live"; app.state = cached; app.offline = !(err instanceof SignedOutError);
+      app.host = seen.host || "Home Assistant"; app.user = seen.user || ""; app.pollMs = seen.poll || 4000;
     } else {
       app.mode = "demo";
       app.state = load(DEMO_KEY, null) || { ...clone(defaults), rev: 0 };
@@ -42,12 +50,17 @@ async function boot() {
   window.addEventListener("hashchange", fromHash);
   fromHash();
   if (app.mode === "live") { startPolling(); flushQueue(); }
-  if (app.mode === "live" && app.host === "Cloudflare") loadAccount();
+  if (app.mode === "live" && app.host === "Cloudflare" && !app.offline && !app.signedOut) loadAccount();
+  // Online version only: keep a copy of the app on the phone so it opens without signal.
+  if (app.host === "Cloudflare" && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    navigator.serviceWorker.register("sw.js").catch((err) => console.warn("offline copy unavailable", err));
+  }
 }
 
 /** Admin-only accounts (online version): no household, just the admin dashboard. */
 async function bootAdmin(res) {
   app.mode = "admin"; app.tab = "admin"; app.user = res.user || ""; app.host = "Cloudflare"; app.region = res.region || null;
+  store(HOST_KEY, { host: "Cloudflare", user: app.user, adminOnly: true });
   document.body.classList.add("admin-only");
   document.addEventListener("click", onClick);
   document.addEventListener("change", onChange);
@@ -240,7 +253,7 @@ function viewShop() {
   const sel = app.selecting.size;
   const title = sel ? `${sel} selected` : app.shopTab === "all" ? "Shopping list" : `At ${esc(shopName(app.shopTab, false))}`;
   const right = sel ? `<button class="btn sm" data-act="selCancel">Cancel</button>`
-    : `<div class="row" style="gap:6px">${offlineBadge()}<button class="icon-btn" data-act="shopMenu" aria-label="Share, print and more">${icon("dots")}</button></div>`;
+    : `<button class="icon-btn" data-act="shopMenu" aria-label="Share, print and more">${icon("dots")}</button>`;
 
   const groups = {};
   shown.forEach((i) => { (groups[i.aisle] = groups[i.aisle] || []).push(i); });
@@ -254,6 +267,7 @@ function viewShop() {
   const usedRack = rackUsedThisWeek(week), unchecked = [...usedRack].filter((k) => !(app.state.pantry || {})[k]).length;
 
   return `${header(`Week of ${niceDate(parseISO(week))}`, title, `<div class="row" style="gap:6px">${right}${settingsButton()}</div>`)}
+    ${app.offline ? `<div style="margin:-4px 0 10px">${offlineBadge()}</div>` : ""}
     <div class="stack" style="gap:12px;margin-bottom:6px">
       <div class="row between small"><span class="muted">${done} of ${shown.length} in the trolley</span><span class="muted">≈ <b style="color:var(--ink)">${money(app.shopTab === "all" ? total : shown.reduce((t, i) => t + (i.cost || 0), 0))}</b></span></div>
       <div class="progress"><i style="width:${shown.length ? Math.round(done / shown.length * 100) : 0}%"></i></div>
@@ -446,7 +460,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.3</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.4</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -888,6 +902,7 @@ const ACTIONS = {
   feedbackTag: (d, el) => { el.classList.toggle("on"); },
   copyFeedback: () => copyText(feedbackText()),
   about: () => openAbout(),
+  signInAgain: () => { location.reload(); },
   acctReload: () => { loadAccount(); toast("Refreshed"); },
   adminFilter: (d) => { app.adminFilter = d.f; render(); },
   adminMember: (d) => openAdminMember(d.email),
@@ -1129,7 +1144,7 @@ function openAbout() {
 // Households and invites (online version only)
 // ---------------------------------------------------------------------------
 async function accountCall(path, body) {
-  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : { cache: "no-store" });
+  const r = await appFetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
   let res = {};
   try { res = await r.json(); } catch { /* not json */ }
   if (!r.ok) throw new Error(res.error || `Something went wrong (${r.status})`);
@@ -1146,7 +1161,11 @@ async function loadAccount() {
 function accountSection() {
   if (app.host !== "Cloudflare") return "";
   const a = app.account;
-  if (!a) return `<p class="section-label">Your household</p><div class="list"><div class="row" style="padding:13px 16px"><span class="muted">Loading…</span></div></div>`;
+  if (!a) {
+    if (app.offline || app.signedOut) return `<p class="section-label">Who's in your household</p><div class="list"><div class="row" style="padding:13px 16px"><span class="muted">${app.signedOut ? "Sign in again to manage your household." : "Managing your household needs a connection."}</span></div></div>`;
+    if (!app.accountLoading) { app.accountLoading = true; loadAccount().finally(() => { app.accountLoading = false; }); }
+    return `<p class="section-label">Who's in your household</p><div class="list"><div class="row" style="padding:13px 16px"><span class="muted">Loading…</span></div></div>`;
+  }
   if (a.error) return `<p class="section-label">Your household</p><div class="list"><div class="row" style="padding:13px 16px"><span class="grow muted">Couldn't load: ${esc(a.error)}</span><button class="btn sm" data-act="acctReload">Retry</button></div></div>`;
   const meEmail = a.me.email;
   const members = a.household.members.map((m) => `<div class="row" style="padding:12px 16px"><span class="grow"><b>${esc(m.name)}</b>${m.email === meEmail ? ` <span class="small muted">(you)</span>` : ""}<br><span class="small muted">${esc(m.email)}</span></span>
@@ -1273,7 +1292,7 @@ function viewAdmin() {
     ${own ? `<div class="list" style="margin-top:18px"><div class="stack" style="padding:14px 16px;gap:8px"><b>Your own household: ${esc(own.name)}</b>
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
-    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.3</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.4</p>`;
 }
 function adminFind(email) {
   for (const h of (app.adminInfo || { households: [] }).households) { const m = h.members.find((x) => x.email === email); if (m) return { m, h }; }
@@ -1328,7 +1347,7 @@ async function importBackup(file) {
     app.state = { ...state, rev: (app.state.rev || 0) + 1 }; store(DEMO_KEY, app.state); render(); return toast("Backup restored");
   }
   try {
-    const r = await fetch("api/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(doc) });
+    const r = await appFetch("api/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(doc) });
     const res = await r.json();
     if (!r.ok) throw new Error(res.error || r.status);
     store(QUEUE_KEY, []); app.state = res.state; store(CACHE_KEY, app.state); render(); toast("Backup restored");

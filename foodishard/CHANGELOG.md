@@ -100,3 +100,10 @@
 - "Cooking for little ones": add as many babies and young children as you like, each with their own name, birth date (and due date if early), eating stage and portion. Each child has a colour. Recipes and cooking mode show a coloured note for each child at their own stage, the "take their portions out" step names them all, and each child gets their own salt check for their age. Growing-up suggestions work per child.
 - New eating stage, "Family food", for toddlers and older (suggested from about 2 years).
 - Existing baby settings carry over automatically as the first child.
+
+## 0.9.4
+- Online version: the app opens without signal. The phone keeps a copy of the app, your latest plan and shopping list. Ticks and changes are saved on the phone and sent when you're back online.
+- Online version: when your sign-in expires, a banner says so with a "Sign in again" button, instead of "no signal". Changes made meanwhile are kept and sent after you sign in.
+- Shopping notes that mention the baby now use your children's names, and are hidden for households without little ones.
+- The no-signal badge on the shopping list sits under the heading.
+- Home Assistant: no offline copy (by design). Otherwise the same.
