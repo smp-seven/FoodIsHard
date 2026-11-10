@@ -581,6 +581,7 @@ function buildList(week) {
     const c = checks[it.key] || {};
     it.shop = effectiveShop(week, it.key, it.shop);
     it.done = !!c.done; it.have = !!c.have; it.need = !!c.need; it.checkedBy = c.by;
+    it.bought = c.bought || null; // when "Done shopping" filed it under Bought this week
     it.from = [...(it.from || [])].map((k) => ingMeta(k).n);
     it.swappable = [...(it.swappable || [])];
     it.checkLabel = it.k ? checkLabelFor(it.k) : [];

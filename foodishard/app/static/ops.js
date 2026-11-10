@@ -21,7 +21,18 @@ function applyOp(state, op, user) {
     }
     case "qty": { const week = bag("checks")[op.week] || (state.checks[op.week] = {}); (week[op.key] || (week[op.key] = {})).n = Math.max(1, Math.min(99, op.n | 0)); break; }
     case "extra_update": (state.extras[op.week] || []).forEach((i) => { if (i.id === op.id) ["name", "price", "qty", "shop"].forEach((k) => { if (k in (op.patch || {})) i[k] = op.patch[k]; }); }); break;
-    case "clear_checks": bag("checks")[op.week] = {}; break;
+    // "Untick all" clears the live list but keeps what's already been bought this week
+    case "clear_checks": bag("checks")[op.week] = Object.fromEntries(Object.entries(state.checks[op.week] || {}).filter(([, v]) => v && v.bought)); break;
+    // Done shopping: ticked items move to "Bought this week", stamped with the trip's time. undo puts them back.
+    case "trip": {
+      const week = bag("checks")[op.week] || (state.checks[op.week] = {});
+      (op.keys || []).forEach((k) => {
+        const item = week[k] || (week[k] = {});
+        if (op.undo) { delete item.bought; item.done = false; } else { item.bought = now; item.done = true; }
+        item.by = user; item.at = now;
+      });
+      break;
+    }
     case "extra_add": (bag("extras")[op.week] || (state.extras[op.week] = [])).push({ ...op.item, by: user }); break;
     case "extra_remove": bag("extras")[op.week] = (state.extras[op.week] || []).filter((i) => i.id !== op.id); break;
     case "price": if (op.price == null) delete bag("prices")[op.key]; else bag("prices")[op.key] = { p: +op.price, shop: op.shop || "aldi", at: now, by: user }; break;

@@ -145,9 +145,15 @@ function babySuggestionCard(sg) {
 }
 
 // ----- Tonight -----
+/** Where today sits in the plan. */
+function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date()) - (settings().weekStartDay || 0) + 7) % 7 }; }
+/** Today's rating for this recipe, if someone has left one. */
+function ratedToday(id) {
+  const start = new Date(); start.setHours(0, 0, 0, 0);
+  return feedbackFor(id).filter((f) => f.at * 1000 >= start.getTime()).pop() || null;
+}
 function viewTonight() {
-  const today = new Date(), week = currentWeek();
-  const i = (mondayIndex(today) - (settings().weekStartDay || 0) + 7) % 7;
+  const today = new Date(), { week, i } = todaySlot();
   const d = planFor(week)[i];
   const r = d.recipe && app.byId[d.recipe];
   const { factor, kids: little } = household();
@@ -162,8 +168,15 @@ function viewTonight() {
       ${headlineSwaps(r).length ? `<span class="tag" style="align-self:flex-start">Made with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}
       <div class="tiles">${kcalTiles(r, true)}</div>
       ${little.length && babyStep >= 0 ? `<div class="baby-note">${icon("baby")}<span>${kidChips(little)} ${little.length > 1 ? "portions come" : "portion comes"} out at <b>step ${babyStep + 1}</b></span></div>` : ""}
-      <div class="row"><button class="btn lg white grow" data-act="cook" data-id="${r.id}">${icon("play", 18)}Start cooking</button>
-      <button class="btn lg outline" data-act="quicker" data-i="${i}">${icon("bolt", 18)}Quicker</button></div>
+      ${(() => {
+        const rated = ratedToday(r.id);
+        if (d.cooked !== r.id && !rated) return `<div class="row"><button class="btn lg white grow" data-act="cook" data-id="${r.id}">${icon("play", 18)}Start cooking</button>
+          <button class="btn lg outline" data-act="quicker" data-i="${i}">${icon("bolt", 18)}Quicker</button></div>`;
+        if (!rated) return `<div class="row"><button class="btn lg white grow" style="white-space:nowrap" data-act="rateMeal" data-id="${r.id}">Leave feedback</button>
+          <button class="btn lg outline" style="white-space:nowrap;flex:0 0 auto" data-act="cook" data-id="${r.id}" aria-label="Cook again">${icon("refresh", 18)}Again</button></div>`;
+        return `<div class="row between" style="gap:10px"><span class="tag">✓ Cooked · ${esc(({ loved: "you loved it", fine: "it was fine", never: "not again" })[rated.rating] || "rated")}</span>
+          <button class="btn outline" data-act="cook" data-id="${r.id}">${icon("refresh", 16)}Cook again</button></div>`;
+      })()}
     </section>`;
   } else if (d.status === "skip" || d.status === "leftovers") {
     hero = `<section class="hero"><span class="tag" style="align-self:flex-start">Tonight</span>
@@ -188,7 +201,8 @@ function viewTonight() {
   }
 
   const list = buildList(week).filter((x) => x.active && (!x.cupboard || x.need));
-  const left = list.filter((x) => !x.done).length, total = list.reduce((t, x) => t + (x.cost || 0), 0);
+  const toBuy = list.filter((x) => !x.done && !x.bought), left = toBuy.length;
+  const total = list.reduce((t, x) => t + (x.cost || 0), 0), leftCost = toBuy.reduce((t, x) => t + (x.cost || 0), 0);
   const growing = babySuggestions().filter((x) => !x.info);
   const growNames = joinNames([...new Set(growing.map((x) => x.name))]);
   return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
@@ -198,7 +212,7 @@ function viewTonight() {
     <div class="list week-mini">${upcoming.join("")}</div>
     <button class="card row" style="width:100%;margin-top:14px;padding:14px 16px;text-align:left" data-act="go" data-to="shop">
       <span class="icon-btn on" style="border-radius:14px">${icon("basket")}</span>
-      <span class="grow"><b>${left ? `${left} thing${left === 1 ? "" : "s"} to buy` : "Shopping's done"}</b><br><span class="small muted">≈ ${money(total)} this week</span></span>
+      <span class="grow"><b>${left ? `${left} thing${left === 1 ? "" : "s"} to buy` : "Shopping's done"}</b><br><span class="small muted">${left ? `≈ ${money(leftCost)} left to buy` : `≈ ${money(total)} this week`}</span></span>
       <span style="color:var(--accent);font-weight:700">Open</span></button>`;
 }
 
@@ -247,14 +261,15 @@ function viewWeek() {
 function shopData() {
   const week = currentWeek();
   const all = buildList(week);
-  const toGet = all.filter((i) => i.active && (!i.cupboard || i.need));
+  const bought = all.filter((i) => i.bought);
+  const toGet = all.filter((i) => i.active && (!i.cupboard || i.need) && !i.bought); // the live list
   const tabs = enabledShops().concat("any").map((s) => ({ s, n: toGet.filter((i) => i.shop === s && !i.done).length, all: toGet.filter((i) => i.shop === s).length })).filter((t) => t.all);
   if (app.shopTab !== "all" && !tabs.some((t) => t.s === app.shopTab)) app.shopTab = "all";
   const shown = app.shopTab === "all" ? toGet : toGet.filter((i) => i.shop === app.shopTab);
-  return { week, all, toGet, tabs, shown };
+  return { week, all, toGet, tabs, shown, bought };
 }
 function viewShop() {
-  const { week, all, toGet, tabs, shown } = shopData();
+  const { week, all, toGet, tabs, shown, bought } = shopData();
   if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}<div class="card empty"><p>Plan some dinners and the list builds itself.</p><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>`;
   const done = shown.filter((i) => i.done).length;
   const sel = app.selecting.size;
@@ -267,8 +282,9 @@ function viewShop() {
   const body = aisleOrder().filter((a) => groups[a]).map((a) => `<p class="section-label">${esc(aisleName(a))}</p>
     <div class="list">${groups[a].sort((x, y) => (x.done - y.done) || x.name.localeCompare(y.name)).map(itemRow).join("")}</div>`).join("");
 
-  const total = toGet.reduce((t, i) => t + (i.cost || 0), 0);
-  const base = toGet.reduce((t, i) => t + (i.cost ? i.cost / shopMult(i.shop === "any" ? priceShop() : i.shop) : 0), 0);
+  const sum = (list) => list.reduce((t, i) => t + (i.cost || 0), 0);
+  const toBuy = shown.filter((i) => !i.done), trolley = sum(shown.filter((i) => i.done));
+  const base = toGet.filter((i) => !i.done).reduce((t, i) => t + (i.cost ? i.cost / shopMult(i.shop === "any" ? priceShop() : i.shop) : 0), 0);
   const compare = enabledShops().slice(0, 4).map((s) => `${esc(shopName(s))} ≈${money(base * shopMult(s))}`).join(" · ");
   const have = all.filter((i) => !i.cupboard && i.have);
   const usedRack = rackUsedThisWeek(week), unchecked = [...usedRack].filter((k) => !(app.state.pantry || {})[k]).length;
@@ -276,16 +292,39 @@ function viewShop() {
   return `${header(`Week of ${niceDate(parseISO(week))}`, title, `<div class="row" style="gap:6px">${right}${settingsButton()}</div>`)}
     ${app.offline ? `<div style="margin:-4px 0 10px">${offlineBadge()}</div>` : ""}
     <div class="stack" style="gap:12px;margin-bottom:6px">
-      <div class="row between small"><span class="muted">${done} of ${shown.length} in the trolley</span><span class="muted">≈ <b style="color:var(--ink)">${money(app.shopTab === "all" ? total : shown.reduce((t, i) => t + (i.cost || 0), 0))}</b></span></div>
+      <div class="row between small"><span class="muted">${done} of ${shown.length} in the trolley${trolley ? ` (≈ ${money(trolley)})` : ""}</span><span class="muted">≈ <b style="color:var(--ink)">${money(sum(toBuy))}</b> to buy</span></div>
       <div class="progress"><i style="width:${shown.length ? Math.round(done / shown.length * 100) : 0}%"></i></div>
       ${tabs.length > 1 ? `<div class="shop-tabs"><button class="chip ${app.shopTab === "all" ? "on" : ""}" data-act="shopTab" data-s="all">All · ${toGet.filter((i) => !i.done).length}</button>${tabs.map((t) => `<button class="chip ${app.shopTab === t.s ? "on" : ""}" data-act="shopTab" data-s="${t.s}">${esc(shopName(t.s))} · ${t.n}</button>`).join("")}</div>` : ""}
     </div>
-    ${body}
+    ${body || `<div class="card empty"><p><b>Everything's bought.</b> Nice work!</p><p class="small muted">Anything you add, or dinners you plan, shows up here.</p></div>`}
+    ${boughtSection(bought, sum(toGet))}
     ${have.length ? `<details class="fold"><summary class="section-label">Not needed this week · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
     <button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="rack">
       <span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">${unchecked ? `${unchecked} thing${unchecked === 1 ? "" : "s"} this week's dinners use ${unchecked === 1 ? "hasn't" : "haven't"} been checked` : "Mark anything running low and it goes on the list"}</span></span>
       ${unchecked ? `<span class="pill warn">Check</span>` : ""}<span aria-hidden="true">›</span></button>
     <p class="small muted" style="margin:20px 4px 0">Same list everywhere: ${compare}. Prices are estimates${inflationFactor() !== 1 ? ", adjusted for food inflation" : ""}. Tap an item to correct its price, swap it or move it to another shop. Press and hold to select several.</p>`;
+}
+/** "Bought this week": each Done shopping trip, with its total and the week's running total. */
+function boughtSection(bought, stillToBuy) {
+  if (!bought.length) return "";
+  const sum = (list) => list.reduce((t, i) => t + (i.cost || 0), 0), spent = sum(bought);
+  const trips = new Map();
+  bought.forEach((i) => { if (!trips.has(i.bought)) trips.set(i.bought, []); trips.get(i.bought).push(i); });
+  const when = (t) => { const d = new Date(t * 1000); return `${DOW[mondayIndex(d)]} ${d.getDate()} ${MONTHS[d.getMonth()]}, ${d.toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit" })}`; };
+  const open = app.showBought;
+  const tripsHtml = [...trips.entries()].sort((a, b) => b[0] - a[0]).map(([t, list]) => {
+    const shops = [...new Set(list.map((i) => shopName(i.shop, false)))].join(", "), by = list[0].checkedBy;
+    return `<p class="section-label" style="margin-top:12px">${esc(when(t))}${by ? ` · ${esc(by)}` : ""}</p>
+      <div class="list">
+        <div class="row between small" style="padding:10px 16px;background:var(--sunk)"><span class="muted">${list.length} thing${list.length === 1 ? "" : "s"} · ${esc(shops)}</span><b>≈ ${money(sum(list))}</b></div>
+        ${list.sort((a, b) => a.name.localeCompare(b.name)).map((i) => `<div class="row" style="padding:10px 16px;gap:10px"><span class="grow">${esc(i.name)}${i.qtyText ? ` <span class="small muted">${esc(i.qtyText)}</span>` : i.counted && i.n > 1 ? ` <span class="small muted">×${i.n}</span>` : ""}</span>
+          ${i.cost != null ? `<span class="small muted">${money(i.cost)}</span>` : ""}<button class="btn sm" data-act="unbuy" data-key="${esc(i.key)}">Put back</button></div>`).join("")}
+      </div>`;
+  }).join("");
+  return `<button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="toggleBought" aria-expanded="${open ? "true" : "false"}">
+      <span class="grow"><b>Bought this week</b><br><span class="small muted">${bought.length} thing${bought.length === 1 ? "" : "s"} · ≈ ${money(spent)} so far · ≈ ${money(spent + stillToBuy)} for the week</span></span>
+      <span aria-hidden="true" style="transform:rotate(${open ? 90 : 0}deg);transition:transform .15s">›</span></button>
+    ${open ? `<div>${tripsHtml}<p class="small muted" style="margin:10px 4px 0">≈ ${money(spent)} bought + ≈ ${money(stillToBuy)} still on the list = ≈ ${money(spent + stillToBuy)} this week. Estimates, from the prices in the app.</p></div>` : ""}`;
 }
 function itemRow(i) {
   const chips = [];
@@ -468,7 +507,7 @@ function viewSettings() {
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
     ${accountFooter()}
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.9</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.10.0</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -674,12 +713,21 @@ function openAdd() {
       <button class="btn lg primary">Add</button></form>`);
   setTimeout(() => { const f = $("#sheetBody input[name=name]"); if (f) f.focus(); }, 250);
 }
-function openDone() {
-  const { toGet } = shopData();
-  const left = toGet.filter((i) => !i.done), got = toGet.length - left.length;
-  if (!left.length) { toast("All done. Nice work!"); return; }
+/** Done shopping: file what's ticked under "Bought this week", then deal with anything left. */
+function doneShopping() {
+  const { toGet, week } = shopData();
+  const got = toGet.filter((i) => i.done), left = toGet.filter((i) => !i.done);
+  const cost = got.reduce((t, i) => t + (i.cost || 0), 0);
+  if (got.length) send({ op: "trip", week, keys: got.map((i) => i.key) });
+  const saved = got.length ? `${got.length} thing${got.length === 1 ? "" : "s"} (≈ ${money(cost)}) moved to Bought this week` : "";
+  if (!left.length) { toast(got.length ? `${saved}. All done!` : "Nothing on the list. All done!"); return; }
+  if (!got.length) { toast("Tick what's in your trolley first, then press Done shopping"); return; }
+  toast(saved);
+  openDone(left, got.length);
+}
+function openDone(left, got) {
   app.moveKeys = left.map((i) => i.key); app.moveShop = null;
-  openSheet(`<h1 class="title" style="font-size:26px">Got ${got} of ${toGet.length}</h1>
+  openSheet(`<h1 class="title" style="font-size:26px">Got ${got}, ${left.length} still to get</h1>
     <p class="muted">Still to get: ${esc(left.slice(0, 6).map((i) => i.name).join(", "))}${left.length > 6 ? ` and ${left.length - 6} more` : ""}.</p>
     <p style="margin:14px 0 8px"><b>Pick them up elsewhere this week?</b></p>
     <div class="shop-grid" style="margin-bottom:14px">${shopOrder().map((s) => `<button data-act="pickMoveShop" data-s="${s}">${esc(shopName(s))}</button>`).join("")}</div>
@@ -993,7 +1041,10 @@ const ACTIONS = {
   removeExtra: (d) => { send({ op: "extra_remove", week: currentWeek(), id: d.id }); closeSheet(); },
   addItem: () => openAdd(),
   addShop: (d, el) => { $$("#sheetBody .shop-grid button").forEach((b) => b.classList.toggle("on", b === el)); $("#sheetBody input[name=shop]").value = d.s; },
-  doneShopping: () => openDone(),
+  doneShopping: () => doneShopping(),
+  toggleBought: () => { app.showBought = !app.showBought; render(); },
+  rateMeal: (d) => openFeedback(d.id),
+  unbuy: (d) => { send({ op: "trip", week: currentWeek(), key: d.key, keys: [d.key], undo: true }); toast("Back on the list"); },
   shopMenu: (d, el) => openMenu(el, [["copyList", "Copy the list", "copy"], ["downloadList", "Download as text", "download"], ["printList", "Print or save as PDF", "print"], ["untickAll", "Untick everything", "trash"]]),
   copyList: () => { closeMenus(); copyText(listAsText(currentWeek(), { byShop: true })); },
   downloadList: () => { closeMenus(); downloadText(listAsText(currentWeek(), { byShop: true }), `shopping-${currentWeek()}.txt`); },
@@ -1004,7 +1055,11 @@ const ACTIONS = {
   cookIng: () => { app.cook.showIng = !app.cook.showIng; renderCook(); },
   cookStep: (d) => {
     const c = app.cook, n = visibleSteps(app.byId[c.id]).length;
-    if (+d.d > 0 && c.step === n - 1) { const id = c.id; stopCooking({ handOver: true }); openFeedback(id); return; }
+    if (+d.d > 0 && c.step === n - 1) {
+      const id = c.id, { week, i } = todaySlot(), day = planFor(week)[i];
+      if (day && day.recipe === id && day.cooked !== id) dayUpdate(i, { cooked: id }, week); // today's dinner is done
+      stopCooking({ handOver: true }); openFeedback(id); return;
+    }
     c.step = Math.max(0, Math.min(n - 1, c.step + +d.d)); renderCook();
   },
   timerStart: (d) => { app.cook.timers.push({ label: `${d.m}-minute timer`, end: Date.now() + d.m * 60000 }); renderCook(); },
@@ -1405,7 +1460,7 @@ function viewAdmin() {
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
     <div style="text-align:center;margin-top:24px"><button class="btn sm" data-act="signOut">Sign out</button></div>
-    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.9</p>`;
+    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.10.0</p>`;
 }
 // ---- Recipe feedback from every household (its own screen, off the dashboard) ----
 const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };

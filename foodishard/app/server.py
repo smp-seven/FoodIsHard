@@ -148,7 +148,22 @@ def apply_op(state, op, user):
                 item.update({k: v for k, v in (op.get("patch") or {}).items() if k in ("name", "price", "qty", "shop")})
 
     elif kind == "clear_checks":
-        state["checks"][op["week"]] = {}
+        # keep what's already been bought this week
+        week = state["checks"].get(op["week"]) or {}
+        state["checks"][op["week"]] = {k: v for k, v in week.items() if isinstance(v, dict) and v.get("bought")}
+
+    elif kind == "trip":
+        week = state["checks"].setdefault(op["week"], {})
+        for k in op.get("keys") or []:
+            item = week.setdefault(k, {})
+            if op.get("undo"):
+                item.pop("bought", None)
+                item["done"] = False
+            else:
+                item["bought"] = now
+                item["done"] = True
+            item["by"] = user
+            item["at"] = now
 
     elif kind == "extra_add":
         items = state["extras"].setdefault(op["week"], [])

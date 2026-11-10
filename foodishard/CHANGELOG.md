@@ -128,3 +128,7 @@
 
 ## 0.9.9
 - Online version: admins can **Message everyone** from the admin dashboard. The message appears as a card at the top of the app the next time each person opens it, until they tap **Got it**. Each person sees it once, whichever phone they use. The dashboard shows how many people have seen it, and you can take it down or replace it.
+
+## 0.10.0
+- **Shopping through the week:** pressing **Done shopping** moves everything ticked into **Bought this week**, stamped with the day, time and who shopped. The list then shows only what's left, and its total is what's still to buy, with anything already in the trolley shown separately. Bought this week, at the bottom of the list, shows each trip with its total, the week's total so far, and **Put back** for anything filed by mistake. Untick all leaves bought items alone. The Today card shows what's left to buy.
+- **After cooking:** once today's dinner has been cooked to the last step, the Today card offers **Leave feedback** and **Again** instead of Start cooking. After rating, it shows "Cooked · you loved it".
