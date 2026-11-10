@@ -195,3 +195,12 @@ Fixes from a review of the new features:
 - **Use up the rest:** suggestions are ranked by what they'd do to the week's part-packs, and ones that would open more than they use are dropped. Putting one on a leftovers night switches off cook double on the day the leftovers came from.
 - **Start-by wording:** when it's later than planned: "Dinner around 18:50 if you start now". It no longer shows after midnight.
 - **Tidy-ups:** dishes with rice or couscous mixed through are marked `grainsMixed` in recipes.json, checked by the recipe checker. The old allergy card code is removed.
+
+## 0.11.0
+- **Who you cook for:** Settings has one list of everyone who eats dinner, grown-ups and little ones together, with the total ("2½ portions a night") at the top. Tapping a grown-up opens their panel:
+  - named sizes (Smaller, Regular, Larger, Extra), with Fine-tune for anything in between;
+  - what the size means ("about 860 kcal for a typical dinner; 90 g of pasta becomes 115 g");
+  - the protein goal, now optional and tucked in here.
+  Tapping a little one opens their details and growing-up suggestions. In the online version, adding a grown-up offers your household members' names. The separate on/off switch for little ones has gone: adding one switches them on, and removing the last switches them off.
+- **Who's eating, by name:** each night's panel lists everyone with a switch, plus guests and cook double. Every dinner in the week shows a chip, e.g. "Everyone eating" or "Alex out · +2 guests", which opens it. Nights saved with the older +/- adjustment still work.
+- **Calmer leftovers:** one "Left over this week" card at the bottom of the shopping list replaces the amber note on each line. "Ideas" appears only where a recipe would use the rest without opening more. The storing and reheating guidance in each recipe starts folded.

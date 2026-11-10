@@ -599,8 +599,13 @@ function effectiveShop(week, key, fallback) {
   return ((app.state.shopFor || {})[week] || {})[key] || (app.state.shopPref || {})[key] || fallback || "any";
 }
 /** Portions for one day: the household, plus guests or minus anyone out, doubled when cooking double. */
+function personKey(p, i) { return p.id || `p${i}`; }
+/** Who's eating on a day: everyone, minus anyone ticked out, plus guests (in regular portions). */
 function dayFactor(day) {
-  const f = Math.max(0.5, household().factor + (+(day && day.extra) || 0));
+  const { adults, kids: little } = household(), away = new Set((day && day.away) || []);
+  let f = adults.reduce((t, p, i) => t + (away.has(personKey(p, i)) ? 0 : +p.portion || 0), 0) + little.reduce((t, k) => t + (away.has(k.id) ? 0 : +k.portion || 0), 0);
+  f += +(day && (day.guests != null ? day.guests : day.extra)) || 0; // "extra" was the older +/- adults
+  f = Math.max(0.5, f);
   return day && day.double ? f * 2 : f;
 }
 /** Portions to cook a recipe for: tonight's adjustments if it's tonight's dinner, otherwise the household's. */

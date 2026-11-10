@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.10.9"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -202,19 +202,21 @@ function hasGrains(r) { return !!r.grainsMixed; }
 function storingBox(r) {
   const whole = hasGrains(r), side = !whole && r.ingredients.some((i) => GRAINS.includes(i.k)), little = kids().length > 0;
   const grain = r.ingredients.some((i) => i.k === "couscous") ? "couscous" : "rice";
-  return `<p class="section-label">Leftovers</p><div class="card stack" style="padding:14px 16px;gap:6px;font-size:15px">
+  return `<details class="fold" style="margin-top:14px"><summary class="section-label" style="display:flex;justify-content:space-between">Storing & reheating leftovers <span aria-hidden="true">›</span></summary><div class="card stack" style="padding:14px 16px;gap:6px;font-size:15px">
     <span>Cool within ${whole ? "1 hour" : "1 to 2 hours"} (split into small tubs to speed it up), then into the fridge. Eat within ${whole ? "24 hours" : "2 days"}, or freeze.</span>
     ${whole ? `<span class="small muted">The ${grain} is why it's stricter: its spores survive cooking, so it mustn't sit around warm.</span>` : ""}
     ${side ? `<span>Any leftover ${grain} is stricter: cool it within 1 hour, keep it in the fridge and eat it within 24 hours.</span>` : ""}
     ${r.freeze ? `<span><b>Freezes well:</b> ${esc(r.freeze.charAt(0).toLowerCase() + r.freeze.slice(1))}. Defrost in the fridge overnight and eat within 24 hours.</span>` : ""}
     <span>Reheat only once, until steaming hot all the way through.</span>
     ${little ? `<span class="small muted">For ${esc(kidNames())}: reheat until steaming hot, then let it cool before serving. Throw away anything left in their bowl.</span>` : ""}
-    <span class="small muted">From Food Standards Agency and NHS advice.</span></div>`;
+    <span class="small muted">From Food Standards Agency and NHS advice.</span></div></details>`;
 }
 /** "+2 guests · cooking double", or "" for a normal day. */
 function dayAdjustText(d) {
   if (!d) return "";
-  const x = +d.extra || 0, bits = [];
+  const x = +(d.guests != null ? d.guests : d.extra) || 0, bits = [], { adults, kids: little } = household(), away = new Set(d.away || []);
+  const out = [...adults.filter((p, i) => away.has(personKey(p, i))).map((p) => p.name), ...little.filter((k) => away.has(k.id)).map((k) => k.name || "Little one")];
+  if (out.length) bits.push(`${joinNames(out)} out`);
   if (x > 0) bits.push(`+${niceNumber(x)} ${x === 1 ? "guest" : "guests"}`);
   if (x < 0) bits.push(`${niceNumber(-x)} fewer eating`);
   if (d.double) bits.push("cooking double");
@@ -238,20 +240,21 @@ function setDouble(week, i) {
   }
 }
 function openEating(week, i, { keepScroll = false } = {}) {
-  const days = planFor(week), d = days[i], next = days[i + 1], { adults, kids: little, factor } = household();
-  const date = addDays(parseISO(week), i), x = +d.extra || 0, r = d.recipe && app.byId[d.recipe];
-  const usual = `${adults.length} grown-up${adults.length === 1 ? "" : "s"}${little.length ? ` and ${kidNames(little)}` : ""}`;
+  const days = planFor(week), d = days[i], next = days[i + 1], { adults, kids: little } = household();
+  const date = addDays(parseISO(week), i), guests = +(d.guests != null ? d.guests : Math.max(0, +d.extra || 0)) || 0, away = new Set(d.away || []), r = d.recipe && app.byId[d.recipe];
   const nextR = next && next.status === "cook" && next.recipe && app.byId[next.recipe];
-  openSheet(`<p class="eyebrow">${DOW_LONG[mondayIndex(date)]} ${date.getDate()} ${MONTHS[date.getMonth()]}</p><h1 class="title" style="font-size:26px">Who's eating?</h1>
-    <p class="muted">Usually ${esc(usual)}: ${niceNumber(factor)} portions${r ? ` of ${esc(r.name.toLowerCase())}` : ""}.</p>
+  const who = [...adults.map((p, n) => ({ key: personKey(p, n), name: p.name, sub: sizeLabel(+p.portion || 1) })), ...little.map((k) => ({ key: k.id, name: k.name || "Little one", sub: `${PORTION_WORDS[k.portion] || ""} portion`, kid: k }))];
+  openSheet(`<p class="eyebrow">${DOW_LONG[mondayIndex(date)]} ${date.getDate()} ${MONTHS[date.getMonth()]}${r ? ` · ${esc(r.name)}` : ""}</p><h1 class="title" style="font-size:26px">Who's eating?</h1>
     <div class="list" style="margin-bottom:12px">
-      <div class="row between" style="padding:14px 16px"><span><b>Guests or anyone out</b><br><span class="small muted">${x ? esc(dayAdjustText({ extra: x })) : "Same as usual"} · adult portions</span></span>
-        <div class="stepper"><button data-act="eatingExtra" data-week="${week}" data-i="${i}" data-d="-1" aria-label="One fewer" ${factor + x - 1 < 0.5 ? "disabled" : ""}>−</button><span>${x === 0 ? "0" : `${x > 0 ? "+" : "−"}${niceNumber(Math.abs(x))}`}</span><button data-act="eatingExtra" data-week="${week}" data-i="${i}" data-d="1" aria-label="One more">+</button></div></div>
+      ${who.map((w) => `<label class="row between" style="padding:12px 16px;${w.kid ? kidStyle(w.kid) : ""}"><span>${w.kid ? `<span class="kid-dot" aria-hidden="true"></span> ` : ""}<b>${esc(w.name)}</b> <span class="small muted">${esc(w.sub)}</span></span>
+        <span class="switch"><input type="checkbox" data-act="eatingWho" data-week="${week}" data-i="${i}" data-k="${esc(w.key)}" ${away.has(w.key) ? "" : "checked"} aria-label="${esc(w.name)} eating"><i></i></span></label>`).join("")}
+      <div class="row between" style="padding:12px 16px;border-top:1px solid var(--line-soft)"><span><b>Guests</b><br><span class="small muted">Regular portions</span></span>
+        <div class="stepper"><button data-act="eatingGuests" data-week="${week}" data-i="${i}" data-d="-1" aria-label="One fewer guest" ${guests <= 0 ? "disabled" : ""}>−</button><span>${guests}</span><button data-act="eatingGuests" data-week="${week}" data-i="${i}" data-d="1" aria-label="One more guest">+</button></div></div>
       <div class="row between" style="padding:14px 16px;border-top:1px solid var(--line-soft)"><span><b>Cook double</b><br><span class="small muted">${next && !next.locked && next.status !== "skip" ? `Twice the amounts, and ${DOW_LONG[mondayIndex(addDays(date, 1))]} becomes leftovers${nextR && !d.double ? ` instead of ${esc(nextR.name.toLowerCase())}` : ""}` : "Twice the amounts, for leftovers"}</span></span>
         <label class="switch"><input type="checkbox" data-act="eatingDouble" data-week="${week}" data-i="${i}" ${d.double ? "checked" : ""} aria-label="Cook double"><i></i></label></div>
       ${next && (next.locked || next.status === "skip") && !d.double ? `<div class="small muted" style="padding:0 16px 12px">${DOW_LONG[mondayIndex(addDays(date, 1))]} is ${next.status === "skip" ? "a night off" : "locked"}, so it stays as it is: the extra will keep for lunch or another night.</div>` : ""}
     </div>
-    <p class="small muted">Cooking for ${niceNumber(dayFactor(d))} portions that night. The shopping list and the amounts in cooking mode follow this.</p>
+    <p class="small muted">Cooking ${niceNumber(dayFactor(d))} portions that night. The shopping list and the recipe's amounts follow this.</p>
     <button class="btn lg primary" data-close>Done</button>`, { keepScroll });
 }
 /** "Start by 17:25", from the household's usual dinner time and the recipe's total time. */
@@ -362,7 +365,7 @@ function viewWeek() {
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}" data-week="${week}" data-i="${i}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
       <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${kcalShort(r)}</div>
-      ${dayAdjustText(d) ? `<button class="pill accent" style="border:0;margin-top:6px" data-act="eating" data-i="${i}" data-week="${week}">${esc(dayAdjustText(d))}</button>` : ""}
+      <button class="pill ${dayAdjustText(d) ? "accent" : ""}" style="border:0;margin-top:6px" data-act="eating" data-i="${i}" data-week="${week}" aria-label="Who's eating: ${esc(dayAdjustText(d) || "everyone")}">${icon("people", 13)} ${esc(dayAdjustText(d) || "Everyone eating")}</button>
       <div class="actions">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
         <button class="btn sm soft" data-act="swapDay" data-i="${i}">Swap</button>
@@ -421,12 +424,20 @@ function viewShop() {
       ${tabs.length > 1 ? `<div class="shop-tabs"><button class="chip ${app.shopTab === "all" ? "on" : ""}" data-act="shopTab" data-s="all">All · ${toGet.filter((i) => !i.done).length}</button>${tabs.map((t) => `<button class="chip ${app.shopTab === t.s ? "on" : ""}" data-act="shopTab" data-s="${t.s}">${esc(shopName(t.s))} · ${t.n}</button>`).join("")}</div>` : ""}
     </div>
     ${body || `<div class="card empty"><p><b>Everything's bought.</b> Nice work!</p><p class="small muted">Anything you add, or dinners you plan, shows up here.</p></div>`}
+    ${leftoverCard(toGet)}
     ${boughtSection(bought, sum(toGet))}
     ${have.length ? `<details class="fold"><summary class="section-label">Not needed this week · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
     <button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="rack">
       <span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">${unchecked ? `${unchecked} thing${unchecked === 1 ? "" : "s"} this week's dinners use ${unchecked === 1 ? "hasn't" : "haven't"} been checked` : "Mark anything running low and it goes on the list"}</span></span>
       ${unchecked ? `<span class="pill warn">Check</span>` : ""}<span aria-hidden="true">›</span></button>
     <p class="small muted" style="margin:20px 4px 0">Same list everywhere: ${compare}. Prices are estimates${inflationFactor() !== 1 ? ", adjusted for food inflation" : ""}. Tap an item to correct its price, swap it or move it to another shop. Press and hold to select several.</p>`;
+}
+/** "Left over this week": the part-packs in one calm card, instead of a note on every line. Tap for ideas to use them up. */
+function leftoverCard(items) {
+  const left = items.filter((i) => i.leftover && !i.have);
+  if (!left.length) return "";
+  return `<p class="section-label">Left over this week</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${useUpIdeas(i).length ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>
+    <p class="small muted" style="margin:6px 4px 0">Things that go off within days. "Ideas" shows recipes that use the rest without opening more.</p>`;
 }
 /** "Bought this week": each Done shopping trip, with its total and the week's running total. */
 function boughtSection(bought, stillToBuy) {
@@ -463,7 +474,6 @@ function itemRow(i) {
   if (i.extra && i.by) sub.push(`added by ${esc(i.by)}`);
   if (i.staple) sub.push("every week");
   if (i.covers) sub.push(`covers the ${esc(i.covers)}`);
-  if (i.leftover && !i.have) sub.push(`<span style="color:var(--warn-ink)">${esc(i.leftover)}</span>`);
   if (i.done && i.checkedBy) sub.push(`✓ ${esc(i.checkedBy)}`);
   const key = esc(i.key);
   const selected = app.selecting.has(i.key);
@@ -536,11 +546,7 @@ function viewRecipes() {
 function viewSettings() {
   const s = settings();
   const stepper = (act, idx, val, step, fmt = (v) => v) => `<div class="stepper"><button data-act="${act}" data-i="${idx}" data-d="${-step}" aria-label="Less">−</button><span>${fmt(val)}</span><button data-act="${act}" data-i="${idx}" data-d="${step}" aria-label="More">+</button></div>`;
-  const people = s.people.map((p, i) => `<div class="stack" style="padding:14px 16px;gap:10px">
-      <div class="row"><input class="input grow" value="${esc(p.name)}" data-set="personName" data-i="${i}" aria-label="Name">
-      ${s.people.length > 1 ? `<button class="icon-btn plain" data-act="removePerson" data-i="${i}" aria-label="Remove ${esc(p.name)}">${icon("trash", 18)}</button>` : ""}</div>
-      <div class="row between"><span class="small muted">Portion size</span>${stepper("portion", i, p.portion, 0.1, (v) => (+v).toFixed(1))}</div>
-      <div class="row between"><span class="small muted">Protein goal at dinner</span>${stepper("goal", i, p.goal || 40, 5, (v) => `${v} g`)}</div></div>`).join("");
+
   const themeRows = DOW_LONG.map((d, i) => { const t = themeById(themeIdForDow(i));
     return `<button class="rrow" data-act="themePick" data-i="${i}" style="padding:10px 16px"><span class="grow">${d}</span><span class="${t ? "" : "muted"}">${esc(t ? t.name : "No theme")}</span><span class="muted">›</span></button>`; }).join("");
   const shopsOn = s.shops || SHOP_ORDER;
@@ -561,27 +567,7 @@ function viewSettings() {
     <p class="small muted" style="margin:-6px 4px 6px">${app.host === "Cloudflare" ? "Saved privately for your household, not in the app's code." : app.mode === "live" ? "Saved on your Home Assistant, not in the app's code." : "Saved on this device only."}</p>
     ${accountSection()}
 
-    <p class="section-label">${app.host === "Cloudflare" ? "Grown-ups (portions)" : "Grown-ups"}</p>
-    <div class="list">${people}<div style="padding:12px 16px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a person</button></div></div>
-
-    <p class="section-label">Little ones</p>
-    <div class="list">
-      <label class="row" style="padding:13px 16px"><span class="grow"><b>Cooking for little ones</b><br><span class="small muted">Babies and young children: their own portions, stages and safety notes in every recipe</span></span>
-        <span class="switch"><input type="checkbox" data-set="kidsOn" ${kidsOn() ? "checked" : ""}><i></i></span></label>
-      ${kidsOn() ? kidsAll().map((k) => {
-        const corrected = k.due && k.due !== k.born;
-        return `<div class="stack kid-card" style="padding:14px 16px;gap:10px;${kidStyle(k)}">
-        <div class="row"><span class="kid-dot" aria-hidden="true"></span><input class="input grow" value="${esc(k.name)}" placeholder="Name" data-set="kid" data-id="${esc(k.id)}" data-f="name" aria-label="Child's name">
-          <button class="icon-btn plain" data-act="kidRemove" data-id="${esc(k.id)}" aria-label="Remove ${esc(k.name || "child")}">${icon("trash", 18)}</button></div>
-        <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input ${k.born ? "" : "nudge-field"}" type="date" value="${esc(k.born)}" data-set="kid" data-id="${esc(k.id)}" data-f="born"></label>
-          <label class="grow"><span class="small muted">Due date (if early)</span><input class="input" type="date" value="${esc(k.due)}" data-set="kid" data-id="${esc(k.id)}" data-f="due"></label></div>
-        <span class="small muted">${k.born ? `${esc(ageText(k.born))} old${corrected ? ` · ${esc(ageText(k.due))} corrected` : ""}` : "Add their birth date. If they arrived early, add the due date too, for their corrected age."}</span>
-        <label><span class="small muted">Eating stage</span><select class="input" data-set="kid" data-id="${esc(k.id)}" data-f="stage">${Object.entries(STAGES).map(([s2, v]) => `<option value="${s2}" ${k.stage === s2 ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
-        <span class="small muted">${esc(STAGES[k.stage]?.hint || "")}</span>
-        ${kidSuggestions(k).map(babySuggestionCard).join("")}
-        <div class="row between"><span class="small muted">Portion size (share of an adult's)</span><div class="stepper"><button data-act="kidPortion" data-id="${esc(k.id)}" data-d="-0.05" aria-label="Less">−</button><span>${(+k.portion || 0).toFixed(2)}</span><button data-act="kidPortion" data-id="${esc(k.id)}" data-d="0.05" aria-label="More">+</button></div></div>
-      </div>`; }).join("") + `<div style="padding:12px 16px"><button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a child</button></div>` : ""}
-    </div>
+    ${whoYouCookFor()}
 
     <p class="section-label">Food</p>
     <div class="list">
@@ -638,7 +624,7 @@ function viewSettings() {
 let sheetPushed = false, cookPushed = false;
 /** Open the panel. keepScroll: redrawing the panel that's already open, so stay where you were. */
 function openSheet(html, { keepScroll = false } = {}) {
-  app.sheetBack = null; // a panel opened from another one sets this afterwards, so closing it goes back
+  app.sheetBack = null; app.panel = null; // a panel opened from another one sets this afterwards, so closing it goes back
   const panel = $(".sheet-panel"), top = keepScroll && !$("#sheet").hidden ? panel.scrollTop : 0;
   $("#sheetBody").innerHTML = html; hydrateIcons($("#sheetBody"));
   $("#sheet").hidden = false; panel.scrollTop = top; document.body.style.overflow = "hidden";
@@ -795,16 +781,21 @@ function openSwap(k, reopen, itemKey = null) {
 }
 /** On a shopping item with some left over: recipes that use up the rest, not already planned this week. */
 function useUpCard(it) {
-  if (!it.leftover || !it.k) return "";
+  const ideas = useUpIdeas(it);
+  if (!ideas.length) return "";
+  return `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Use up the rest</b><span class="small muted">You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left. These use it too:</span>
+    <div class="list">${ideas.map((r) => `<button class="rrow" data-act="useUpPick" data-id="${r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(r.name)}</span><span class="small muted">${r.time} min</span></button>`).join("")}</div></div>`;
+}
+/** Recipes that would use up a part-pack without opening more, best first. */
+function useUpIdeas(it) {
+  if (!it.leftover || !it.k) return [];
   const days = planFor(currentWeek()), planned = new Set(days.map((d) => d.recipe).filter(Boolean)), base = wasteOf(days);
   // rank by what each would do to the week's part-packs, as the planner does: drop any that would open more than they use up
   const ideas = app.recipes.filter((r) => usable(r) && !planned.has(r.id) && effectiveIngredients(r).some((i) => i.k === it.k))
     .map((r) => ({ r, change: wasteOf([...days, { status: "cook", recipe: r.id }]) - base }))
     .filter((x) => x.change < 0.1)
     .sort((a, b) => a.change - b.change || recipeWeight(b.r.id) - recipeWeight(a.r.id) || a.r.time - b.r.time).slice(0, 4).map((x) => x.r);
-  if (!ideas.length) return "";
-  return `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Use up the rest</b><span class="small muted">You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left. These use it too:</span>
-    <div class="list">${ideas.map((r) => `<button class="rrow" data-act="useUpPick" data-id="${r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(r.name)}</span><span class="small muted">${r.time} min</span></button>`).join("")}</div></div>`;
+  return ideas;
 }
 function openUseUp(id, itemKey) {
   const week = currentWeek(), days = planFor(week), r = app.byId[id], start = parseISO(week), today = iso(new Date());
@@ -1147,7 +1138,8 @@ const ACTIONS = {
     ["status", "Leftovers night", "pot", `data-i="${d.i}" data-s="leftovers"`], ["status", "Clear this day", "x", `data-i="${d.i}" data-s="clear"`]]),
   pickFromMenu: (d) => { closeMenus(); openPicker(+d.i); },
   eating: (d) => { closeMenus(); openEating(d.week || app.weekStart, +d.i); },
-  eatingExtra: (d) => { const day = planFor(d.week)[+d.i]; dayUpdate(+d.i, { extra: Math.max(-20, Math.min(20, (+day.extra || 0) + +d.d)) }, d.week); openEating(d.week, +d.i, { keepScroll: true }); },
+  eatingGuests: (d) => { const day = planFor(d.week)[+d.i], g = +(day.guests != null ? day.guests : Math.max(0, +day.extra || 0)) || 0; dayUpdate(+d.i, { guests: Math.max(0, Math.min(20, g + +d.d)), extra: null }, d.week); openEating(d.week, +d.i, { keepScroll: true }); },
+  eatingWho: (d) => { const day = planFor(d.week)[+d.i], away = new Set(day.away || []); away.has(d.k) ? away.delete(d.k) : away.add(d.k); dayUpdate(+d.i, { away: [...away], extra: day.extra < 0 ? null : day.extra }, d.week); openEating(d.week, +d.i, { keepScroll: true }); },
   eatingDouble: (d) => { setDouble(d.week, +d.i); openEating(d.week, +d.i, { keepScroll: true }); },
   fam: (d) => { app.openFamilies.has(d.f) ? app.openFamilies.delete(d.f) : app.openFamilies.add(d.f); render(); },
   rfilter: (d) => { app.recipeFilter = d.f; render(); },
@@ -1287,24 +1279,30 @@ const ACTIONS = {
   timerStart: (d) => { app.cook.timers.push({ label: `${d.m}-minute timer`, end: Date.now() + d.m * 60000 }); renderCook(); },
   timerStop: (d) => { app.cook.timers.splice(+d.i, 1); renderCook(); },
   // settings
-  portion: (d) => { const people = clone(settings().people); people[+d.i].portion = Math.max(0.3, Math.round((+people[+d.i].portion + +d.d) * 10) / 10); send({ op: "settings", patch: { people } }); },
-  goal: (d) => { const people = clone(settings().people); people[+d.i].goal = Math.max(10, (+people[+d.i].goal || 40) + +d.d); send({ op: "settings", patch: { people } }); },
-  babyReview: () => { go("settings"); setTimeout(() => { const el = $(".baby-suggest"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, 120); },
+  portion: (d) => { const people = clone(settings().people); people[+d.i].portion = Math.max(0.3, Math.min(3, Math.round((+people[+d.i].portion + +d.d) * 20) / 20)); send({ op: "settings", patch: { people } }); refreshPanel(); },
+  portionSet: (d) => { const people = clone(settings().people); people[+d.i].portion = +d.v; app.fineTune = false; send({ op: "settings", patch: { people } }); refreshPanel(); },
+  fineTune: () => { app.fineTune = true; refreshPanel(); },
+  goal: (d) => { const people = clone(settings().people); people[+d.i].goal = Math.max(10, (+people[+d.i].goal || 40) + +d.d); send({ op: "settings", patch: { people } }); refreshPanel(); },
+  person: (d) => { app.fineTune = false; openPerson(+d.i); },
+  kidPanel: (d) => openKid(d.id),
+  kidsOnNow: () => saveKids(kidsAll(), true),
+  addPersonNamed: (d) => { const people = clone(settings().people); people.push({ id: uid(), name: d.n, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${d.n} added`); },
+  babyReview: () => { const sg = babySuggestions().find((x) => !x.info) || babySuggestions()[0]; if (sg) openKid(sg.kid); else go("settings"); },
   babyAccept: (d) => {
     const sg = babySuggestions().find((x) => x.kid === d.kid && x.key === d.k); if (!sg) return;
     const k = kidsAll().find((x) => x.id === d.kid);
     updateKid(d.kid, { ...sg.set, dismissed: [...(k.dismissed || []), d.k] });
-    toast("Updated. You can change it any time.");
+    refreshPanel(); toast("Updated. You can change it any time.");
   },
-  babyDismiss: (d) => { const k = kidsAll().find((x) => x.id === d.kid); if (k) updateKid(d.kid, { dismissed: [...new Set([...(k.dismissed || []), d.k])] }); },
-  kidPortion: (d) => { const k = kidsAll().find((x) => x.id === d.id); if (k) updateKid(d.id, { portion: Math.max(0.05, Math.round(((+k.portion || 0) + +d.d) * 100) / 100) }); },
-  kidAdd: () => { saveKids([...kidsAll(), { id: uid(), name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); },
+  babyDismiss: (d) => { const k = kidsAll().find((x) => x.id === d.kid); if (k) updateKid(d.kid, { dismissed: [...new Set([...(k.dismissed || []), d.k])] }); refreshPanel(); },
+  kidPortion: (d) => { const k = kidsAll().find((x) => x.id === d.id); if (k) updateKid(d.id, { portion: Math.max(0.05, Math.round(((+k.portion || 0) + +d.d) * 100) / 100) }); refreshPanel(); },
+  kidAdd: () => { const id = uid(); saveKids([...kidsAll(), { id, name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); openKid(id); },
   kidRemove: (d) => {
     const k = kidsAll().find((x) => x.id === d.id);
-    if (window.confirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) saveKids(kidsAll().filter((x) => x.id !== d.id));
+    if (window.confirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) { const left = kidsAll().filter((x) => x.id !== d.id); saveKids(left, left.length > 0 && kidsOn()); closeSheet(); }
   },
-  addPerson: () => { const people = clone(settings().people); people.push({ id: uid(), name: `Adult ${people.length + 1}`, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); },
-  removePerson: (d) => { const people = clone(settings().people); people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); },
+  addPerson: () => openAddPerson(),
+  removePerson: (d) => { const people = clone(settings().people); if (people.length <= 1 || !window.confirm(`Remove ${people[+d.i].name}? Portions and the shopping list will be for one fewer.`)) return; people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); closeSheet(); },
   allergyDone: () => { send({ op: "settings", patch: { allergyAsked: true } }); toast(avoidList().length ? "Saved. Recipes with those are hidden" : "Saved: no allergies"); },
   avoid: (d) => { const a = new Set(settings().avoid || []); a.has(d.k) ? a.delete(d.k) : a.add(d.k); send({ op: "settings", patch: { avoid: [...a] } }); },
   shopToggle: (d) => {
@@ -1337,7 +1335,7 @@ function onChange(e) {
   switch (d.set) {
     case "personName": { const p = people(); p[+d.i].name = el.value.trim() || p[+d.i].name; return send({ op: "settings", patch: { people: p } }); }
     case "kidsOn": { const list = kidsAll(); return saveKids(el.checked && !list.length ? [{ id: uid(), name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }] : list, el.checked); }
-    case "kid": return updateKid(d.id, { [d.f]: d.f === "name" ? el.value.trim() : el.value });
+    case "kid": { updateKid(d.id, { [d.f]: d.f === "name" ? el.value.trim() : el.value }); if (d.f !== "name") refreshPanel(); return; }
     case "text": return send({ op: "settings", patch: { [d.f]: el.value } });
     case "num": {
       send({ op: "settings", patch: { [d.f]: +el.value } });
@@ -1372,6 +1370,7 @@ function onSubmit(e) {
     accountCall("api/admin/member", body).then(async (res) => { await loadAccount(); showInviteResult(body.name, body.email.toLowerCase(), res.signIn); }).catch((err) => toast(err.message));
     return;
   }
+  if (f.dataset.form === "addPerson") { const name = val("name").trim(); if (!name) return; const people = clone(settings().people); people.push({ id: uid(), name, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${name} added`); return; }
   if (f.dataset.form === "adminNotice") { adminDo("api/admin/notice", { text: val("text") }, () => toast("Sent. Everyone sees it next time they open the app")); return; }
   if (f.dataset.form === "adminRename") { adminDo("api/admin/rename-household", { id: f.dataset.id, name: val("name").trim() }, () => toast("Renamed")); return; }
   if (f.dataset.form === "invite" || f.dataset.form === "newHousehold") { submitInvite(f.dataset.form === "newHousehold" ? "household" : "member", f); return; }
@@ -1455,6 +1454,80 @@ async function accountCall(path, body) {
   if (!r.ok) throw new Error(res.error || `Something went wrong (${r.status})`);
   return res;
 }
+// ---- Who you cook for: one list of everyone who eats dinner (sizes, little ones) ----
+const SIZES = [["Smaller", 0.75], ["Regular", 1], ["Larger", 1.25], ["Extra", 1.5]];
+function sizeLabel(portion) { const hit = SIZES.find(([, v]) => Math.abs(v - portion) < 0.01); return hit ? hit[0] : `×${(+portion).toFixed(2).replace(/0$/, "")}`; }
+let typicalKcal = null;
+/** Calories in a typical dinner here: the middle of all the recipes, per standard portion. */
+function typicalDinnerKcal() {
+  if (typicalKcal == null) { const all = app.recipes.map((r) => nutritionPerPortion(r).kcal).sort((a, b) => a - b); typicalKcal = all[Math.floor(all.length / 2)] || 650; }
+  return typicalKcal;
+}
+function whoYouCookFor() {
+  const s = settings(), { factor } = household(), kidsHere = kidsOn() ? kidsAll() : [], paused = !kidsOn() && kidsAll().length;
+  const adults = s.people.map((p, i) => `<button class="rrow" data-act="person" data-i="${i}" style="padding:12px 16px"><span class="grow"><b>${esc(p.name)}</b> <span class="small muted">${esc(sizeLabel(+p.portion || 1))} · about ${Math.round(typicalDinnerKcal() * (+p.portion || 1) / 10) * 10} kcal</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
+  const little = kidsHere.map((k) => `<button class="rrow ${k.born ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="kid-dot" aria-hidden="true"></span><span class="grow"><b>${esc(k.name || "Little one")}</b> <span class="small muted">${k.born ? esc(ageText(k.born).split(",")[0]) : "add a birth date"} · ${esc(STAGES[k.stage]?.name || "")} · ${esc(PORTION_WORDS[k.portion] || `${Math.round((+k.portion || 0) * 100)}%`)} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
+  return `<p class="section-label">Who you cook for</p>
+    <div class="list">
+      <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner. They don't need to sign in.</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
+      ${adults}${little}
+      ${paused ? `<div class="row" style="padding:12px 16px"><span class="grow small muted">Little ones are switched off, so their portions and notes are hidden.</span><button class="btn sm" data-act="kidsOnNow">Switch on</button></div>` : ""}
+      <div class="row wrap" style="padding:12px 16px;gap:8px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button><button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button></div>
+    </div>`;
+}
+/** A grown-up's panel: name, named size (with what it means), optional protein goal. */
+function openPerson(i, { keepScroll = false } = {}) {
+  const s = settings(), p = s.people[i]; if (!p) return;
+  const portion = +p.portion || 1, named = SIZES.some(([, v]) => Math.abs(v - portion) < 0.01);
+  const fine = app.fineTune || !named;
+  openSheet(`<p class="eyebrow">Who you cook for</p><h1 class="title" style="font-size:26px">${esc(p.name)}</h1>
+    <label class="stack" style="gap:6px;margin-bottom:14px"><span class="small muted">Name</span><input class="input" value="${esc(p.name)}" data-set="personName" data-i="${i}"></label>
+    <p class="section-label" style="margin-top:0">Dinner size</p>
+    <div class="seg" style="margin-bottom:8px">${SIZES.map(([n, v]) => `<button class="${Math.abs(v - portion) < 0.01 ? "on" : ""}" data-act="portionSet" data-i="${i}" data-v="${v}">${n}</button>`).join("")}</div>
+    <p class="small" style="margin:0 0 6px">About <b>${Math.round(typicalDinnerKcal() * portion / 10) * 10} kcal</b> for a typical dinner here. For example, 90 g of pasta becomes <b>${Math.round(90 * portion / 5) * 5} g</b>.</p>
+    ${fine ? `<div class="row between" style="margin:6px 0"><span class="small muted">Fine-tune</span><div class="stepper"><button data-act="portion" data-i="${i}" data-d="-0.05" aria-label="Less">−</button><span>×${portion.toFixed(2)}</span><button data-act="portion" data-i="${i}" data-d="0.05" aria-label="More">+</button></div></div>`
+      : `<button class="btn sm ghost" style="margin-bottom:6px" data-act="fineTune" data-i="${i}">Fine-tune</button>`}
+    <p class="section-label">Protein goal at dinner <span class="muted" style="text-transform:none;letter-spacing:0">(optional)</span></p>
+    <div class="row between"><span class="small muted">Shown in each recipe's nutrition</span><div class="stepper"><button data-act="goal" data-i="${i}" data-d="-5" aria-label="Less">−</button><span>${p.goal || 40} g</span><button data-act="goal" data-i="${i}" data-d="5" aria-label="More">+</button></div></div>
+    <div class="row" style="gap:8px;margin-top:18px"><button class="btn primary" data-close>Done</button>${s.people.length > 1 ? `<button class="btn" style="color:var(--warm)" data-act="removePerson" data-i="${i}">${icon("trash", 16)}Remove</button>` : ""}</div>`, { keepScroll });
+  app.panel = { type: "person", i };
+}
+/** A little one's panel: the same details as before (dates, stage, portion, suggestions). */
+function openKid(id, { keepScroll = false } = {}) {
+  const k = kidsAll().find((x) => x.id === id); if (!k) return;
+  const corrected = k.due && k.due !== k.born;
+  openSheet(`<p class="eyebrow">Who you cook for</p><h1 class="title" style="font-size:26px">${esc(k.name || "Little one")}</h1>
+    <div class="list">${kidCardHtml(k, corrected)}</div>
+    <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-close>Done</button></div>`, { keepScroll });
+  app.panel = { type: "kid", id };
+}
+function kidCardHtml(k, corrected) {
+  return `<div class="stack kid-card" style="padding:14px 16px;gap:10px;${kidStyle(k)}">
+        <div class="row"><span class="kid-dot" aria-hidden="true"></span><input class="input grow" value="${esc(k.name)}" placeholder="Name" data-set="kid" data-id="${esc(k.id)}" data-f="name" aria-label="Child's name">
+          <button class="icon-btn plain" data-act="kidRemove" data-id="${esc(k.id)}" aria-label="Remove ${esc(k.name || "child")}">${icon("trash", 18)}</button></div>
+        <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input ${k.born ? "" : "nudge-field"}" type="date" value="${esc(k.born)}" data-set="kid" data-id="${esc(k.id)}" data-f="born"></label>
+          <label class="grow"><span class="small muted">Due date (if early)</span><input class="input" type="date" value="${esc(k.due)}" data-set="kid" data-id="${esc(k.id)}" data-f="due"></label></div>
+        <span class="small muted">${k.born ? `${esc(ageText(k.born))} old${corrected ? ` · ${esc(ageText(k.due))} corrected` : ""}` : "Add their birth date. If they arrived early, add the due date too, for their corrected age."}</span>
+        <label><span class="small muted">Eating stage</span><select class="input" data-set="kid" data-id="${esc(k.id)}" data-f="stage">${Object.entries(STAGES).map(([s2, v]) => `<option value="${s2}" ${k.stage === s2 ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
+        <span class="small muted">${esc(STAGES[k.stage]?.hint || "")}</span>
+        ${kidSuggestions(k).map(babySuggestionCard).join("")}
+        <div class="row between"><span class="small muted">Portion size (share of an adult's)</span><div class="stepper"><button data-act="kidPortion" data-id="${esc(k.id)}" data-d="-0.05" aria-label="Less">−</button><span>${(+k.portion || 0).toFixed(2)}</span><button data-act="kidPortion" data-id="${esc(k.id)}" data-d="0.05" aria-label="More">+</button></div></div>
+      </div>`;
+}
+/** Redraw whichever person panel is open after a change (not while typing a name). */
+function refreshPanel() {
+  const p = app.panel; if (!p || $("#sheet").hidden) return;
+  if (p.type === "person") openPerson(p.i, { keepScroll: true }); else openKid(p.id, { keepScroll: true });
+}
+function openAddPerson() {
+  const names = new Set(settings().people.map((p) => p.name.toLowerCase()));
+  const members = (app.account && app.account.household ? app.account.household.members : []).map((m) => m.name).filter((n) => n && !names.has(n.toLowerCase()));
+  openSheet(`<p class="eyebrow">Who you cook for</p><h1 class="title" style="font-size:26px">Add a grown-up</h1>
+    ${members.length ? `<p class="small muted" style="margin-bottom:6px">From your household:</p><div class="chips wrap" style="margin-bottom:12px">${members.map((n) => `<button class="chip" data-act="addPersonNamed" data-n="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
+    <form data-form="addPerson" class="stack"><label><span class="small muted">Name</span><input class="input" name="name" required autocomplete="off" placeholder="e.g. Grandad"></label>
+      <span class="small muted">They don't need to sign in: this is just for portions.</span><button class="btn lg primary">Add</button></form>`);
+}
+
 // ---- "Update ready" (online version) ----
 const newerThan = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };
 async function updateReady(worker) {
