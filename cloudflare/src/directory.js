@@ -33,6 +33,8 @@ export class Directory extends DurableObject {
     // added in 0.9: when each person last used the app (Unix seconds, updated at most hourly)
     const cols = this.sql.exec("PRAGMA table_info(members)").toArray().map((c) => c.name);
     if (!cols.includes("last_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN last_seen INTEGER");
+    // added in 0.9.9: the newest admin message each person has dismissed
+    if (!cols.includes("notice_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN notice_seen INTEGER");
     // added in 0.9.5: when each recipe rating was left (no contents), so the admin dashboard can
     // say "3 new" without opening every household. The ratings themselves stay in each household.
     this.sql.exec("CREATE TABLE IF NOT EXISTS feedback_log (at INTEGER NOT NULL, household TEXT NOT NULL)");
@@ -124,7 +126,7 @@ export class Directory extends DurableObject {
   // ---- admins only (the Worker checks ADMINS before calling these) ----------
   overview() {
     const households = this.rows("SELECT id, name, created FROM households ORDER BY name COLLATE NOCASE");
-    return { households: households.map((h) => ({ ...h, members: this.householdMembers(h.id) })), people: this.peopleCount(), limits: LIMITS, lastSync: JSON.parse(this.meta("lastSync") || "null") };
+    return { households: households.map((h) => ({ ...h, members: this.householdMembers(h.id) })), people: this.peopleCount(), limits: LIMITS, lastSync: JSON.parse(this.meta("lastSync") || "null"), notice: this.noticeStats() };
   }
 
   createHousehold(byEmail, { householdName, email, name }) {
@@ -188,6 +190,35 @@ export class Directory extends DurableObject {
       return { left: m.household, deleted: m.household };
     }
     return { left: m.household };
+  }
+
+  // ---- a message from the admin to everyone, shown once each -----------------
+  notice() { return JSON.parse(this.meta("notice") || "null"); }
+  noticeStats() {
+    const n = this.notice();
+    if (!n) return null;
+    return { ...n, seenBy: this.row("SELECT COUNT(*) AS n FROM members WHERE notice_seen >= ?", n.id).n };
+  }
+  setNotice(byEmail, text) {
+    text = String(text || "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim();
+    if (!text) throw new UserError("Please write a message");
+    if (text.length > 400) throw new UserError("Please keep it under 400 characters");
+    const prev = this.notice();
+    const id = Math.max(this.now(), prev ? prev.id + 1 : 0); // always newer, so everyone sees it
+    this.setMeta("notice", JSON.stringify({ id, text, at: this.now() }));
+    this.sql.exec("UPDATE members SET notice_seen = ? WHERE email = ?", id, byEmail); // you've seen your own
+    return this.noticeStats();
+  }
+  clearNotice() { this.sql.exec("DELETE FROM meta WHERE key = 'notice'"); return null; }
+  /** The message, if this person hasn't dismissed it yet. */
+  noticeFor(email) {
+    const n = this.notice(), m = n && this.row("SELECT notice_seen AS seen FROM members WHERE email = ?", email);
+    if (!n || !m || (m.seen || 0) >= n.id) return null;
+    return { id: n.id, text: n.text, at: n.at };
+  }
+  markNotice(email, id) {
+    this.sql.exec("UPDATE members SET notice_seen = ? WHERE email = ? AND (notice_seen IS NULL OR notice_seen < ?)", Number(id) || 0, email, Number(id) || 0);
+    return { ok: true };
   }
 
   // ---- recipe feedback ------------------------------------------------------

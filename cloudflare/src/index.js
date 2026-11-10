@@ -124,6 +124,10 @@ async function api(request, env, who, url) {
   }
   if (path === "/api/import" && post) return json({ ...(await household(env, who.household).importState(await readBody(request))), user: who.name });
 
+  // ---- a message from the admin, shown once ----
+  if (path === "/api/notice" && !post) return json({ notice: await dir.noticeFor(who.email) });
+  if (path === "/api/notice/seen" && post) { const { id } = await readBody(request); return json(await dir.markNotice(who.email, id)); }
+
   // ---- your household's members ----
   if (path === "/api/account" && !post) return json({ ...(await dir.account(who.email)), admin: who.admin, ...signInInfo() });
   if (path === "/api/account/invite" && post) {
@@ -179,6 +183,15 @@ async function api(request, env, who, url) {
       });
       items.sort((a, b) => b.at - a.at);
       return json({ items: items.slice(0, 3000), ...(await dir.feedbackNew(who.email)) });
+    }
+    if (path === "/api/admin/notice" && post) {
+      const { text } = await readBody(request);
+      await dir.setNotice(who.email, text);
+      return json({ ...(await dir.overview()), ...signInInfo() });
+    }
+    if (path === "/api/admin/notice/clear" && post) {
+      await dir.clearNotice();
+      return json({ ...(await dir.overview()), ...signInInfo() });
     }
     if (path === "/api/admin/feedback/seen" && post) return json(await dir.markFeedbackSeen(who.email));
     if (path === "/api/admin/household" && post) {

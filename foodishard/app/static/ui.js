@@ -50,7 +50,10 @@ async function boot() {
   window.addEventListener("hashchange", fromHash);
   fromHash();
   if (app.mode === "live") { startPolling(); flushQueue(); }
-  if (app.mode === "live" && app.host === "Cloudflare" && !app.offline && !app.signedOut) loadAccount();
+  if (app.mode === "live" && app.host === "Cloudflare" && !app.offline && !app.signedOut) {
+    loadAccount(); loadNotice();
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) loadNotice(); });
+  }
   // Online version only: keep a copy of the app on the phone so it opens without signal.
   if (app.host === "Cloudflare" && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     navigator.serviceWorker.register("sw.js").catch((err) => console.warn("offline copy unavailable", err));
@@ -465,7 +468,7 @@ function viewSettings() {
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
     ${accountFooter()}
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.8</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.9</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -916,6 +919,9 @@ const ACTIONS = {
   about: () => openAbout(),
   signInAgain: () => { location.reload(); },
   acctReload: () => { loadAccount(); toast("Refreshed"); },
+  noticeDismiss: () => dismissNotice(),
+  adminNotice: () => openAdminNotice(),
+  adminNoticeClear: () => { if (window.confirm("Take the message down? Anyone who hasn't seen it yet won't.")) adminDo("api/admin/notice/clear", {}, () => toast("Message taken down")); },
   signOut: () => signOut(),
   deleteAccount: () => openDeleteAccount(),
   deleteAccountConfirm: () => deleteAccount(),
@@ -1088,6 +1094,7 @@ function onSubmit(e) {
     accountCall("api/admin/member", body).then(async (res) => { await loadAccount(); showInviteResult(body.name, body.email.toLowerCase(), res.signIn); }).catch((err) => toast(err.message));
     return;
   }
+  if (f.dataset.form === "adminNotice") { adminDo("api/admin/notice", { text: val("text") }, () => toast("Sent. Everyone sees it next time they open the app")); return; }
   if (f.dataset.form === "adminRename") { adminDo("api/admin/rename-household", { id: f.dataset.id, name: val("name").trim() }, () => toast("Renamed")); return; }
   if (f.dataset.form === "invite" || f.dataset.form === "newHousehold") { submitInvite(f.dataset.form === "newHousehold" ? "household" : "member", f); return; }
   if (f.dataset.form === "skip") { dayUpdate(+f.dataset.i, { status: "skip", note: val("note").trim() || null }); closeSheet(); return; }
@@ -1132,7 +1139,7 @@ function openAbout() {
   const where = online
     ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data${app.region === "eu" ? " in its EU data centres" : ""} and sends the sign-in codes.</p>
        <ul>
-         <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, and when you last used the app (so unused places can be freed up).</li>
+         <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), and whether you've read the latest message from the host.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, their names and birth dates) and recipe feedback.</li>
          <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard, with your household's name, so they can improve the recipes. Nothing else of your household's is shown to them in the app.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
@@ -1170,6 +1177,40 @@ async function accountCall(path, body) {
   if (!r.ok) throw new Error(res.error || `Something went wrong (${r.status})`);
   return res;
 }
+// ---- A message from the admin, shown once to each person (online version) ----
+let noticeChecked = 0;
+async function loadNotice() {
+  if (Date.now() - noticeChecked < 10 * 60000) return; // at most every 10 minutes
+  noticeChecked = Date.now();
+  try {
+    const { notice } = await accountCall("api/notice");
+    if (notice) showNotice(notice);
+  } catch { noticeChecked = 0; /* try again next time */ }
+}
+function showNotice(n) {
+  const el = $("#notice");
+  el.dataset.id = n.id;
+  el.innerHTML = `<div class="row" style="gap:10px"><img src="icon-192.png" alt="" width="28" height="28" style="border-radius:8px"><span class="eyebrow grow" style="margin:0">Message from FoodIsHard · ${shortDate(n.at)}</span></div>
+    <div class="notice-text">${esc(n.text)}</div>
+    <button class="btn sm primary" style="align-self:flex-end" data-act="noticeDismiss">Got it</button>`;
+  el.hidden = false;
+}
+async function dismissNotice() {
+  const el = $("#notice"); el.hidden = true;
+  try { await accountCall("api/notice/seen", { id: Number(el.dataset.id) }); } catch { /* shown again next time: better than never */ }
+}
+function openAdminNotice() {
+  const n = (app.adminInfo || {}).notice;
+  openSheet(`<p class="eyebrow">Admin</p><h1 class="title" style="font-size:26px">Message everyone</h1>
+    <p class="muted">It appears at the top of the app the next time each person opens it, until they tap <b>Got it</b>. Each person sees it once. Sending a new message replaces the old one.</p>
+    ${n ? `<div class="list" style="margin-bottom:12px"><div class="stack" style="padding:12px 16px;gap:6px"><span class="small muted">Showing now · sent ${shortDate(n.at)} · seen by ${n.seenBy} of ${app.adminInfo.people}</span><span style="white-space:pre-line">${esc(n.text)}</span>
+      <button class="btn sm" style="align-self:flex-start;color:var(--warm)" data-act="adminNoticeClear">Take it down</button></div></div>` : ""}
+    <form data-form="adminNotice" class="stack">
+      <textarea class="input" name="text" rows="4" maxlength="400" required placeholder="e.g. 5 new recipes this week. Tell me what you think!" style="resize:vertical;min-height:100px"></textarea>
+      <span class="small muted">Up to 400 characters. People who join later see it too, until you take it down.</span>
+      <button class="btn lg primary">${n ? "Send instead" : "Send to everyone"}</button></form>`);
+}
+
 // ---- Sign out and delete my account (online version) ----
 /** Forget this device's copy (so the next person can't see it offline), then end the Cloudflare sign-in. */
 async function signOut({ ask = true } = {}) {
@@ -1353,7 +1394,8 @@ function viewAdmin() {
           : `<span class="small" style="color:var(--warm)">Automatic sign-in updates aren't set up: add new emails to your Access policy by hand (CLOUDFLARE.md, step 6).</span>`}
       </div>
     </div>
-    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="go" data-to="feedback" style="padding:13px 16px"><span class="grow"><b>Recipe feedback</b><br><span class="small muted">Ratings from every household</span></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button></div>
+    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="go" data-to="feedback" style="padding:13px 16px"><span class="grow"><b>Recipe feedback</b><br><span class="small muted">Ratings from every household</span></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button>
+      <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b><br><span class="small muted">${ad.notice ? `Showing now · seen by ${ad.notice.seenBy} of ${ad.people}` : "Shown once, at the top of the app"}</span></span>${icon("right", 18)}</button></div>
     <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
     <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search people or households" aria-label="Search people or households" data-input="afilter" autocomplete="off"></label>
     <div class="chips" style="margin-bottom:12px">${chip("all", "Everyone")}${chip("never", `Never signed in (${never})`)}${chip("inactive", `Inactive (${inactive})`)}</div>
@@ -1363,7 +1405,7 @@ function viewAdmin() {
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
     <div style="text-align:center;margin-top:24px"><button class="btn sm" data-act="signOut">Sign out</button></div>
-    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.8</p>`;
+    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.9</p>`;
 }
 // ---- Recipe feedback from every household (its own screen, off the dashboard) ----
 const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };

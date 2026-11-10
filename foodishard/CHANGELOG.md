@@ -125,3 +125,6 @@
 
 ## 0.9.8
 - Calories replace protein on the Today card, the week list, the recipe list and the recipe panel. Tap a person's figure for the full nutrition, which still includes protein and the protein goal. The week list shows one figure when everyone's portion is the same.
+
+## 0.9.9
+- Online version: admins can **Message everyone** from the admin dashboard. The message appears as a card at the top of the app the next time each person opens it, until they tap **Got it**. Each person sees it once, whichever phone they use. The dashboard shows how many people have seen it, and you can take it down or replace it.

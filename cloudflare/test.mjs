@@ -406,6 +406,27 @@ await test("delete my account: leaves the household, scrubs the name; the last o
   assert.equal(((await hh.getState()).state.extras || {})["2026-11-09"], undefined);
   assert.equal((await c("/api/account/delete", { email: "nobody@example.com", body: {} })).status, 403);
 });
+await test("admin message: everyone sees it once, until they dismiss it; a new one shows again", async () => {
+  const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "alex@example.com": "Alex", "admin@example.com": "Me" }, b: { "priya@example.com": "Priya" } }) });
+  const c = (p, o = {}) => call(p, { e, ...o });
+  assert.equal((await c("/api/notice", { email: "alex@example.com" })).body.notice, null);
+  assert.equal((await c("/api/admin/notice", { email: "alex@example.com", body: { text: "hi" } })).status, 403);
+  assert.equal((await c("/api/admin/notice", { email: "admin@example.com", body: { text: "  " } })).status, 400);
+  const ov = (await c("/api/admin/notice", { email: "admin@example.com", body: { text: "New recipes are in!" } })).body;
+  assert.equal(ov.notice.text, "New recipes are in!"); assert.equal(ov.notice.seenBy, 1);
+  assert.equal((await c("/api/notice", { email: "admin@example.com" })).body.notice, null); // the sender has seen it
+  const n = (await c("/api/notice", { email: "alex@example.com" })).body.notice;
+  assert.equal(n.text, "New recipes are in!");
+  assert.equal((await c("/api/notice", { email: "alex@example.com" })).body.notice.id, n.id); // still there until dismissed
+  await c("/api/notice/seen", { email: "alex@example.com", body: { id: n.id } });
+  assert.equal((await c("/api/notice", { email: "alex@example.com" })).body.notice, null);
+  assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.notice.seenBy, 2);
+  await c("/api/admin/notice", { email: "admin@example.com", body: { text: "Another one" } });
+  assert.equal((await c("/api/notice", { email: "alex@example.com" })).body.notice.text, "Another one");
+  await c("/api/admin/notice/clear", { email: "admin@example.com", body: {} });
+  assert.equal((await c("/api/notice", { email: "priya@example.com" })).body.notice, null);
+  assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.notice, null);
+});
 await test("DATA_REGION=auto lets Cloudflare choose", async () => {
   const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ z: { "z@example.com": "Z" } }), DATA_REGION: "auto" });
   jurisdictions.length = 0;
