@@ -98,10 +98,11 @@ export function withDefaults(state, defaults) {
   return state;
 }
 
-/** Drop old weeks so a household's data stays small (shopping ticks: 6 months, plans: 2 years). */
+/** Drop old weeks: shopping lists after 8 weeks, meal plans after a year (same as server.py). */
+export const KEEP_WEEKS = { lists: 8, plans: 52 };
 export function prune(state, today = new Date()) {
   const cutoff = (weeks) => { const d = new Date(today); d.setDate(d.getDate() - weeks * 7); return d.toISOString().slice(0, 10); };
-  const short = cutoff(26), long = cutoff(104);
+  const short = cutoff(KEEP_WEEKS.lists), long = cutoff(KEEP_WEEKS.plans);
   for (const k of ["checks", "extras", "shopFor"]) for (const wk of Object.keys(state[k] || {})) if (wk < short) delete state[k][wk];
   for (const wk of Object.keys(state.plans || {})) if (wk < long) delete state.plans[wk];
   return state;

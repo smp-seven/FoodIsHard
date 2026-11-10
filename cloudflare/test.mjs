@@ -77,10 +77,12 @@ function sqlStorage() {
     },
   };
 }
+const jurisdictions = [];
 function namespace(Cls, env) {
   const objects = new Map();
   return {
     idFromName: (n) => n,
+    jurisdiction(j) { jurisdictions.push(j); return this; },
     get(id) {
       if (!objects.has(id)) {
         const store = new Map();
@@ -157,6 +159,8 @@ await test("new household starts from defaults; names and host come through", as
   const r = await call("/api/state", { email: "alex@example.com" });
   assert.equal(r.body.user, "Alex"); assert.equal(r.body.poll, 8); assert.equal(r.body.host, "Cloudflare");
   assert.equal(r.body.state.rev, 0);
+  assert.equal(r.body.region, "eu");
+  assert.ok(jurisdictions.length > 0 && jurisdictions.every((j) => j === "eu"), "data kept in the EU");
 });
 await test("ops are shared within a household (email case ignored)", async () => {
   await call("/api/op", { email: "alex@example.com", body: { op: "settings", patch: { dislikes: "olives" } } });
@@ -301,10 +305,18 @@ await test("weekly ONS check reaches every household that hasn't switched it off
   assert.equal((await state("a@example.com")).inflation.factor, 1.015);
   assert.ok(!((await state("b@example.com")).inflation || {}).factor);
 });
-await test("old weeks are pruned so data stays small", async () => {
-  const s = { checks: { "2020-01-06": {}, "2026-11-09": {} }, extras: {}, shopFor: {}, plans: { "2020-01-06": {}, "2026-11-09": {} } };
+await test("old weeks are pruned: lists after 8 weeks, plans after a year", async () => {
+  const s = { checks: { "2026-09-07": {}, "2026-09-21": {}, "2026-11-09": {} }, extras: { "2026-09-07": [] }, shopFor: {},
+    plans: { "2025-10-27": {}, "2025-11-17": {}, "2026-09-07": {} } };
   logic.prune(s, new Date("2026-11-10"));
-  assert.deepEqual(Object.keys(s.checks), ["2026-11-09"]); assert.deepEqual(Object.keys(s.plans), ["2026-11-09"]);
+  assert.deepEqual(Object.keys(s.checks), ["2026-09-21", "2026-11-09"]); assert.deepEqual(Object.keys(s.extras), []);
+  assert.deepEqual(Object.keys(s.plans), ["2025-11-17", "2026-09-07"]);
+});
+await test("DATA_REGION=auto lets Cloudflare choose", async () => {
+  const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ z: { "z@example.com": "Z" } }), DATA_REGION: "auto" });
+  jurisdictions.length = 0;
+  const r = await call("/api/state", { email: "z@example.com", e });
+  assert.equal(r.body.region, "auto"); assert.equal(jurisdictions.length, 0);
 });
 await test("a broken old HOUSEHOLDS setting is reported, not half-imported", async () => {
   const e = makeEnv({ HOUSEHOLDS: "{not json" });

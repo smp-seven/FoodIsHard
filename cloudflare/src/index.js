@@ -7,6 +7,7 @@
 //   ACCESS_TEAM   e.g. "yourteam.cloudflareaccess.com"
 //   ACCESS_AUD    the Access application's "Application Audience (AUD) Tag"
 //   ADMINS        your email (comma-separate several). Admins invite new households.
+//   DATA_REGION   optional: "eu" (default) or "auto"
 // Optional, so invites update the sign-in list automatically:
 //   CF_ACCOUNT_ID        your Cloudflare account ID
 //   CF_API_TOKEN         secret: an API token allowed to edit Access policies
@@ -41,8 +42,14 @@ const page = (title, body, status) => new Response(
   <body style="font:16px/1.5 system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;color:#222"><h1 style="font-size:1.4rem">${title}</h1>${body}</body>`,
   { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
 
-const directory = (env) => env.DIRECTORY.get(env.DIRECTORY.idFromName("directory"));
-const household = (env, id) => env.HOUSEHOLD.get(env.HOUSEHOLD.idFromName(id));
+// Where data is stored. "eu" (the default) keeps every household's data, and the directory of
+// names and emails, in Cloudflare's EU data centres. Set DATA_REGION to "auto" to let
+// Cloudflare choose. Decide before real use: changing it later starts everyone afresh.
+const region = (env) => (env.DATA_REGION === "auto" ? "auto" : "eu");
+const space = (env, ns) => (region(env) === "eu" ? ns.jurisdiction("eu") : ns);
+const stub = (env, ns, name) => { const s = space(env, ns); return s.get(s.idFromName(name)); };
+const directory = (env) => stub(env, env.DIRECTORY, "directory");
+const household = (env, id) => stub(env, env.HOUSEHOLD, id);
 
 let imported = false;
 const whoCache = new Map();
@@ -97,7 +104,7 @@ async function api(request, env, who, url) {
   // ---- the household's meal-planning data ----
   if (path === "/api/state" && !post) {
     const res = await household(env, who.household).getState(url.searchParams.get("rev"));
-    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", account: true, poll: POLL_SECONDS });
+    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS });
   }
   if (path === "/api/op" && post) return json({ ...(await household(env, who.household).op(await readBody(request), who.name)), user: who.name });
   if (path === "/api/import" && post) return json({ ...(await household(env, who.household).importState(await readBody(request))), user: who.name });

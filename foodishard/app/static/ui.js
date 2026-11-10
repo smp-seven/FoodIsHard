@@ -15,7 +15,7 @@ async function boot() {
   try {
     const res = await getJSON("api/state");
     if (!res.state) throw new Error("no state");
-    app.mode = "live"; app.state = res.state; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.pollMs = (res.poll || 4) * 1000;
+    app.mode = "live"; app.state = res.state; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
     store(CACHE_KEY, app.state);
   } catch {
     const cached = load(CACHE_KEY, null);
@@ -400,7 +400,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.1</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.2</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1019,15 +1019,16 @@ let searchTimer;
 function openAbout() {
   const online = app.host === "Cloudflare", ha = app.mode === "live" && !online;
   const where = online
-    ? `<p>This copy runs on a Cloudflare account belonging to whoever invited you (or invited your household). They run it as a favour, not as a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data and sends the sign-in codes.</p>
+    ? `<p>This copy runs on a Cloudflare account belonging to whoever invited you (or invited your household). They run it as a favour, not as a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data${app.region === "eu" ? " in its EU data centres" : ""} and sends the sign-in codes.</p>
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name and who invited you.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you turn baby mode on, your baby's name and birth date) and recipe feedback.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
        </ul>
+       <p>Old shopping lists are deleted after 8 weeks and meal plans after a year.</p>
        <p>You can <b>download a backup</b> of your household's data any time (Settings → Your data). To have it deleted, ask the person who runs this copy.</p>`
-    : ha ? `<p>Everything is stored on your own Home Assistant, and only people with a Home Assistant login can open it. Nothing is sent anywhere else.</p>`
+    : ha ? `<p>Everything is stored on your own Home Assistant, and only people with a Home Assistant login can open it. Nothing is sent anywhere else. Old shopping lists are deleted after 8 weeks and meal plans after a year.</p>`
     : `<p>This is a preview. Everything is saved in this browser only.</p>`;
   openSheet(`<p class="eyebrow">About</p><h1 class="title" style="font-size:26px">FoodIsHard</h1>
     <div class="stack about" style="gap:6px">

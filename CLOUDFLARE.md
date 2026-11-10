@@ -19,6 +19,12 @@ The Home Assistant app is unaffected: it ignores everything in this file.
 | **Household** (one Durable Object each) | Holds that household's plans, lists and settings. Only its members can reach it. |
 | **Cloudflare Access** | Sends the email codes and only lets listed emails through. The app keeps that list up to date when people are invited or removed. |
 
+**Where the data lives:** in your Cloudflare account, in Cloudflare's **EU data centres**.
+That's the default, set by `DATA_REGION`. To keep data small and tidy:
+
+- shopping lists are deleted after **8 weeks**
+- meal plans are deleted after **a year**
+
 **Cost:** free for up to 50 people. Access's free plan has a 50-person limit, and the app stops
 at 45 to leave room. Zero Trust asks for a payment card even on the free plan, but it charges
 nothing unless you choose a paid plan.
@@ -74,6 +80,10 @@ Open the Worker, go to **Settings → Variables and Secrets**, add these as **Te
 | `ACCESS_TEAM` | `yourteam.cloudflareaccess.com` |
 | `ACCESS_AUD` | the AUD tag from step 4 |
 | `ADMINS` | your email; separate several with commas |
+
+Optional: `DATA_REGION` = `auto` lets Cloudflare choose where to store data instead of the EU.
+Only use it if the EU option fails on your plan, and decide before anyone uses the app: changing
+it later starts every household afresh.
 
 Now open the address on your phone and sign in with your email and the code. The app creates
 your household automatically, called "Home"; you can rename it in Settings.
@@ -170,6 +180,7 @@ anything. After that it's ignored, and you can delete it.
 | "Not set up yet" | They signed in, but nobody has invited that email. Invite it from Settings. |
 | The code email never arrives | That email isn't in the **FoodIsHard people** policy. Cloudflare silently ignores unknown addresses. Press **Update sign-in list now**, or add the email to the policy by hand. |
 | Invite says "add their email to your Access policy" | Step 6 isn't set up yet, so add the email to the policy by hand. |
+| An error mentioning "jurisdiction" on first sign-in | Your plan doesn't allow the EU restriction. Add `DATA_REGION` = `auto` and Deploy. |
 | App says it's offline | The sign-in has probably expired while the app was open. Reload to sign in again. |
 
 ## For developers (and learning)

@@ -73,3 +73,7 @@
 
 ## 0.8.1
 - Settings → About: what is stored and who can see it (worded for whichever version you run), plus food-safety notes on allergies, vegetarian labels and babies.
+
+## 0.8.2
+- Both versions: old shopping lists are deleted after 8 weeks and meal plans after a year, so data stays small and tidy.
+- Online version: data is kept in Cloudflare's EU data centres (DATA_REGION, default "eu").

@@ -5,6 +5,7 @@ Runs as a Home Assistant add-on behind Ingress (HA handles login), or standalone
 """
 
 import copy
+import datetime
 import json
 import mimetypes
 import os
@@ -72,7 +73,29 @@ def _load_merge(state):
     return state
 
 
+KEEP_WEEKS = {"lists": 8, "plans": 52}  # same as KEEP_WEEKS in cloudflare/src/logic.js
+
+
+def prune(state, today=None):
+    """Drop old weeks: shopping lists after 8 weeks, meal plans after a year."""
+    today = today or datetime.date.today()
+    short = (today - datetime.timedelta(weeks=KEEP_WEEKS["lists"])).isoformat()
+    long_ = (today - datetime.timedelta(weeks=KEEP_WEEKS["plans"])).isoformat()
+    for key in ("checks", "extras", "shopFor"):
+        bag = state.get(key)
+        if isinstance(bag, dict):
+            for week in [w for w in bag if w < short]:
+                del bag[week]
+    plans = state.get("plans")
+    if isinstance(plans, dict):
+        for week in [w for w in plans if w < long_]:
+            del plans[week]
+    return state
+
+
 def _save():
+    if _state is not None:
+        prune(_state)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=DATA_DIR, prefix=".state-", suffix=".json")
     with os.fdopen(fd, "w", encoding="utf-8") as fh:

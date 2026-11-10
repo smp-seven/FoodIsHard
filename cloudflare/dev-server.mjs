@@ -47,6 +47,7 @@ function namespace(Cls, env) {
   const objects = new Map();
   return {
     idFromName: (n) => n,
+    jurisdiction() { return this; },
     get(id) {
       if (!objects.has(id)) {
         const store = new Map(), db = new DatabaseSync(":memory:");
