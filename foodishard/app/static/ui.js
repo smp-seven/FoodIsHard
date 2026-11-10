@@ -108,6 +108,12 @@ function proteinTiles(r, onHero) {
 function proteinShort(r) { return household().adults.map((p) => proteinFor(r, p.portion)).join(" / ") + " g"; }
 function visibleSteps(r) { const inc = household().baby.include; return r.steps.filter((s) => inc || !s.baby); }
 
+function babySuggestionCard(sg) {
+  return `<div class="baby-suggest"><p>${esc(sg.text)}</p>${sg.info
+    ? `<button class="btn sm" data-act="babyDismiss" data-k="${esc(sg.key)}">Got it</button>`
+    : `<div class="row" style="gap:8px"><button class="btn sm primary" data-act="babyAccept" data-k="${esc(sg.key)}">Yes, change it</button><button class="btn sm" data-act="babyDismiss" data-k="${esc(sg.key)}">Not yet</button></div>`}</div>`;
+}
+
 // ----- Tonight -----
 function viewTonight() {
   const today = new Date(), week = currentWeek();
@@ -153,7 +159,9 @@ function viewTonight() {
 
   const list = buildList(week).filter((x) => x.active && (!x.cupboard || x.need));
   const left = list.filter((x) => !x.done).length, total = list.reduce((t, x) => t + (x.cost || 0), 0);
+  const growing = babySuggestions().filter((x) => !x.info);
   return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
+    ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(babyName())} is growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals. Tap to review.</span></span><span class="muted">›</span></button>` : ""}
     ${hero}
     <div class="row between" style="margin:22px 4px 10px"><h2 class="h2">Coming up</h2><button class="btn sm ghost" data-act="go" data-to="week">See the week</button></div>
     <div class="list week-mini">${upcoming.join("")}</div>
@@ -378,7 +386,7 @@ function viewSettings() {
         <span class="small muted">${b.born ? `${esc(ageText(b.born))} old${b.due && b.due !== b.born ? ` · ${esc(ageText(b.due))} corrected` : ""}` : "Add the birth date. If they arrived early, add the due date too, for their corrected age."}</span>
         <label><span class="small muted">Eating stage</span><select class="input" data-set="baby" data-f="stage">${Object.entries(STAGES).map(([k, v]) => `<option value="${k}" ${b.stage === k ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
         <span class="small muted">${esc(STAGES[b.stage]?.hint || "")}</span>
-        ${bi.ageCorrected && bi.ageCorrected.m >= 12 && b.stage !== "chopped" ? `<div class="pill baby" style="white-space:normal;padding:8px 12px">Past 12 months corrected: they may be ready for chopped family food.</div>` : ""}
+        ${babySuggestions().map(babySuggestionCard).join("")}
         <div class="row between"><span class="small muted">Portion size</span>${stepper("babyPortion", 0, b.portion, 0.05, (v) => (+v).toFixed(2))}</div></div>` : ""}
     </div>
 
@@ -423,7 +431,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.1</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.2</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -949,6 +957,14 @@ const ACTIONS = {
   // settings
   portion: (d) => { const people = clone(settings().people); people[+d.i].portion = Math.max(0.3, Math.round((+people[+d.i].portion + +d.d) * 10) / 10); send({ op: "settings", patch: { people } }); },
   goal: (d) => { const people = clone(settings().people); people[+d.i].goal = Math.max(10, (+people[+d.i].goal || 40) + +d.d); send({ op: "settings", patch: { people } }); },
+  babyReview: () => { go("settings"); setTimeout(() => { const el = $(".baby-suggest"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, 120); },
+  babyAccept: (d) => {
+    const sg = babySuggestions().find((x) => x.key === d.k); if (!sg) return;
+    const b = settings().baby;
+    send({ op: "settings", patch: { baby: { ...b, ...sg.set, dismissed: [...(b.dismissed || []), d.k] } } });
+    toast("Updated. You can change it any time.");
+  },
+  babyDismiss: (d) => { const b = settings().baby; send({ op: "settings", patch: { baby: { ...b, dismissed: [...new Set([...(b.dismissed || []), d.k])] } } }); },
   babyPortion: (d) => { const b = settings().baby; send({ op: "settings", patch: { baby: { ...b, portion: Math.max(0.05, Math.round((+b.portion + +d.d) * 100) / 100) } } }); },
   addPerson: () => { const people = clone(settings().people); people.push({ id: uid(), name: `Adult ${people.length + 1}`, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); },
   removePerson: (d) => { const people = clone(settings().people); people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); },
@@ -1237,7 +1253,7 @@ function viewAdmin() {
     ${own ? `<div class="list" style="margin-top:18px"><div class="stack" style="padding:14px 16px;gap:8px"><b>Your own household: ${esc(own.name)}</b>
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
-    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.1</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.2</p>`;
 }
 function adminFind(email) {
   for (const h of (app.adminInfo || { households: [] }).households) { const m = h.members.find((x) => x.email === email); if (m) return { m, h }; }

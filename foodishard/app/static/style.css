@@ -256,3 +256,7 @@ details.fold summary::-webkit-details-marker { display: none; }
 .head .brand { width: 44px; height: 44px; border-radius: 12px; flex: none; align-self: center; margin-right: 2px; }
 body.admin-only .nav { display: none; }
 body.admin-only .view { padding-bottom: 32px; }
+
+/* Baby growth suggestions */
+.baby-suggest { background: var(--baby-soft); color: var(--baby-ink); border-radius: 14px; padding: 12px 14px; display: grid; gap: 10px; }
+.baby-suggest p { margin: 0; font-size: 15px; }

@@ -201,6 +201,42 @@ function babyInfo() {
   const saltLimit = months < 12 ? 1 : months < 48 ? 2 : 3; // NHS daily maximums
   return { b, ageActual, ageCorrected, firstBirthday, underOne: months < 12, saltLimit };
 }
+// Gentle, dismissible suggestions as the baby grows. They never change anything by
+// themselves: babies vary, and portions should follow their appetite. Ages use the
+// corrected age when a due date is given (premature babies), otherwise the real age.
+// These are rough general guides, not professional advice.
+const BABY_STAGE_FROM = [["smooth", 0], ["finger", 7], ["chopped", 10]]; // months
+const BABY_PORTION_FROM = [[6, 0.2], [9, 0.25], [12, 0.33], [24, 0.4], [48, 0.5]]; // months, share of an adult portion
+const PORTION_WORDS = { 0.2: "a fifth", 0.25: "a quarter", 0.33: "a third", 0.4: "two-fifths", 0.5: "half" };
+function babySuggestions() {
+  const s = settings(), b = (s.baby || {});
+  if (!b.include || !b.born) return [];
+  const bi = babyInfo(), age = bi.ageCorrected || bi.ageActual;
+  if (!age || age.m < 0) return [];
+  const name = b.name || "Baby", m = age.m, corrected = b.due && b.due !== b.born;
+  const ageWords = `${ageText(corrected ? b.due : b.born)}${corrected ? " (corrected)" : ""}`;
+  const dismissed = b.dismissed || [], out = [];
+  if (m < 6) {
+    out.push({ key: "start", text: `${name} is ${ageWords}. Most babies start solid food at around 6 months${corrected ? "; for babies born early, ask your health visitor when to start" : ""}. The baby portions are here for when you're ready.`, info: true });
+  }
+  const order = BABY_STAGE_FROM.map(([k]) => k);
+  const due = BABY_STAGE_FROM.filter(([, from]) => m >= from).pop()[0];
+  if (order.indexOf(due) > order.indexOf(b.stage || "smooth")) {
+    out.push({
+      key: `stage:${due}`, set: { stage: due },
+      text: due === "finger"
+        ? `${name} is ${ageWords}. Many babies are ready for soft lumps and finger foods from about 7 months. Switch the baby notes to "${STAGES.finger.name}"?`
+        : `${name} is ${ageWords}. Many babies move on to chopped family food from about 10 to 12 months. Switch the baby notes to "${STAGES.chopped.name}"?`,
+    });
+  }
+  const band = BABY_PORTION_FROM.filter(([from]) => m >= from).pop();
+  if (band && band[1] > (+b.portion || 0) + 0.02) {
+    out.push({ key: `portion:${band[1]}`, set: { portion: band[1] },
+      text: `As a very rough guide, many ${m >= 12 ? "toddlers" : "babies"} of ${name}'s age eat about ${PORTION_WORDS[band[1]]} of an adult portion (it's set to ${(+b.portion || 0).toFixed(2)} now). Go by their appetite. Make it ${PORTION_WORDS[band[1]]}?` });
+  }
+  return out.filter((x) => !dismissed.includes(x.key));
+}
+
 function babyName() { const b = household().baby; return b.name || "Baby"; }
 function prefsFor(id) { return app.state.prefs[id] || {}; }
 function family(id) { return app.famById[id] || { id, name: id, plural: id }; }
