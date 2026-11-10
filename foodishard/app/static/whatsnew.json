@@ -2,6 +2,17 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.10.6",
+   "notes": [
+    "Guests, or someone out? Tap ⋯ on a day, then 'Who's eating', and the shopping list and amounts follow.",
+    "Cook double: twice the amounts tonight, and tomorrow becomes leftovers.",
+    "The shopping list notes when a pack will be left over (e.g. '¾ tin left over') for things that go off.",
+    "Set your own aisle order in Settings.",
+    "Each recipe now says how to store, freeze and reheat leftovers safely.",
+    "Fixed: closing Swap returns to the recipe, and the under-6-months note uses the baby's actual age."
+   ]
+  },
+  {
    "version": "0.10.5",
    "notes": [
     "Cooking mode shows the ingredients and amounts each step uses, so there's no scrolling back with messy hands.",

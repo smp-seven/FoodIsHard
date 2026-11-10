@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.10.5"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.10.6"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -150,8 +150,9 @@ function kidChips(list = kids()) { return list.map((k) => `<span class="kid-chip
 /** Things worth flagging for one child and one recipe: salt from shop-bought foods, and being too young for solids. */
 function kidWarnings(r, k, info) {
   const out = [], name = k.name || "the baby";
-  const age = (info.ageCorrected || info.ageActual || {}).m;
-  if (age != null && age < 6) out.push(`${name} is under 6 months${k.due ? " (corrected age)" : ""}. The NHS advises starting solids at around 6 months, so check with your health visitor first.`);
+  // NHS "around 6 months" is about actual age (premature babies: ask the health visitor), so this uses the date of birth
+  const age = (info.ageActual || {}).m;
+  if (age != null && age < 6) out.push(`${name} is under 6 months old. The NHS advises starting solids at around 6 months, so check with your health visitor first.`);
   const portion = +k.portion || 0;
   if (portion > 0) {
     // salt the steps can't take out: bread, wraps, gnocchi, beans and the like
@@ -198,6 +199,63 @@ function allergyPrompt() {
     <div class="row" style="gap:8px"><button class="btn primary" data-act="allergyDone">Done</button><button class="btn" data-act="allergyDone">No allergies</button></div>
   </div>`;
 }
+// ---- Storing and reheating (FSA and NHS guidance) ----
+const GRAINS = ["rice", "rice_pouch", "arborio", "couscous"];
+// dishes where the rice or couscous is mixed through, so the whole dish follows the stricter rice rule
+const GRAIN_DISHES = new Set(["egg-fried-rice", "egg-veg-biryani", "baked-pea-risotto", "greek-chickpea-bowls", "halloumi-chickpea-couscous"]);
+function hasGrains(r) { return GRAIN_DISHES.has(r.id); }
+function storingBox(r) {
+  const whole = hasGrains(r), side = !whole && r.ingredients.some((i) => GRAINS.includes(i.k)), little = kids().length > 0;
+  const grain = r.ingredients.some((i) => i.k === "couscous") ? "couscous" : "rice";
+  return `<p class="section-label">Leftovers</p><div class="card stack" style="padding:14px 16px;gap:6px;font-size:15px">
+    <span>Cool within ${whole ? "1 hour" : "1 to 2 hours"} (split into small tubs to speed it up), then into the fridge. Eat within ${whole ? "24 hours" : "2 days"}, or freeze.</span>
+    ${whole ? `<span class="small muted">The ${grain} is why it's stricter: its spores survive cooking, so it mustn't sit around warm.</span>` : ""}
+    ${side ? `<span>Any leftover ${grain} is stricter: cool it within 1 hour, keep it in the fridge and eat it within 24 hours.</span>` : ""}
+    ${r.freeze ? `<span><b>Freezes well:</b> ${esc(r.freeze.charAt(0).toLowerCase() + r.freeze.slice(1))}. Defrost in the fridge overnight and eat within 24 hours.</span>` : ""}
+    <span>Reheat only once, until steaming hot all the way through.</span>
+    ${little ? `<span class="small muted">For ${esc(kidNames())}: reheat until steaming hot, then let it cool before serving. Throw away anything left in their bowl.</span>` : ""}
+    <span class="small muted">From Food Standards Agency and NHS advice.</span></div>`;
+}
+/** "+2 guests · cooking double", or "" for a normal day. */
+function dayAdjustText(d) {
+  if (!d) return "";
+  const x = +d.extra || 0, bits = [];
+  if (x > 0) bits.push(`+${niceNumber(x)} ${x === 1 ? "guest" : "guests"}`);
+  if (x < 0) bits.push(`${niceNumber(-x)} fewer eating`);
+  if (d.double) bits.push("cooking double");
+  return bits.join(" · ");
+}
+function leftoversFrom(days, d) {
+  const src = d.from != null && days[d.from], r = src && src.recipe && app.byId[src.recipe];
+  return r ? `From ${DOW_LONG[mondayIndex(addDays(parseISO(app.weekStart), d.from))]}'s ${esc(r.name.toLowerCase())}` : "From earlier in the week";
+}
+/** Cook double: twice the amounts tonight, and the next day becomes leftovers from it. Turning it off puts the next day back. */
+function setDouble(week, i) {
+  const days = planFor(week), d = days[i], next = days[i + 1], on = !d.double;
+  dayUpdate(i, { double: on }, week);
+  if (!next) return;
+  if (on) dayUpdate(i + 1, { status: "leftovers", from: i, note: null }, week);
+  else if (next.status === "leftovers" && next.from === i) {
+    const recipe = next.recipe || pickRecipe(week, i + 1, planFor(week));
+    dayUpdate(i + 1, { status: "cook", from: null, recipe }, week);
+  }
+}
+function openEating(week, i, { keepScroll = false } = {}) {
+  const days = planFor(week), d = days[i], next = days[i + 1], { adults, kids: little, factor } = household();
+  const date = addDays(parseISO(week), i), x = +d.extra || 0, r = d.recipe && app.byId[d.recipe];
+  const usual = `${adults.length} grown-up${adults.length === 1 ? "" : "s"}${little.length ? ` and ${kidNames(little)}` : ""}`;
+  const nextR = next && next.status === "cook" && next.recipe && app.byId[next.recipe];
+  openSheet(`<p class="eyebrow">${DOW_LONG[mondayIndex(date)]} ${date.getDate()} ${MONTHS[date.getMonth()]}</p><h1 class="title" style="font-size:26px">Who's eating?</h1>
+    <p class="muted">Usually ${esc(usual)}: ${niceNumber(factor)} portions${r ? ` of ${esc(r.name.toLowerCase())}` : ""}.</p>
+    <div class="list" style="margin-bottom:12px">
+      <div class="row between" style="padding:14px 16px"><span><b>Guests or anyone out</b><br><span class="small muted">${x ? esc(dayAdjustText({ extra: x })) : "Same as usual"} · adult portions</span></span>
+        <div class="stepper"><button data-act="eatingExtra" data-week="${week}" data-i="${i}" data-d="-1" aria-label="One fewer" ${factor + x - 1 < 0.5 ? "disabled" : ""}>−</button><span>${x === 0 ? "0" : `${x > 0 ? "+" : "−"}${niceNumber(Math.abs(x))}`}</span><button data-act="eatingExtra" data-week="${week}" data-i="${i}" data-d="1" aria-label="One more">+</button></div></div>
+      <div class="row between" style="padding:14px 16px;border-top:1px solid var(--line-soft)"><span><b>Cook double</b><br><span class="small muted">${next ? `Twice the amounts, and ${DOW_LONG[mondayIndex(addDays(date, 1))]} becomes leftovers${nextR && !d.double ? ` instead of ${esc(nextR.name.toLowerCase())}` : ""}` : "Twice the amounts, for leftovers"}</span></span>
+        <label class="switch"><input type="checkbox" data-act="eatingDouble" data-week="${week}" data-i="${i}" ${d.double ? "checked" : ""} aria-label="Cook double"><i></i></label></div>
+    </div>
+    <p class="small muted">Cooking for ${niceNumber(dayFactor(d))} portions that night. The shopping list and the amounts in cooking mode follow this.</p>
+    <button class="btn lg primary" data-close>Done</button>`, { keepScroll });
+}
 /** "Start by 17:25", from the household's usual dinner time and the recipe's total time. */
 function startByTag(r) {
   const m = /^(\d{1,2}):(\d{2})$/.exec(settings().dinnerTime || "");
@@ -207,8 +265,6 @@ function startByTag(r) {
   const hhmm = `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
   return `<span class="tag" style="align-self:flex-start">${icon("clock", 14)} ${late ? `Should have started at ${hhmm}: try Quicker?` : `Start by ${hhmm} for dinner at ${esc(settings().dinnerTime)}`}</span>`;
 }
-/** Where today sits in the plan. */
-function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date()) - (settings().weekStartDay || 0) + 7) % 7 }; }
 /** Today's rating for this recipe, if someone has left one. */
 function ratedToday(id) {
   const start = new Date(); start.setHours(0, 0, 0, 0);
@@ -223,10 +279,11 @@ function viewTonight() {
   let hero;
   if (d.status === "cook" && r) {
     const babyStep = visibleSteps(r).findIndex((s) => s.baby);
-    const cost = recipeCost(r) * factor;
+    const cost = recipeCost(r) * dayFactor(d);
     hero = `<section class="hero">
       <div class="row wrap" style="gap:8px"><span class="tag">${esc(r.emergency ? "Quick meal" : family(r.family).name)}</span><span class="tag">${r.time} min</span><span class="tag">≈ ${money(cost)}</span></div>
       <h1>${esc(r.name)}</h1>
+      ${dayAdjustText(d) ? `<button class="tag" style="align-self:flex-start;border:0" data-act="eating" data-i="${i}" data-week="${week}">${icon("people", 14)} ${esc(dayAdjustText(d))}</button>` : ""}
       ${headlineSwaps(r).length ? `<span class="tag" style="align-self:flex-start">Made with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}
       <div class="tiles">${kcalTiles(r, true)}</div>
       ${little.length && babyStep >= 0 ? `<div class="baby-note">${icon("baby")}<span>${kidChips(little)} ${little.length > 1 ? "portions come" : "portion comes"} out at <b>step ${babyStep + 1}</b></span></div>` : ""}
@@ -243,6 +300,7 @@ function viewTonight() {
   } else if (d.status === "skip" || d.status === "leftovers") {
     hero = `<section class="hero"><span class="tag" style="align-self:flex-start">Tonight</span>
       <h1>${d.status === "skip" ? `Night off${d.note ? ` · ${esc(d.note)}` : ""}` : "Leftovers night"}</h1>
+      ${d.status === "leftovers" ? `<p style="margin:0;opacity:.9">Reheat until steaming hot all the way through, and only once.${(() => { const src = d.from != null && planFor(week)[d.from], sr = src && src.recipe && app.byId[src.recipe]; return sr && hasGrains(sr) ? " It has rice or couscous, so it should have gone in the fridge within an hour and be eaten within a day." : ""; })()}</p>` : ""}
       <div class="row"><button class="btn white" data-act="status" data-i="${i}" data-s="cook">Cook something after all</button></div></section>`;
   } else {
     hero = `<section class="card empty"><p class="h2">Nothing planned tonight</p><p>Plan the week, or grab a quick one.</p>
@@ -290,11 +348,11 @@ function viewWeek() {
     const r = d.recipe && app.byId[d.recipe], theme = themeFor(week, i);
     const dateCol = `<div><div class="dow">${DOW[mondayIndex(date)].toUpperCase()}</div><div class="dom">${date.getDate()}</div></div>`;
     if (d.status === "skip") return `<article class="day off">${dateCol}<div class="row between"><span><b>Skipped${d.note ? ` · ${esc(d.note)}` : ""}</b><br><span class="small muted">Not on the shopping list</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Undo</button></div></article>`;
-    if (d.status === "leftovers") return `<article class="day off">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">From earlier in the week</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
+    if (d.status === "leftovers") return `<article class="day off">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">${leftoversFrom(days, d)}</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
     if (!r) return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${theme ? `<div class="fam">${esc(theme.name)}</div>` : ""}
       <button class="name" style="font-family:var(--sans);font-size:15px;color:var(--muted)" data-act="pick" data-i="${i}">+ Choose a dinner</button>
       <div class="actions"><button class="btn sm soft" data-act="skip" data-i="${i}">Skip</button></div></div></article>`;
-    const c = recipeCost(r) * factor; cost += c;
+    const c = recipeCost(r) * dayFactor(d); cost += c;
     const famText = r.emergency ? `<span class="fam quick">${theme && themeMatch(theme, r) ? esc(theme.name) : "Quick"} · ${r.time} min${isToday ? " · tonight" : ""}</span>`
       : `<span class="fam">${esc(theme && themeMatch(theme, r) ? theme.name : family(r.family).name)}${isToday ? " · tonight" : ""}</span>`;
     const fam = `<div class="row between" style="margin:-6px -6px 0 0">${famText}<span class="row" style="gap:0">
@@ -303,6 +361,7 @@ function viewWeek() {
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
       <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${kcalShort(r)}</div>
+      ${dayAdjustText(d) ? `<button class="pill accent" style="border:0;margin-top:6px" data-act="eating" data-i="${i}" data-week="${week}">${esc(dayAdjustText(d))}</button>` : ""}
       <div class="actions">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
         <button class="btn sm soft" data-act="swapDay" data-i="${i}">Swap</button>
@@ -402,6 +461,7 @@ function itemRow(i) {
   if (i.extra && i.by) sub.push(`added by ${esc(i.by)}`);
   if (i.staple) sub.push("every week");
   if (i.covers) sub.push(`covers the ${esc(i.covers)}`);
+  if (i.leftover && !i.have) sub.push(`<span style="color:var(--warn-ink)">${esc(i.leftover)}</span>`);
   if (i.done && i.checkedBy) sub.push(`✓ ${esc(i.checkedBy)}`);
   const key = esc(i.key);
   const selected = app.selecting.has(i.key);
@@ -556,6 +616,7 @@ function viewSettings() {
         <span class="switch"><input type="checkbox" data-set="bool" data-f="budget" ${s.budget ? "checked" : ""}><i></i></span></label>
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Track food inflation</b><br><span class="small muted">${infLine}</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="inflation" ${s.inflation !== false ? "checked" : ""}><i></i></span></label>
+      <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="aisles"><span class="grow"><b>Aisle order</b><br><span class="small muted">Match the list to the way you walk round your shop</span></span><span aria-hidden="true">›</span></button>
       <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="rack"><span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">What you've got, what's running low</span></span><span aria-hidden="true">›</span></button>
       <div class="row" style="padding:13px 16px"><span class="grow"><b>Receipt reader</b><br><span class="small muted">Coming later: scan receipts to update prices, read on your own PC.</span></span></div>
     </div>
@@ -583,6 +644,7 @@ function viewSettings() {
 let sheetPushed = false, cookPushed = false;
 /** Open the panel. keepScroll: redrawing the panel that's already open, so stay where you were. */
 function openSheet(html, { keepScroll = false } = {}) {
+  app.sheetBack = null; // a panel opened from another one sets this afterwards, so closing it goes back
   const panel = $(".sheet-panel"), top = keepScroll && !$("#sheet").hidden ? panel.scrollTop : 0;
   $("#sheetBody").innerHTML = html; hydrateIcons($("#sheetBody"));
   $("#sheet").hidden = false; panel.scrollTop = top; document.body.style.overflow = "hidden";
@@ -591,6 +653,11 @@ function openSheet(html, { keepScroll = false } = {}) {
 /** Close the panel. fromBack: Back was pressed. navigating: we're about to change page, so don't step history back. */
 function closeSheet({ fromBack = false, navigating = false } = {}) {
   if ($("#sheet").hidden) return;
+  if (app.sheetBack && !navigating) { // e.g. Swap opened from a recipe: closing it shows the recipe again
+    const back = app.sheetBack; app.sheetBack = null;
+    if (fromBack) sheetPushed = false; // the phone's Back used up the history entry, so the recipe gets a new one
+    back(); return;
+  }
   $("#sheet").hidden = true; document.body.style.overflow = "";
   if (sheetPushed) {
     sheetPushed = false;
@@ -605,7 +672,7 @@ window.addEventListener("popstate", () => {
 
 function openRecipe(id, { pickDay = null, keepScroll = false } = {}) {
   const r = app.byId[id]; if (!r) return;
-  const { factor } = household(), p = prefsFor(id);
+  const factor = factorFor(id), p = prefsFor(id); // tonight's guests or cook-double, if it's tonight's dinner
   const ings = effectiveIngredients(r), main = ings.filter((i) => i.q != null && !ingMeta(i.k).c), rack = ings.filter((i) => i.q != null && ingMeta(i.k).c), cupboard = ings.filter((i) => i.q == null);
   const fb = feedbackFor(id), lastFb = fb[fb.length - 1];
   const blocked = blockedBy(r), cost = recipeCost(r), avoid = avoidList().map((a) => app.ing.allergens[a] || a);
@@ -641,7 +708,8 @@ function openRecipe(id, { pickDay = null, keepScroll = false } = {}) {
     ${rack.length || cupboard.length ? `<p class="section-label">From the spice rack &amp; cupboard</p><div class="card"><ul class="ing-list">${rack.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted" style="white-space:nowrap">${esc(fmtQty(i.q * factor, i.u))}</span></li>`).join("")}${cupboard.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted">to taste</span></li>`).join("")}</ul></div>` : ""}
     ${kids().length ? `<p class="section-label">Little ones</p><div class="stack" style="gap:8px">${kidNotes(r, { withRules: true })}</div>` : ""}
     <p class="section-label">Method</p>
-    <ol class="steps">${steps.map((s) => `<li class="${s.baby ? "baby" : ""}">${s.baby ? `<span class="kid-chips">${kidChips()}</span>` : ""}${esc(personaliseStep(scaleStep(s.t, factor)))}</li>`).join("")}</ol>`, { keepScroll });
+    <ol class="steps">${steps.map((s) => `<li class="${s.baby ? "baby" : ""}">${s.baby ? `<span class="kid-chips">${kidChips()}</span>` : ""}${esc(personaliseStep(scaleStep(s.t, factor)))}</li>`).join("")}</ol>
+    ${storingBox(r)}`, { keepScroll });
 }
 
 function openMacros(id, who) {
@@ -713,7 +781,7 @@ function openSkip(i) {
     <input class="input" name="note" placeholder="Or type a note (optional)" autocomplete="off"><button class="btn lg primary">Skip this day</button></form>`);
 }
 
-function openSwap(k, reopen) {
+function openSwap(k, reopen, itemKey = null) {
   const m = ingMeta(k), r = reopen ? app.byId[reopen] : null, current = resolveIng(k, r).k;
   const scope = r ? `${r.id}:${k}` : k;
   const row = (altKey, why, isOrig) => {
@@ -724,6 +792,8 @@ function openSwap(k, reopen) {
   openSheet(`<h1 class="title" style="font-size:26px">Swap ${esc(m.n.toLowerCase())}</h1>
     <p class="muted">${r ? `Just for ${esc(r.name)}. Other recipes keep ${esc(m.n.toLowerCase())}.` : "For every recipe that uses it."}</p>
     <div class="list">${row(k, "As the recipe says", true)}${(m.sw || []).map((o) => row(o.k, o.why, false)).join("")}</div>`);
+  if (reopen) app.sheetBack = () => openRecipe(reopen);
+  else if (itemKey) app.sheetBack = () => openItem(itemKey);
 }
 function openItem(key) {
   const it = buildList(currentWeek()).find((i) => i.key === key); if (!it) return;
@@ -743,7 +813,7 @@ function openItem(key) {
         <div class="row"><span style="font-weight:700">£</span><input class="input" name="price" inputmode="decimal" value="${bp ? (bp.p * shopMult(shopNow)).toFixed(2) : ""}" aria-label="Price">
           <select class="input" name="shop" style="width:140px" aria-label="Seen at">${enabledShops().map((s) => `<option value="${s}" ${s === shopNow ? "selected" : ""}>${esc(shopName(s))}</option>`).join("")}</select></div>
         <div class="row"><button class="btn primary">Save price</button>${bp && bp.own ? `<button type="button" class="btn" data-act="resetPrice" data-k="${esc(it.k)}">Use the estimate</button>` : ""}</div></form>` : ""}
-      ${it.swappable.length ? `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Swap</b><div class="row wrap">${it.swappable.map((k) => `<button class="btn sm" data-act="swapIng" data-k="${esc(k)}">${esc(ingMeta(k).n)}…</button>`).join("")}</div></div>` : ""}
+      ${it.swappable.length ? `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Swap</b><div class="row wrap">${it.swappable.map((k) => `<button class="btn sm" data-act="swapIng" data-k="${esc(k)}" data-item="${esc(it.key)}">${esc(ingMeta(k).n)}…</button>`).join("")}</div></div>` : ""}
       <div class="card stack" style="padding:14px 16px;gap:8px"><b>Get it at</b>
         <div class="shop-grid">${shopOrder().map((s) => `<button class="${it.shop === s ? "on" : ""}" data-act="moveTo" data-keys="${esc(key)}" data-s="${s}">${esc(shopName(s))}</button>`).join("")}</div>
         <span class="small muted">Remembered for next time. Change it again whenever you like.</span></div>
@@ -800,6 +870,15 @@ function openDone(left, got) {
     <div class="stack"><button class="btn lg primary" data-act="confirmMove" disabled id="moveGo">Pick a shop</button><button class="btn lg" data-close>Leave them on the list</button></div>`);
 }
 
+function openAisles({ keepScroll = false } = {}) {
+  const order = aisleOrder();
+  openSheet(`<h1 class="title" style="font-size:26px">Aisle order</h1>
+    <p class="muted">Put the aisles in the order you reach them. The shopping list follows it, for everyone in your household.</p>
+    <div class="list">${order.map((id, n) => `<div class="row" style="padding:8px 8px 8px 16px;gap:6px"><span class="grow">${esc(aisleName(id))}</span>
+      <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="-1" aria-label="Move ${esc(aisleName(id))} up" ${n === 0 ? "disabled" : ""}>${icon("up", 18)}</button>
+      <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="1" aria-label="Move ${esc(aisleName(id))} down" ${n === order.length - 1 ? "disabled" : ""}>${icon("down", 18)}</button></div>`).join("")}</div>
+    <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-close>Done</button>${(settings().aisleOrder || []).length ? `<button class="btn" data-act="aisleReset">Reset to usual</button>` : ""}</div>`, { keepScroll });
+}
 function openRack({ keepScroll = false } = {}) {
   const used = rackUsedThisWeek(currentWeek());
   const row = (m) => {
@@ -848,7 +927,7 @@ function startCooking(id) {
     $("#sheet").hidden = true; document.body.style.overflow = "";
     if (sheetPushed) { sheetPushed = false; cookPushed = true; }
   }
-  app.cook = { id, step: 0, timers: [], showIng: false };
+  app.cook = { id, step: 0, timers: [], showIng: false, factor: factorFor(id) };
   $("#cook").hidden = false;
   try { navigator.wakeLock && navigator.wakeLock.request("screen").then((l) => { wakeLock = l; }).catch(() => {}); } catch { /* not supported */ }
   clearInterval(cookTick);
@@ -871,7 +950,7 @@ function stepMinutes(text) {
 }
 function renderCook() {
   const c = app.cook; if (!c) return;
-  const r = app.byId[c.id], steps = visibleSteps(r), s = steps[c.step], { factor } = household();
+  const r = app.byId[c.id], steps = visibleSteps(r), s = steps[c.step], factor = c.factor || household().factor;
   const text = personaliseStep(scaleStep(s.t, factor)), mins = stepMinutes(text);
   const prog = steps.map((st, i) => `<span class="${i < c.step ? "done" : i === c.step && st.baby ? "baby" : i === c.step ? "done" : ""}"></span>`).join("");
   const timers = c.timers.map((t, i) => {
@@ -1016,13 +1095,16 @@ const ACTIONS = {
     if (d.s === "cook" && !days[i].recipe) patch.recipe = pickRecipe(week, i, days);
     dayUpdate(i, patch, week);
   },
-  dayMenu: (d, el) => openMenu(el, [["pickFromMenu", "Choose a recipe…", "book", `data-i="${d.i}"`], ["emergency", "Emergency meal (about 15 min)", "bolt", `data-i="${d.i}" data-week="${app.weekStart}"`],
+  dayMenu: (d, el) => openMenu(el, [["eating", "Who's eating / cook double…", "people", `data-i="${d.i}" data-week="${app.weekStart}"`], ["pickFromMenu", "Choose a recipe…", "book", `data-i="${d.i}"`], ["emergency", "Emergency meal (about 15 min)", "bolt", `data-i="${d.i}" data-week="${app.weekStart}"`],
     ["status", "Leftovers night", "pot", `data-i="${d.i}" data-s="leftovers"`], ["status", "Clear this day", "x", `data-i="${d.i}" data-s="clear"`]]),
   pickFromMenu: (d) => { closeMenus(); openPicker(+d.i); },
+  eating: (d) => { closeMenus(); openEating(d.week || app.weekStart, +d.i); },
+  eatingExtra: (d) => { const day = planFor(d.week)[+d.i]; dayUpdate(+d.i, { extra: Math.max(-20, Math.min(20, (+day.extra || 0) + +d.d)) }, d.week); openEating(d.week, +d.i, { keepScroll: true }); },
+  eatingDouble: (d) => { setDouble(d.week, +d.i); openEating(d.week, +d.i, { keepScroll: true }); },
   fam: (d) => { app.openFamilies.has(d.f) ? app.openFamilies.delete(d.f) : app.openFamilies.add(d.f); render(); },
   rfilter: (d) => { app.recipeFilter = d.f; render(); },
   pref: (d) => { send({ op: "pref", recipe: d.id, patch: { [d.f]: d.v === "1" } }); openRecipe(d.id, { keepScroll: true }); },
-  swapIng: (d) => openSwap(d.k, d.reopen),
+  swapIng: (d) => openSwap(d.k, d.reopen, d.item || null),
   setSwap: (d) => { send({ op: "swap", key: d.k, alt: d.alt }); if (d.reopen) openRecipe(d.reopen); else { closeSheet(); toast(d.alt ? `Swapped for ${ingMeta(d.alt).n.toLowerCase()}` : "Back to the original"); } },
   // shop
   shopTab: (d) => { app.shopTab = d.s; render(); },
@@ -1033,6 +1115,14 @@ const ACTIONS = {
     render();
   },
   rack: () => openRack(),
+  aisles: () => openAisles(),
+  aisleMove: (d) => {
+    const order = aisleOrder(), n = order.indexOf(d.id), to = n + +d.d;
+    if (n < 0 || to < 0 || to >= order.length) return;
+    [order[n], order[to]] = [order[to], order[n]];
+    send({ op: "settings", patch: { aisleOrder: order } }, { rerender: false }); openAisles({ keepScroll: true });
+  },
+  aisleReset: () => { send({ op: "settings", patch: { aisleOrder: [] } }, { rerender: false }); openAisles({ keepScroll: true }); toast("Back to the usual order"); },
   rackSet: (d) => { send({ op: "pantry", key: d.k, status: d.s }); openRack({ keepScroll: true }); },
   rackStarter: () => {
     const keys = rackItems().filter((m) => m.rack === "spices" && m.status !== "ok").map((m) => m.k);

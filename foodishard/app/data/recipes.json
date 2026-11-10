@@ -110,7 +110,8 @@
     "finger": "Keep it thick and let it cool to warm. Chapati or toast fingers to scoop with, plus a spoon of full-fat plain yoghurt.",
     "chopped": "As yours before the chilli and salt, with small pieces of chapati."
    },
-   "tags": []
+   "tags": [],
+   "freeze": "The dhal"
   },
   {
    "id": "bean-chilli",
@@ -227,7 +228,8 @@
    },
    "tags": [
     "onepot"
-   ]
+   ],
+   "freeze": "The chilli (not the rice)"
   },
   {
    "id": "tofu-peanut-noodles",
@@ -424,7 +426,8 @@
    },
    "tags": [
     "comfort"
-   ]
+   ],
+   "freeze": "The sauce (not the pasta)"
   },
   {
    "id": "mattar-paneer",
@@ -872,7 +875,8 @@
    "tags": [
     "oven",
     "comfort"
-   ]
+   ],
+   "freeze": "The whole pie, or the filling on its own"
   },
   {
    "id": "pesto-quorn-pasta",
@@ -1165,7 +1169,8 @@
     "finger": "Squashed chickpeas and spinach to scoop with rice, plus full-fat plain yoghurt.",
     "chopped": "As yours, before the chilli and salt."
    },
-   "tags": []
+   "tags": [],
+   "freeze": "The curry, before the yoghurt (not the rice)"
   },
   {
    "id": "bean-quesadillas",
@@ -1350,7 +1355,8 @@
     "smooth": "Blend with a spoon of full-fat plain yoghurt until smooth.",
     "finger": "Squash the chickpeas with a fork so they're soft and flat. Strips of naan to dip.",
     "chopped": "As yours before the chilli and salt, chickpeas squashed, with naan pieces."
-   }
+   },
+   "freeze": "The curry, before the yoghurt"
   },
   {
    "id": "aloo-gobi-chickpea",
@@ -1472,7 +1478,8 @@
     "smooth": "Blend with a little full-fat plain yoghurt until smooth.",
     "finger": "Soft potato and cauliflower pieces and squashed chickpeas, with chapati fingers.",
     "chopped": "As yours before the chilli and salt, cut small."
-   }
+   },
+   "freeze": "The curry, before the yoghurt"
   },
   {
    "id": "saag-paneer",
@@ -1756,7 +1763,8 @@
     "smooth": "Blend the plain sauce and some pasta until smooth.",
     "finger": "Pasta shapes in the plain sauce, chickpeas squashed.",
     "chopped": "Plain sauce and pasta, chickpeas squashed."
-   }
+   },
+   "freeze": "The sauce (not the pasta)"
   },
   {
    "id": "roast-pepper-feta-pasta",
@@ -1846,7 +1854,8 @@
     "smooth": "Blend a little more with water until smooth.",
     "finger": "Pasta shapes coated in the sauce.",
     "chopped": "As yours before the feta, chopped small."
-   }
+   },
+   "freeze": "The blended sauce, before the feta"
   },
   {
    "id": "creamy-bean-gnocchi",
@@ -2987,7 +2996,8 @@
     "smooth": "Blend with a little water.",
     "finger": "Pasta shapes and broccoli florets, beans squashed.",
     "chopped": "As yours, cut small."
-   }
+   },
+   "freeze": "The bake, once cooled"
   },
   {
    "id": "jacket-potato-beans",
@@ -3156,7 +3166,8 @@
     "smooth": "Perfect as it is, served lukewarm.",
     "finger": "Thick soup to dip toast fingers into, plus a little toastie cut into strips.",
     "chopped": "Soup thickened a little, with toastie pieces."
-   }
+   },
+   "freeze": "The soup (not the toasties)"
   },
   {
    "id": "minestrone",
@@ -3259,7 +3270,8 @@
     "smooth": "Blend with a spoon of grated cheese.",
     "finger": "Drain some of the bits out: pasta, beans and soft veg, with a little cheese.",
     "chopped": "As yours before the stock, cut small."
-   }
+   },
+   "freeze": "The soup (the pasta goes softer)"
   },
   {
    "id": "chickpea-apricot-stew",
@@ -3378,7 +3390,8 @@
     "smooth": "Blend with a little full-fat plain yoghurt.",
     "finger": "Sweet potato pieces, squashed chickpeas and couscous pressed into small balls.",
     "chopped": "As yours, cut small."
-   }
+   },
+   "freeze": "The stew (not the couscous)"
   },
   {
    "id": "baked-pea-risotto",
@@ -4050,7 +4063,8 @@
     "smooth": "Mash the patty and sweet potato with full-fat plain yoghurt.",
     "finger": "Patty cut into fingers, plus soft fries.",
     "chopped": "Patty and fries cut small."
-   }
+   },
+   "freeze": "The uncooked burgers, between sheets of baking paper"
   },
   {
    "id": "salt-pepper-tofu",

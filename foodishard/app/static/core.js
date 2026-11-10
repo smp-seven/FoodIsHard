@@ -64,6 +64,9 @@ const ICONS = {
   check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   left: '<path d="m15 5-7 7 7 7"/>',
+  people: '<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.4.2 4 1.8 4.5 4.3"/>',
+  up: '<path d="m6 15 6-6 6 6"/>',
+  down: '<path d="m6 9 6 6 6-6"/>',
   refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>',
   right: '<path d="m9 5 7 7-7 7"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
@@ -587,11 +590,23 @@ function catalogueMatch(name) {
 function effectiveShop(week, key, fallback) {
   return ((app.state.shopFor || {})[week] || {})[key] || (app.state.shopPref || {})[key] || fallback || "any";
 }
+/** Portions for one day: the household, plus guests or minus anyone out, doubled when cooking double. */
+function dayFactor(day) {
+  const f = Math.max(0.5, household().factor + (+(day && day.extra) || 0));
+  return day && day.double ? f * 2 : f;
+}
+/** Portions to cook a recipe for: tonight's adjustments if it's tonight's dinner, otherwise the household's. */
+function factorFor(id) {
+  const { week, i } = todaySlot(), d = planFor(week)[i];
+  return d && d.status === "cook" && d.recipe === id ? dayFactor(d) : household().factor;
+}
+/** Where today sits in the plan. */
+function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date()) - (settings().weekStartDay || 0) + 7) % 7 }; }
 function buildList(week) {
-  const { factor } = household();
   const items = new Map();
   planFor(week).forEach((d) => {
     if (d.status !== "cook" || !d.recipe) return;
+    const factor = dayFactor(d);
     const r = app.byId[d.recipe]; if (!r) return;
     effectiveIngredients(r).forEach((ing) => {
       const m = ingMeta(ing.k), key = "i:" + ing.k;
@@ -648,7 +663,11 @@ function buildList(week) {
       it.n = c.n || it.baseQty || 1;
       it.cost = it.unitPrice != null ? it.unitPrice * it.n : null;
       it.qtyText = "";
-    } else if (it.k) { const e = Object.entries(it.qty || {}); it.cost = e.length === 1 ? costOf(it.k, e[0][1], e[0][0], { wholePacks: true, shop: costShop }) : null; }
+    } else if (it.k) {
+      const e = Object.entries(it.qty || {});
+      it.cost = e.length === 1 ? costOf(it.k, e[0][1], e[0][0], { wholePacks: true, shop: costShop }) : null;
+      if (e.length === 1) it.leftover = leftoverText(it.k, e[0][1], e[0][0]);
+    }
     const bp = it.k ? basePrice(it.k) : null;
     it.stale = !!(bp && bp.stale);
     if (it.cupboard) {
@@ -662,6 +681,25 @@ function buildList(week) {
   });
   return out;
 }
+/** What's left of the packs you buy, for things that go off ("¾ left over", "about 130 g left over"). */
+// Only things that go off within days once bought or opened: a note on every line would just be ignored.
+const GOES_OFF = new Set(["spinach", "red_pepper", "courgette", "broccoli", "mushrooms", "cherry_tomatoes", "coriander", "cauliflower",
+  "spring_onion", "cucumber", "salad_leaves", "white_cabbage", "beansprouts", "avocado", "celery", "ricotta", "cottage_cheese",
+  "mozzarella", "feta", "tofu", "paneer", "halloumi", "gnocchi", "hummus", "chopped_tomatoes", "black_beans", "kidney_beans",
+  "chickpeas", "green_lentils", "baked_beans", "passata", "cannellini"]);
+function leftoverText(k, q, u) {
+  const m = ingMeta(k);
+  if (!m.pk || !GOES_OFF.has(k)) return null;
+  const [pq, pu] = m.pk;
+  if ((pu || "") !== (u || "") || !(q > 0)) return null;
+  const packs = Math.max(1, Math.ceil(q / pq - 0.02)), left = packs * pq - q;
+  if (left / pq < 0.25) return null; // near enough the whole pack
+  if (u === "g" || u === "ml") return `about ${fmtQty(Math.floor(left / 10) * 10 || left, u)} left over`;
+  if (u === "tin") return `${niceNumber(left)} tin left over`;
+  if (u === "slices") return `${Math.floor(left)} slices left over`;
+  if (pq === 1) return `${niceNumber(left)} left over`;
+  return Math.floor(left) >= 1 ? `${Math.floor(left)} left over` : null;
+}
 function rackItems() {
   return Object.entries(app.ing.items).filter(([, m]) => m.c).map(([k, m]) => ({ k, ...m, status: (app.state.pantry || {})[k] || null }));
 }
@@ -672,7 +710,12 @@ function rackUsedThisWeek(week) {
 }
 function feedbackFor(id) { return (app.state.feedback || {})[id] || []; }
 function cookedIt(id) { return feedbackFor(id).some((f) => f.rating !== "never"); }
-function aisleOrder() { return app.ing.aisles.map((a) => a.id); }
+/** Aisles in the household's own order (Settings), with any new aisles added where they normally go. */
+function aisleOrder() {
+  const all = app.ing.aisles.map((a) => a.id), mine = (settings().aisleOrder || []).filter((id) => all.includes(id));
+  all.forEach((id, n) => { if (!mine.includes(id)) mine.splice(Math.min(n, mine.length), 0, id); });
+  return mine;
+}
 function aisleName(id) { return (app.ing.aisles.find((a) => a.id === id) || { name: "Other" }).name; }
 
 function listAsText(week, { byShop = false } = {}) {

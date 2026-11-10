@@ -167,3 +167,11 @@
 - **Start-by time:** set a usual dinner time in Settings (Week & planning). The Today card then says "Start by 17:25", or suggests Quicker if it's already too late.
 - **Undo after Shuffle:** the toast after reshuffling the week has an Undo button for 6 seconds.
 - **Longer memory:** the planner tries to avoid anything from the last 3 weeks (at least the last 1). Meals you rated "loved it" come up twice as often, and "not again" hardly ever.
+
+## 0.10.6
+- **Who's eating:** ⋯ on any day → "Who's eating / cook double…" adds guests or takes someone off for that night, in adult portions. The shopping list, the day's cost, and the recipe and cooking mode on the night all use the adjusted amounts.
+- **Cook double:** doubles that night's amounts and makes the next day "Leftovers from Tuesday's …". Turning it off puts the next day's dinner back.
+- **Left over on the list:** things that go off within days (fresh veg, soft cheeses, tofu, opened tins and so on) show what's left of the pack, e.g. "¾ tin left over". Long-keeping things don't, to keep the list readable.
+- **Aisle order:** Settings → Shopping & prices → Aisle order lets a household match the list to their shop.
+- **Leftovers guidance:** every recipe ends with how to cool, store, freeze and reheat it, following Food Standards Agency and NHS advice. Rice and couscous dishes get the stricter 1-hour/24-hour rule, rice on the side gets its own line, and 14 recipes say what freezes well. Leftovers night on the Today card reminds you to reheat once, until steaming hot.
+- **Fixes:** closing the Swap panel (X, tapping outside or Back) returns to the recipe or shopping item it came from. The "under 6 months" note now uses the baby's actual age, as NHS advice does, so a mistyped due date can't trigger it.
