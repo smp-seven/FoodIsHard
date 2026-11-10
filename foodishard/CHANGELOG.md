@@ -107,3 +107,7 @@
 - Shopping notes that mention the baby now use your children's names, and are hidden for households without little ones.
 - The no-signal badge on the shopping list sits under the heading.
 - Home Assistant: no offline copy (by design). Otherwise the same.
+
+## 0.9.5
+- Online version: admins get a **Recipe feedback** screen, off the admin dashboard. It shows every household's ratings and notes, newest first or grouped by recipe, with filters, search and a "new" count, plus a button that copies them for Claude without anyone's names.
+- The rating sheet and About now say that ratings and notes are visible to whoever runs FoodIsHard. The Home Assistant version is unchanged.

@@ -59,7 +59,7 @@ async function boot() {
 
 /** Admin-only accounts (online version): no household, just the admin dashboard. */
 async function bootAdmin(res) {
-  app.mode = "admin"; app.tab = "admin"; app.user = res.user || ""; app.host = "Cloudflare"; app.region = res.region || null;
+  app.mode = "admin"; app.tab = location.hash === "#feedback" ? "feedback" : "admin"; app.user = res.user || ""; app.host = "Cloudflare"; app.region = res.region || null;
   store(HOST_KEY, { host: "Cloudflare", user: app.user, adminOnly: true });
   document.body.classList.add("admin-only");
   document.addEventListener("click", onClick);
@@ -67,6 +67,7 @@ async function bootAdmin(res) {
   document.addEventListener("submit", onSubmit);
   document.addEventListener("input", onInput);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
+  window.addEventListener("hashchange", fromHash);
   render();
   await loadAccount();
   setInterval(() => { if (!document.hidden && $("#sheet").hidden) loadAccount(); }, 60000);
@@ -74,11 +75,13 @@ async function bootAdmin(res) {
 
 function hydrateIcons(root) { $$("[data-icon]", root).forEach((el) => { if (!el.firstChild) el.innerHTML = icon(el.dataset.icon, 24); }); }
 function go(tab) {
-  if (tab === "settings" && app.tab !== "settings" && app.tab !== "admin") app.prevTab = app.tab; if (location.hash !== "#" + tab) location.hash = tab; else { app.tab = tab; render(); } }
+  if (tab === "settings" && !["settings", "admin", "feedback"].includes(app.tab)) app.prevTab = app.tab; if (location.hash !== "#" + tab) location.hash = tab; else { app.tab = tab; render(); } }
 function fromHash() {
   const t = (location.hash || "#tonight").slice(1);
-  app.tab = ["tonight", "week", "shop", "recipes", "settings", "admin"].includes(t) ? t : "tonight";
-  if (app.tab === "admin" && app.host !== "Cloudflare") app.tab = "settings";
+  app.tab = ["tonight", "week", "shop", "recipes", "settings", "admin", "feedback"].includes(t) ? t : "tonight";
+  if ((app.tab === "admin" || app.tab === "feedback") && app.host !== "Cloudflare") app.tab = "settings";
+  if (app.mode === "admin" && app.tab !== "feedback") app.tab = "admin";
+  if (app.tab !== "feedback") app.fbAdmin = null; // reopening shows what's new since this visit
   app.selecting.clear();
   render(); window.scrollTo(0, 0);
 }
@@ -87,9 +90,9 @@ function fromHash() {
 // Render
 // ---------------------------------------------------------------------------
 function render() {
-  if (app.mode === "admin" || app.tab === "admin") {
+  if (app.mode === "admin" || app.tab === "admin" || app.tab === "feedback") {
     $$(".nav button").forEach((b) => b.classList.remove("on"));
-    const view = $("#view"); view.innerHTML = viewAdmin(); hydrateIcons(view);
+    const view = $("#view"); view.innerHTML = app.tab === "feedback" ? viewAdminFeedback() : viewAdmin(); hydrateIcons(view);
     $("#dock").hidden = true;
     return;
   }
@@ -460,7 +463,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.4</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.5</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -702,6 +705,7 @@ function openFeedback(id) {
       <div class="seg"><button type="button" data-act="feedbackRate" data-r="loved">Loved it</button><button type="button" data-act="feedbackRate" data-r="fine">Fine</button><button type="button" data-act="feedbackRate" data-r="never">Not again</button></div>
       <div class="chips wrap">${FEEDBACK_TAGS.filter((t) => kids().length || !t.startsWith("Little ones")).map((t) => `<button type="button" class="chip" data-act="feedbackTag" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
       <input class="input" name="note" placeholder="Anything else? e.g. needed more salt" autocomplete="off">
+      ${app.host === "Cloudflare" ? `<span class="small muted">Your household and whoever runs FoodIsHard can see this, to improve the recipes.</span>` : ""}
       <button class="btn lg primary" id="fbSave" disabled>Save</button><button type="button" class="btn" data-close>Skip</button></form>`);
 }
 function feedbackText() {
@@ -904,6 +908,10 @@ const ACTIONS = {
   about: () => openAbout(),
   signInAgain: () => { location.reload(); },
   acctReload: () => { loadAccount(); toast("Refreshed"); },
+  fbReload: () => { app.fbAdmin = null; render(); },
+  fbFilter: (d) => { app.fbFilter = d.f; render(); },
+  fbGroup: (d) => { app.fbGroup = d.g; render(); },
+  fbCopy: () => copyText(adminFeedbackText()),
   adminFilter: (d) => { app.adminFilter = d.f; render(); },
   adminMember: (d) => openAdminMember(d.email),
   adminHousehold: (d) => openAdminHousehold(d.id),
@@ -1115,6 +1123,7 @@ function openAbout() {
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, and when you last used the app (so unused places can be freed up).</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, their names and birth dates) and recipe feedback.</li>
+         <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard, with your household's name, so they can improve the recipes. Nothing else of your household's is shown to them in the app.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
        </ul>
@@ -1155,7 +1164,7 @@ async function loadAccount() {
     app.account = await accountCall("api/account");
     app.adminInfo = app.account.admin ? await accountCall("api/admin") : null;
   } catch (err) { app.account = { error: err.message }; }
-  if (app.tab === "admin" && app.mode !== "admin" && !(app.account && app.account.admin)) { app.tab = "settings"; history.replaceState(null, "", "#settings"); }
+  if ((app.tab === "admin" || app.tab === "feedback") && app.mode !== "admin" && !(app.account && app.account.admin)) { app.tab = "settings"; history.replaceState(null, "", "#settings"); }
   if (app.tab === "settings" || app.tab === "admin") render();
 }
 function accountSection() {
@@ -1284,6 +1293,7 @@ function viewAdmin() {
           : `<span class="small" style="color:var(--warm)">Automatic sign-in updates aren't set up: add new emails to your Access policy by hand (CLOUDFLARE.md, step 6).</span>`}
       </div>
     </div>
+    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="go" data-to="feedback" style="padding:13px 16px"><span class="grow"><b>Recipe feedback</b><br><span class="small muted">Ratings from every household</span></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button></div>
     <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
     <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search people or households" aria-label="Search people or households" data-input="afilter" autocomplete="off"></label>
     <div class="chips" style="margin-bottom:12px">${chip("all", "Everyone")}${chip("never", `Never signed in (${never})`)}${chip("inactive", `Inactive (${inactive})`)}</div>
@@ -1292,7 +1302,88 @@ function viewAdmin() {
     ${own ? `<div class="list" style="margin-top:18px"><div class="stack" style="padding:14px 16px;gap:8px"><b>Your own household: ${esc(own.name)}</b>
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
-    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.4</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.5</p>`;
+}
+// ---- Recipe feedback from every household (its own screen, off the dashboard) ----
+const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };
+const RATING_PILL = { loved: "accent", fine: "", never: "warm" };
+async function loadAdminFeedback() {
+  if (app.fbLoading) return;
+  app.fbLoading = true;
+  try {
+    const res = await accountCall("api/admin/feedback");
+    app.fbAdmin = { ...res, prevSeen: res.seen };
+    if (res.new) { // opening the screen counts as reading them; they stay marked "New" until you leave
+      const seen = await accountCall("api/admin/feedback/seen", {});
+      if (app.adminInfo) app.adminInfo.feedback = seen;
+    }
+  } catch (err) { app.fbAdmin = { error: err.message }; }
+  app.fbLoading = false;
+  if (app.tab === "feedback") render();
+}
+function fbFiltered() {
+  const fb = app.fbAdmin, f = app.fbFilter || "all";
+  return (fb.items || []).filter((i) => f === "all"
+    || (f === "new" && i.at > fb.prevSeen)
+    || (f === "notes" && (i.note || i.tags.length))
+    || (f === "never" && i.rating === "never")
+    || (f === "kids" && i.tags.some((t) => t.startsWith("Little ones"))));
+}
+function viewAdminFeedback() {
+  const right = `<div class="row" style="gap:6px"><button class="icon-btn" data-act="fbReload" aria-label="Refresh">${icon("refresh", 18)}</button><button class="icon-btn" data-act="go" data-to="admin" aria-label="Back to the admin dashboard">${icon("left", 18)}</button></div>`;
+  const head = header("Admin", "Recipe feedback", right, { logo: true });
+  const fb = app.fbAdmin;
+  if (!fb) { loadAdminFeedback(); return `${head}<div class="list"><div class="row" style="padding:16px"><span class="muted">Loading…</span></div></div>`; }
+  if (fb.error) return `${head}<div class="list"><div class="row" style="padding:16px"><span class="grow muted">Couldn't load: ${esc(fb.error)}</span><button class="btn sm" data-act="fbReload">Retry</button></div></div>`;
+  const all = fb.items || [], items = fbFiltered(), f = app.fbFilter || "all", g = app.fbGroup || "latest";
+  const homes = new Set(all.map((i) => i.householdId)).size, recipesRated = new Set(all.map((i) => i.recipe)).size;
+  const fresh = all.filter((i) => i.at > fb.prevSeen).length;
+  const count = (fn) => all.filter(fn).length;
+  const chip = (id, label, n) => `<button class="chip ${f === id ? "on" : ""}" data-act="fbFilter" data-f="${id}">${label}${n != null ? ` (${n})` : ""}</button>`;
+  const entry = (i, showRecipe) => `<div class="row" style="padding:11px 16px;align-items:flex-start" data-text="${esc(`${i.recipeName} ${i.household} ${i.by} ${i.note} ${i.tags.join(" ")}`.toLowerCase())}">
+      <span class="grow">${showRecipe ? `<b>${esc(i.recipeName)}</b> ` : ""}<span class="pill ${RATING_PILL[i.rating] || ""}">${esc(RATING_LABEL[i.rating] || i.rating)}</span>${i.at > fb.prevSeen ? ` <span class="pill warn">New</span>` : ""}<br>
+      <span class="small muted">${esc(i.household)}${i.by ? ` · ${esc(i.by)}` : ""} · ${i.at ? `${shortDate(i.at)} (${ago(i.at)})` : "date unknown"}</span>
+      ${i.tags.length ? `<br><span class="small">${i.tags.map(esc).join(" · ")}</span>` : ""}
+      ${i.note ? `<br><span style="font-style:italic">“${esc(i.note)}”</span>` : ""}</span></div>`;
+  let body;
+  if (!all.length) body = `<div class="empty">No ratings yet. They appear here when someone finishes cooking and taps how it went.</div>`;
+  else if (!items.length) body = `<div class="empty">Nothing matches that filter.</div>`;
+  else if (g === "recipe") {
+    const groups = new Map();
+    items.forEach((i) => { if (!groups.has(i.recipe)) groups.set(i.recipe, []); groups.get(i.recipe).push(i); });
+    body = [...groups.values()].map((list) => {
+      const n = (r) => list.filter((i) => i.rating === r).length;
+      const summary = [["loved", "loved"], ["fine", "fine"], ["never", "not again"]].filter(([r]) => n(r)).map(([r, w]) => `${n(r)} ${w}`).join(" · ");
+      return `<section class="list" style="margin-bottom:12px" data-group-list>
+        <div class="row" style="padding:12px 16px;background:var(--sunk)" data-text="${esc(list[0].recipeName.toLowerCase())}" data-name="${esc(list[0].recipeName.toLowerCase())}"><span class="grow"><b>${esc(list[0].recipeName)}</b><br><span class="small muted">${summary}</span></span></div>
+        ${list.map((i) => entry(i, false)).join("")}</section>`;
+    }).join("");
+  } else body = `<section class="list" data-group-list><div hidden data-name=""></div>${items.map((i) => entry(i, true)).join("")}</section>`;
+  return `${head}
+    <div class="list" style="margin-bottom:12px"><div class="stack" style="padding:14px 16px;gap:8px">
+      <b>${all.length} rating${all.length === 1 ? "" : "s"} of ${recipesRated} recipe${recipesRated === 1 ? "" : "s"}, from ${homes} household${homes === 1 ? "" : "s"}</b>
+      <span class="small muted">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."} Copy them to paste to Claude when it's time to adjust recipes; household and people's names are left out.</span>
+      <button class="btn sm" style="align-self:flex-start" data-act="fbCopy" ${items.length ? "" : "disabled"}>${icon("copy", 16)}Copy ${f === "all" ? "all" : "these"} for Claude</button>
+    </div></div>
+    <div class="seg" style="margin-bottom:10px"><button class="${g === "latest" ? "on" : ""}" data-act="fbGroup" data-g="latest">Latest first</button><button class="${g === "recipe" ? "on" : ""}" data-act="fbGroup" data-g="recipe">By recipe</button></div>
+    <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search recipes, households or notes" aria-label="Search feedback" data-input="ffilter" autocomplete="off"></label>
+    <div class="chips" style="margin-bottom:12px">${chip("all", "All")}${chip("new", "New", fresh)}${chip("notes", "With comments", count((i) => i.note || i.tags.length))}${chip("never", "Not again", count((i) => i.rating === "never"))}${count((i) => i.tags.some((t) => t.startsWith("Little ones"))) ? chip("kids", "Little ones", count((i) => i.tags.some((t) => t.startsWith("Little ones")))) : ""}</div>
+    <div id="adminList">${body}</div>
+    <div class="empty" data-none hidden>Nothing matches that.</div>`;
+}
+/** Everyone's feedback as plain text for Claude, grouped by recipe, without names. */
+function adminFeedbackText() {
+  const groups = new Map();
+  fbFiltered().forEach((i) => { if (!groups.has(i.recipe)) groups.set(i.recipe, { name: i.recipeName, list: [] }); groups.get(i.recipe).list.push(i); });
+  const homes = new Map(); let n = 0;
+  const label = (id) => { if (!homes.has(id)) homes.set(id, `household ${String.fromCharCode(65 + (n++ % 26))}`); return homes.get(id); };
+  const lines = ["FoodIsHard recipe feedback from all households (names left out)", ""];
+  for (const [id, { name, list }] of groups) {
+    lines.push(`${name} (${id})`);
+    list.slice().sort((a, b) => a.at - b.at).forEach((f) => lines.push(`- ${f.at ? new Date(f.at * 1000).toISOString().slice(0, 10) : "?"} ${label(f.householdId)}: ${f.rating}${f.tags.length ? ` [${f.tags.join(", ")}]` : ""}${f.note ? `: ${f.note}` : ""}`));
+    lines.push("");
+  }
+  return lines.length > 2 ? lines.join("\n") : "No feedback yet.";
 }
 function adminFind(email) {
   for (const h of (app.adminInfo || { households: [] }).households) { const m = h.members.find((x) => x.email === email); if (m) return { m, h }; }
@@ -1358,7 +1449,7 @@ function confirmReplace(when) {
 }
 
 function onInput(e) {
-  if (e.target.dataset.input === "afilter") {
+  if (e.target.dataset.input === "afilter" || e.target.dataset.input === "ffilter") {
     const q = e.target.value.trim().toLowerCase(), list = $("#adminList");
     $$("[data-group-list]", list).forEach((sec) => {
       const head = sec.firstElementChild, rows = [...sec.children].slice(1).filter((r) => r.dataset.text);

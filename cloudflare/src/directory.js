@@ -33,6 +33,9 @@ export class Directory extends DurableObject {
     // added in 0.9: when each person last used the app (Unix seconds, updated at most hourly)
     const cols = this.sql.exec("PRAGMA table_info(members)").toArray().map((c) => c.name);
     if (!cols.includes("last_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN last_seen INTEGER");
+    // added in 0.9.5: when each recipe rating was left (no contents), so the admin dashboard can
+    // say "3 new" without opening every household. The ratings themselves stay in each household.
+    this.sql.exec("CREATE TABLE IF NOT EXISTS feedback_log (at INTEGER NOT NULL, household TEXT NOT NULL)");
   }
 
   // ---- small helpers -------------------------------------------------------
@@ -186,6 +189,20 @@ export class Directory extends DurableObject {
     }
     return { left: m.household };
   }
+
+  // ---- recipe feedback ------------------------------------------------------
+  noteFeedback(household) {
+    const now = this.now();
+    this.sql.exec("INSERT INTO feedback_log (at, household) VALUES (?, ?)", now, household);
+    this.sql.exec("DELETE FROM feedback_log WHERE at < ?", now - 400 * 86400);
+  }
+  /** How many ratings have arrived since this admin last opened the Feedback screen. */
+  feedbackNew(email) {
+    const seen = Number(this.meta(`feedbackSeen:${email}`) || 0);
+    const n = this.row("SELECT COUNT(*) AS n FROM feedback_log f JOIN households h ON h.id = f.household WHERE f.at > ?", seen).n;
+    return { new: n, seen };
+  }
+  markFeedbackSeen(email) { this.setMeta(`feedbackSeen:${email}`, String(this.now())); return this.feedbackNew(email); }
 
   allEmails() { return this.rows("SELECT email FROM members ORDER BY email").map((r) => r.email); }
   recordSync(result) { this.setMeta("lastSync", JSON.stringify({ ...result, at: this.now() })); }

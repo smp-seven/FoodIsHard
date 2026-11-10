@@ -182,6 +182,12 @@ you can create households, add, move or remove people, rename or delete househol
 someone's invite message again, and re-sync the sign-in list. If your admin email is already in a
 household, open **Settings → Admin dashboard → Make this an admin-only account**.
 
+**Recipe feedback (admin):** the **Recipe feedback** button on the admin dashboard shows the
+ratings and notes every household leaves after cooking, with a "new" count since you last looked.
+You can see them newest first or grouped by recipe, filter them, and press **Copy for Claude** to
+copy them without anyone's names, ready to paste when adjusting recipes. People are told, on the
+rating screen and in About, that the host can see their ratings.
+
 **Inviting a new household (admin):**
 1. In the admin dashboard, press **New household** and enter the household name, the first
    person's name and their email.

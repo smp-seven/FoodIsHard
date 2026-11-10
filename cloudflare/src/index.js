@@ -29,6 +29,7 @@ import { Directory } from "./directory.js";
 export { Directory };
 
 const { applyOp } = globalThis.FoodIsHardOps;
+const RECIPE_NAMES = Object.fromEntries(recipes.recipes.map((r) => [r.id, r.name]));
 const DATA = { "recipes.json": recipes, "ingredients.json": ingredients, "defaults.json": defaults };
 const POLL_SECONDS = 8; // how often open phones check for changes (keeps well inside the free tier)
 const WHO_CACHE_MS = 60_000; // remember who's who for a minute, to halve requests
@@ -115,7 +116,12 @@ async function api(request, env, who, url) {
     const res = await household(env, who.household).getState(url.searchParams.get("rev"));
     return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS });
   }
-  if (path === "/api/op" && post) return json({ ...(await household(env, who.household).op(await readBody(request), who.name)), user: who.name });
+  if (path === "/api/op" && post) {
+    const op = await readBody(request);
+    const res = await household(env, who.household).op(op, who.name);
+    if (op && op.op === "feedback") await dir.noteFeedback(who.household);
+    return json({ ...res, user: who.name });
+  }
   if (path === "/api/import" && post) return json({ ...(await household(env, who.household).importState(await readBody(request))), user: who.name });
 
   // ---- your household's members ----
@@ -145,7 +151,23 @@ async function api(request, env, who, url) {
   // ---- admins ----
   if (path.startsWith("/api/admin")) {
     if (!who.admin) return json({ error: "Only admins can do that" }, 403);
-    if (path === "/api/admin" && !post) return json({ ...(await dir.overview()), ...signInInfo() });
+    if (path === "/api/admin" && !post) return json({ ...(await dir.overview()), ...signInInfo(), feedback: await dir.feedbackNew(who.email) });
+    if (path === "/api/admin/feedback" && !post) {
+      // Collect every household's recipe ratings. Fine at this size (45 people at most).
+      const { households } = await dir.overview();
+      const lists = await Promise.all(households.map((h) => household(env, h.id).feedbackList()));
+      const items = [];
+      households.forEach((h, i) => {
+        for (const [recipe, list] of Object.entries(lists[i] || {})) {
+          for (const f of list || []) {
+            items.push({ household: h.name, householdId: h.id, recipe, recipeName: RECIPE_NAMES[recipe] || recipe, rating: f.rating, tags: f.tags || [], note: f.note || "", at: f.at || 0, by: f.by || "" });
+          }
+        }
+      });
+      items.sort((a, b) => b.at - a.at);
+      return json({ items: items.slice(0, 3000), ...(await dir.feedbackNew(who.email)) });
+    }
+    if (path === "/api/admin/feedback/seen" && post) return json(await dir.markFeedbackSeen(who.email));
     if (path === "/api/admin/household" && post) {
       const created = await dir.createHousehold(who.email, await readBody(request));
       whoCache.clear();
@@ -290,6 +312,11 @@ export class Household extends DurableObject {
     state.inflation = info.error ? { ...(state.inflation || {}), checked: info.checked, error: info.error } : { ...info };
     state.rev = (state.rev || 0) + 1;
     await this.save();
+  }
+  /** Recipe ratings and notes, for the admin's Feedback screen. */
+  async feedbackList() {
+    const state = await this.load();
+    return state.feedback || {};
   }
   /** Called when an admin deletes a household: removes all its data. */
   async wipe() {

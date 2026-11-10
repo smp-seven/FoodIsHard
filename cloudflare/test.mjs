@@ -364,6 +364,26 @@ await test("old weeks are pruned: lists after 8 weeks, plans after a year", asyn
   assert.deepEqual(Object.keys(s.checks), ["2026-09-21", "2026-11-09"]); assert.deepEqual(Object.keys(s.extras), []);
   assert.deepEqual(Object.keys(s.plans), ["2025-11-17", "2026-09-07"]);
 });
+await test("recipe feedback: admins see every household's, with a new count; others can't", async () => {
+  const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "alex@example.com": "Alex" }, b: { "priya@example.com": "Priya" } }) });
+  const c = (p, o = {}) => call(p, { e, ...o });
+  const before = (await c("/api/admin", { email: "admin@example.com" })).body.feedback;
+  assert.equal(before.new, 0);
+  const rid = (await import("../foodishard/app/data/recipes.json", { with: { type: "json" } })).default.recipes[0];
+  assert.equal((await c("/api/op", { email: "alex@example.com", body: { op: "feedback", recipe: rid.id, rating: "loved", tags: ["Too spicy"], note: "lovely" } })).status, 200);
+  assert.equal((await c("/api/op", { email: "priya@example.com", body: { op: "feedback", recipe: rid.id, rating: "never" } })).status, 200);
+  assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.feedback.new, 2);
+  assert.equal((await c("/api/admin/feedback", { email: "alex@example.com" })).status, 403);
+  const r = (await c("/api/admin/feedback", { email: "admin@example.com" })).body;
+  const mine = r.items.filter((i) => i.recipe === rid.id && (i.note === "lovely" || i.rating === "never"));
+  assert.equal(mine.length, 2);
+  const alex = mine.find((i) => i.note === "lovely");
+  assert.equal(alex.recipeName, rid.name); assert.equal(alex.by, "Alex"); assert.deepEqual(alex.tags, ["Too spicy"]); assert.ok(alex.household);
+  assert.equal(r.new, 2);
+  assert.equal((await c("/api/admin/feedback/seen", { email: "admin@example.com", body: {} })).body.new, 0);
+  assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.feedback.new, 0);
+  assert.equal((await c("/api/admin/feedback/seen", { email: "alex@example.com", body: {} })).status, 403);
+});
 await test("DATA_REGION=auto lets Cloudflare choose", async () => {
   const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ z: { "z@example.com": "Z" } }), DATA_REGION: "auto" });
   jurisdictions.length = 0;
