@@ -118,3 +118,7 @@
 - Online version: **Delete my account** in Settings → Your account. It removes you and your email from the sign-in list, and takes your name off the household's past ticks and notes. If you're the last person in the household, it deletes the household and all its data too, with an offer to download a backup first.
 - About and the privacy policy explain both. Home Assistant is unchanged.
 - Setting a spice to Got it, Low or Out, or tapping Favourite or Never again on a recipe, no longer jumps back to the top of the panel. (Both versions.)
+
+## 0.9.7
+- Every recipe's method has been rewritten for people who don't cook much. Each starts with a **Get ready** step for the chopping, draining and slicing, and each cooking step says which pan, what heat, how long and what "done" looks like. Nothing is used before it has been prepared, for example the halved tomatoes in the halloumi couscous. Long steps are split up.
+- Cooking mode offers a timer for a step's longest wait ("stir for 1 minute, then simmer for 20" offers 20 minutes, not 1).

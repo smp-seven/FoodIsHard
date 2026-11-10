@@ -464,7 +464,7 @@ function viewSettings() {
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
     ${accountFooter()}
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.6</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.7</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -747,7 +747,11 @@ function stopCooking({ fromBack = false, handOver = false } = {}) {
   if (handOver) sheetPushed = true; // the next panel reuses this history entry
   else if (!fromBack) history.back();
 }
-function stepMinutes(text) { const m = text.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*min(?:ute)?s?/i); return m ? +(m[2] || m[1]) : null; }
+/** The timer to offer for a step: its longest wait ("stir for 1 minute, then simmer for 20 minutes" → 20). */
+function stepMinutes(text) {
+  const all = [...text.matchAll(/(\d+)(?:\s*(?:[–-]|to)\s*(\d+))?\s*min(?:ute)?s?\b/gi)].map((m) => +(m[2] || m[1]));
+  return all.length ? Math.max(...all) : null;
+}
 function renderCook() {
   const c = app.cook; if (!c) return;
   const r = app.byId[c.id], steps = visibleSteps(r), s = steps[c.step], { factor } = household();
@@ -1358,7 +1362,7 @@ function viewAdmin() {
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
     <div style="text-align:center;margin-top:24px"><button class="btn sm" data-act="signOut">Sign out</button></div>
-    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.6</p>`;
+    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.7</p>`;
 }
 // ---- Recipe feedback from every household (its own screen, off the dashboard) ----
 const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };

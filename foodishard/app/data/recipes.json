@@ -1,6 +1,6 @@
 {
  "version": 1,
- "notes": "Quantities are per ONE standard adult portion and the app scales them. {{300|ml}} in a step is scaled too. Steps assume a confident home cook. Every ingredient has an amount except salt and pepper (to taste). Run tools/check_recipes.py after editing.",
+ "notes": "Quantities are per ONE standard adult portion and the app scales them. {{300|ml}} in a step is scaled too. Steps are written for someone who doesn't cook much: start with a 'Get ready' step for the chopping, draining and slicing (salty or spicy things like halloumi and feta are prepped after the baby step), and say which pan, what heat, how long and what done looks like. Every ingredient has an amount except salt and pepper (to taste). Run tools/check_recipes.py after editing.",
  "recipes": [
   {
    "id": "dhal-spinach",
@@ -83,17 +83,26 @@
    ],
    "steps": [
     {
-     "t": "Soften the chopped onion in the oil over a medium heat, about 8 minutes. Add the crushed garlic, grated ginger, cumin and turmeric and stir for 1 minute."
+     "t": "Get ready: finely chop the onion, crush the garlic and grate the ginger. Rinse the lentils in a sieve under the cold tap until the water runs clearer."
     },
     {
-     "t": "Add the rinsed lentils, tomatoes and {{300|ml}} water. Simmer for 20 minutes, stirring now and then, until the lentils have collapsed and it's thick. Loosen with a splash of water if it catches."
+     "t": "Heat the oil in a medium saucepan over a medium heat. Add the onion and cook for 8 minutes, stirring now and then, until soft and golden."
     },
     {
-     "t": "Spoon the baby's portion out now, before the chilli and salt. Stir a little spinach into it to wilt.",
+     "t": "Add the garlic, ginger, cumin and turmeric and stir for 1 minute, until it smells fragrant."
+    },
+    {
+     "t": "Add the lentils, the tomatoes and {{300|ml}} water. Bring to the boil, then turn down to a gentle simmer for 20 minutes, stirring now and then, until the lentils have broken down and it's thick. Add a splash of water if it starts to stick."
+    },
+    {
+     "t": "Spoon the baby's portion into a bowl now, before the chilli and salt. Stir a little spinach into it so it wilts in the heat.",
      "baby": true
     },
     {
-     "t": "Stir the spinach, garam masala and chilli flakes into the rest until wilted. Season with salt and a squeeze of lemon. Serve with yoghurt and warm chapatis."
+     "t": "Stir the rest of the spinach, the garam masala and the chilli flakes into the pan and cook for 1 to 2 minutes until the spinach wilts. Season with salt and a squeeze of lemon."
+    },
+    {
+     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve the dhal with the yoghurt and chapatis."
     }
    ],
    "baby": {
@@ -189,17 +198,26 @@
    ],
    "steps": [
     {
-     "t": "Fry the chopped onion, pepper and sweet potato (1.5 cm cubes) in the oil over a medium heat for 8 minutes. Add the garlic, cumin, smoked paprika and oregano and stir for 1 minute."
+     "t": "Get ready: peel the sweet potato and cut it into 1.5 cm cubes. Chop the onion and pepper and crush the garlic. Drain and rinse the beans. Rinse the rice in a sieve."
     },
     {
-     "t": "Add the drained beans, tomatoes and {{100|ml}} water. Cover and simmer for 20 minutes until the sweet potato is tender. Cook the rice meanwhile."
+     "t": "Heat the oil in a large saucepan with a lid over a medium heat. Add the onion, pepper and sweet potato and cook for 8 minutes, stirring now and then, until the onion is soft."
+    },
+    {
+     "t": "Add the garlic, cumin, smoked paprika and oregano and stir for 1 minute."
+    },
+    {
+     "t": "Add the beans, the tomatoes and {{100|ml}} water. Bring to a simmer, cover and cook gently for 20 minutes, stirring once or twice, until a knife slides easily into the sweet potato."
+    },
+    {
+     "t": "Meanwhile, cook the rice in a pan of boiling water for 10 to 12 minutes until tender, then drain. Grate the cheddar."
     },
     {
      "t": "Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Stir in the chilli flakes and season with salt. Serve over rice with grated cheddar and a spoon of yoghurt."
+     "t": "Stir the chilli flakes into the rest and season with salt. Serve over the rice with the cheddar and a spoon of yoghurt."
     }
    ],
    "baby": {
@@ -276,20 +294,23 @@
    ],
    "steps": [
     {
-     "t": "Pat the tofu dry, cut into fingers and fry in the oil over a medium-high heat until golden on most sides, about 8 minutes."
+     "t": "Get ready: put the kettle on. Pat the tofu dry with kitchen paper and cut it into fingers. Cut the broccoli into small florets. Crush the garlic, grate the ginger and squeeze the lime juice."
     },
     {
-     "t": "Meanwhile cook the noodles, adding the broccoli and edamame for the last 3 minutes. Drain, keeping a mugful of the water."
+     "t": "Heat the oil in a large non-stick frying pan over a medium-high heat. Fry the tofu for about 8 minutes, turning every couple of minutes, until golden on most sides."
     },
     {
-     "t": "Whisk the peanut butter with the crushed garlic, grated ginger, lime juice and a splash of noodle water until smooth and pourable."
+     "t": "Meanwhile, cook the noodles in a pan of boiling water following the packet, adding the broccoli and edamame for the last 3 minutes. Scoop out a mugful of the cooking water, then drain."
+    },
+    {
+     "t": "In a bowl, whisk the peanut butter with the garlic, ginger, lime juice and a splash of the noodle water until smooth and pourable."
     },
     {
      "t": "Take the baby's portion out now: tofu fingers, soft broccoli and short noodles with a little sauce, before the soy and chilli.",
      "baby": true
     },
     {
-     "t": "Stir the soy sauce and chilli flakes into the rest of the sauce, then toss with the noodles, veg and tofu."
+     "t": "Stir the soy sauce and chilli flakes into the rest of the sauce. Tip the noodles, veg and sauce into the tofu pan and toss over a low heat for 1 minute until everything is coated."
     }
    ],
    "baby": {
@@ -374,17 +395,26 @@
    ],
    "steps": [
     {
-     "t": "Finely chop the onion, carrot and mushrooms (a food processor does it in seconds). Fry in the oil over a medium heat for 10 minutes until soft and starting to brown."
+     "t": "Get ready: finely chop the onion, carrot and mushrooms (a food processor does it in seconds). Crush the garlic. Drain and rinse the lentils. Put a large pan of water on to boil for the pasta."
     },
     {
-     "t": "Stir in the garlic, tomato purée and oregano for 1 minute. Add the drained lentils, tomatoes and {{75|ml}} water and simmer for 15 minutes while the pasta cooks."
+     "t": "Heat the oil in a large frying pan or saucepan over a medium heat. Add the chopped veg and cook for 10 minutes, stirring now and then, until soft and starting to brown."
+    },
+    {
+     "t": "Stir in the garlic, tomato purée and oregano and cook for 1 minute."
+    },
+    {
+     "t": "Add the lentils, the tomatoes and {{75|ml}} water. Simmer gently for 15 minutes, stirring now and then, until thick."
+    },
+    {
+     "t": "Meanwhile, cook the pasta in the boiling water for the time on the packet. Scoop out a mugful of the cooking water, then drain. Grate the cheese."
     },
     {
      "t": "Take the baby's sauce and pasta out now, before the Henderson's and seasoning.",
      "baby": true
     },
     {
-     "t": "Season the rest with Henderson's, salt and pepper. Toss with the pasta and grate the cheese over."
+     "t": "Season the rest of the sauce with Henderson's, salt and pepper. Toss it with the pasta, loosening with a splash of the pasta water, and scatter the cheese over."
     }
    ],
    "baby": {
@@ -483,13 +513,22 @@
    ],
    "steps": [
     {
-     "t": "Fry the paneer cubes in the oil over a high heat until golden on a few sides, about 4 minutes. Lift out and set aside. Start the rice."
+     "t": "Get ready: cut the paneer into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger. Chop the coriander. Rinse the rice in a sieve."
     },
     {
-     "t": "Soften the chopped onion in the same pan over a medium heat for 6 minutes. Add the garlic, grated ginger, cumin, ground coriander and turmeric for 1 minute, then the tomatoes and {{75|ml}} water. Simmer for 8 minutes."
+     "t": "Heat the oil in a large frying pan over a high heat. Fry the paneer for about 4 minutes, turning, until golden on a few sides. Lift it onto a plate."
     },
     {
-     "t": "Add the peas and paneer and simmer for 3 minutes. Take off the heat and stir in the yoghurt (off the heat so it doesn't split)."
+     "t": "Put the rice on: cook it in a pan of boiling water for 10 to 12 minutes until tender, then drain."
+    },
+    {
+     "t": "Turn the paneer pan down to a medium heat. Add the onion and cook for 6 minutes until soft."
+    },
+    {
+     "t": "Add the garlic, ginger, cumin, ground coriander and turmeric and stir for 1 minute. Add the tomatoes and {{75|ml}} water and simmer for 8 minutes until slightly thickened."
+    },
+    {
+     "t": "Add the peas and paneer and simmer for 3 minutes. Take the pan off the heat and stir in the yoghurt (off the heat so it doesn't split)."
     },
     {
      "t": "Take the baby's portion out now, before the garam masala, chilli and salt.",
@@ -577,17 +616,26 @@
    ],
    "steps": [
     {
-     "t": "Fry the sliced onion and pepper in the oil in a wide frying pan with a lid, over a medium heat, until soft, about 10 minutes. Add the garlic, cumin and smoked paprika for 1 minute."
+     "t": "Get ready: slice the onion and pepper into thin strips. Crush the garlic. Drain and rinse the chickpeas."
     },
     {
-     "t": "Add the tomatoes and drained chickpeas and simmer for 8 minutes until thick enough to hold a hollow."
+     "t": "Heat the oil in a wide frying pan that has a lid, over a medium heat. Add the onion and pepper and cook for 10 minutes, stirring now and then, until soft."
     },
     {
-     "t": "Spoon the baby's sauce into a small pan, crack in one egg, cover and cook on a low heat until the egg is fully set, about 8 minutes. Do this before any salt, chilli or feta goes in.",
+     "t": "Add the garlic, cumin and smoked paprika and stir for 1 minute."
+    },
+    {
+     "t": "Add the tomatoes and chickpeas and simmer, uncovered, for 8 minutes, until thick enough that a spoon drawn through it leaves a gap."
+    },
+    {
+     "t": "Spoon the baby's portion of sauce into a small pan, crack in one egg, cover and cook on a low heat for about 8 minutes, until the white and yolk are both fully set. Do this before any salt, chilli or feta goes in.",
      "baby": true
     },
     {
-     "t": "Season the rest with salt and chilli flakes. Make hollows, crack in the eggs, cover and cook on a low heat for 5 to 8 minutes, until the whites are set and the yolks still soft. Crumble over the feta and serve with the bread."
+     "t": "Season the rest with salt and chilli flakes. Make a hollow for each egg with the back of a spoon and crack the eggs in. Cover and cook on a low heat for 5 to 8 minutes, until the whites are set but the yolks are still soft."
+    },
+    {
+     "t": "Meanwhile, toast the bread. Crumble the feta over the top and serve."
     }
    ],
    "baby": {
@@ -674,17 +722,23 @@
    ],
    "steps": [
     {
-     "t": "Heat the oven to 200°C fan. Toss the chunky-chopped onion, courgette and pepper and the drained chickpeas with the oil, smoked paprika and cumin on a large tray. Roast for 20 minutes."
+     "t": "Get ready: heat the oven to 200°C fan. Cut the onion, courgette and pepper into chunks about 3 cm across. Drain and rinse the chickpeas and pat them dry with kitchen paper."
+    },
+    {
+     "t": "On a large baking tray, toss the veg and chickpeas with the oil, smoked paprika and cumin, then spread them out in one layer. Roast for 20 minutes."
     },
     {
      "t": "Take the baby's veg and chickpeas off the tray now, before the salt and halloumi.",
      "baby": true
     },
     {
-     "t": "Season the tray with salt, add the sliced halloumi and the tomatoes, and roast for 12 to 15 minutes until the halloumi is golden."
+     "t": "Slice the halloumi about 1 cm thick. Season the tray with salt, add the halloumi and the whole cherry tomatoes, and roast for 12 to 15 minutes until the halloumi is golden."
     },
     {
-     "t": "Mix the yoghurt with the tahini, lemon juice and a splash of water. Serve with warm flatbreads."
+     "t": "Meanwhile, squeeze the lemon juice into the yoghurt, add the tahini and a splash of water, and stir until it's runny enough to drizzle."
+    },
+    {
+     "t": "Warm the flatbreads in the oven for the last 2 minutes. Serve the traybake with the tahini yoghurt and flatbreads."
     }
    ],
    "baby": {
@@ -781,17 +835,29 @@
    ],
    "steps": [
     {
-     "t": "Boil the potatoes (no need to peel, just scrub and chunk) for 15 to 18 minutes until soft. Drain and mash with the milk and butter. Heat the oven to 200°C fan."
+     "t": "Get ready: scrub the potatoes (no need to peel) and cut them into 3 cm chunks. Finely chop the onion, carrot and mushrooms. Drain and rinse the lentils. Grate the cheddar."
     },
     {
-     "t": "Meanwhile fry the chopped onion, carrot and mushrooms in the oil over a medium heat for 10 minutes. Stir in the tomato purée and herbs, then the drained lentils and {{100|ml}} water. Simmer for 10 minutes."
+     "t": "Put the potatoes in a saucepan, cover with cold water and bring to the boil. Simmer for 15 to 18 minutes until a knife slides in easily. Heat the oven to 200°C fan."
     },
     {
-     "t": "Spoon some filling and mash into a small dish for the baby now, before the stock and seasoning.",
+     "t": "Meanwhile, heat the oil in a large frying pan over a medium heat. Add the onion, carrot and mushrooms and cook for 10 minutes, stirring now and then, until soft."
+    },
+    {
+     "t": "Stir in the tomato purée and herbs for 1 minute, then add the lentils and {{100|ml}} water. Simmer for 10 minutes until thick."
+    },
+    {
+     "t": "Drain the potatoes and mash them with the milk and butter until smooth."
+    },
+    {
+     "t": "Spoon some filling into a small ovenproof dish for the baby now and top it with mash, before the stock and seasoning.",
      "baby": true
     },
     {
-     "t": "Crumble the stock cube into the rest with the Henderson's, salt and pepper. Tip into a baking dish, top with the mash and cheese and bake for 25 minutes until golden. Serve with peas."
+     "t": "Crumble the stock cube into the rest of the filling with the Henderson's, salt and pepper and stir well. Tip it into a baking dish, spread the mash over the top and scatter with the cheddar."
+    },
+    {
+     "t": "Bake for 25 minutes until golden and bubbling, with the baby's dish alongside for the last 15. Meanwhile, cook the peas in boiling water for 3 minutes, drain and serve with the pie."
     }
    ],
    "baby": {
@@ -842,17 +908,17 @@
    ],
    "steps": [
     {
-     "t": "Boil the pasta. Add the frozen Quorn pieces and peas for the last 5 minutes."
+     "t": "Bring a large pan of water to the boil. Add the pasta and cook it for the time on the packet, adding the frozen Quorn pieces and peas for the last 5 minutes."
     },
     {
-     "t": "Drain, keeping a splash of water, and stir the spinach through so it wilts."
+     "t": "Scoop out a mugful of the cooking water, then drain everything and return it to the pan. Stir the spinach through until it wilts."
     },
     {
      "t": "Take the baby's portion out now, with only a little pesto (it's salty and contains nuts).",
      "baby": true
     },
     {
-     "t": "Stir the pesto and a splash of pasta water through the rest."
+     "t": "Stir the pesto and a splash of the pasta water through the rest until it's glossy."
     }
    ],
    "baby": {
@@ -907,20 +973,23 @@
    ],
    "steps": [
     {
-     "t": "Fry the garlic in the oil in a large pan or wok for 30 seconds. Add the frozen peas and edamame and cook for 3 minutes."
+     "t": "Get ready: crush the garlic. Beat the eggs in a mug. Squeeze the rice pouches to break the grains up."
     },
     {
-     "t": "Squeeze the rice pouches to break the grains up, add to the pan and stir-fry for 3 minutes until hot."
+     "t": "Heat the oil in a large frying pan or wok over a high heat. Fry the garlic for 30 seconds, then add the frozen peas and edamame and stir-fry for 3 minutes."
     },
     {
-     "t": "Push the rice aside, scramble the beaten eggs in the gap, then stir through."
+     "t": "Add the rice and stir-fry for 3 minutes until piping hot."
+    },
+    {
+     "t": "Push the rice to one side, pour the eggs into the gap and stir for about 1 minute until scrambled and set, then mix them through the rice."
     },
     {
      "t": "Take the baby's portion out now, before the soy sauce.",
      "baby": true
     },
     {
-     "t": "Season the rest with the soy sauce."
+     "t": "Season the rest with the soy sauce, tossing well."
     }
    ],
    "baby": {
@@ -974,14 +1043,20 @@
    ],
    "steps": [
     {
-     "t": "Warm the beans. Toast and butter the bread. Fry the eggs in the oil."
+     "t": "Get ready: grate the cheddar."
     },
     {
-     "t": "Take the baby's portion out now: toast fingers, a spoon of mashed beans and an egg cooked until set.",
+     "t": "Warm the beans in a small saucepan over a low heat for 4 to 5 minutes, stirring now and then."
+    },
+    {
+     "t": "Meanwhile, heat the oil in a frying pan over a medium heat, crack in the eggs and fry for 3 to 4 minutes until the whites are set. Toast the bread and butter it."
+    },
+    {
+     "t": "Take the baby's portion out now: toast fingers, a spoon of mashed beans and an egg cooked until the yolk is firm.",
      "baby": true
     },
     {
-     "t": "Pile the beans on the toast, grate the cheese over and top with the eggs."
+     "t": "Pile the beans on the toast, scatter the cheese over and top with the eggs."
     }
    ],
    "baby": {
@@ -1062,17 +1137,23 @@
    ],
    "steps": [
     {
-     "t": "Fry the garlic, cumin and turmeric in the oil for 1 minute. Add the tomatoes, drained chickpeas and frozen spinach."
+     "t": "Get ready: crush the garlic. Drain and rinse the chickpeas."
     },
     {
-     "t": "Simmer for 8 minutes, squashing some chickpeas to thicken it. Heat the rice meanwhile."
+     "t": "Heat the oil in a medium saucepan over a medium heat. Add the garlic, cumin and turmeric and stir for 1 minute, without letting the garlic brown."
+    },
+    {
+     "t": "Add the tomatoes, chickpeas and frozen spinach. Simmer for 8 minutes, stirring, and squash some of the chickpeas with the back of a spoon to thicken it."
+    },
+    {
+     "t": "Meanwhile, heat the rice pouch in the microwave following the packet."
     },
     {
      "t": "Take the baby's portion out now, before the garam masala, chilli and salt.",
      "baby": true
     },
     {
-     "t": "Stir the garam masala and chilli flakes into the rest and season with salt. Serve with rice and a spoon of yoghurt."
+     "t": "Stir the garam masala and chilli flakes into the rest and season with salt. Serve with the rice and a spoon of yoghurt."
     }
    ],
    "baby": {
@@ -1129,17 +1210,20 @@
    ],
    "steps": [
     {
-     "t": "Mash the drained beans with the smoked paprika and cumin."
+     "t": "Get ready: drain and rinse the beans. Grate the cheddar."
     },
     {
-     "t": "Make the baby's quesadilla first: a thin layer of beans and a little cheese in half a wrap, no chilli.",
+     "t": "In a bowl, mash the beans with a fork, along with the smoked paprika and cumin, until mostly smooth."
+    },
+    {
+     "t": "Make the baby's quesadilla first: spread a thin layer of beans and a little cheese over half a wrap and fold it over, no chilli.",
      "baby": true
     },
     {
-     "t": "Stir the chilli flakes into the rest of the beans. Spread over half of each wrap, add the cheese and fold."
+     "t": "Stir the chilli flakes into the rest of the beans. Spread them over half of each wrap, scatter the cheese on top and fold the wraps over."
     },
     {
-     "t": "Dry-fry in a frying pan over a medium heat for 2 minutes a side until crisp. Cut into wedges and serve with the yoghurt."
+     "t": "Heat a dry frying pan over a medium heat. Cook the quesadillas, the baby's first, for 2 minutes a side until crisp and the cheese has melted. Cut into wedges and serve with the yoghurt."
     }
    ],
    "baby": {
@@ -1236,17 +1320,26 @@
    ],
    "steps": [
     {
-     "t": "Soften the chopped onion in the oil for 8 minutes until golden at the edges. Add most of the garlic, the grated ginger, cumin, ground coriander and turmeric and stir for 1 minute."
+     "t": "Get ready: chop the onion. Crush most of the garlic and finely grate the rest for the yoghurt. Grate the ginger. Drain and rinse the chickpeas. Chop the coriander."
     },
     {
-     "t": "Add the tomatoes, the drained chickpeas and {{100|ml}} water. Simmer for 15 minutes, squashing a few chickpeas against the pan to thicken it."
+     "t": "Heat the oil in a medium saucepan over a medium heat. Add the onion and cook for 8 minutes until soft and golden at the edges."
+    },
+    {
+     "t": "Add the crushed garlic, ginger, cumin, ground coriander and turmeric and stir for 1 minute."
+    },
+    {
+     "t": "Add the tomatoes, chickpeas and {{100|ml}} water. Simmer for 15 minutes, squashing a few chickpeas against the side of the pan to thicken it."
     },
     {
      "t": "Spoon the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Stir the garam masala and chilli into the rest and season with salt and lemon. Mix the remaining garlic, finely grated, into the yoghurt with a pinch of salt. Serve with the yoghurt, coriander and warm naan."
+     "t": "Stir the garam masala and chilli flakes into the rest and season with salt and a squeeze of lemon."
+    },
+    {
+     "t": "Mix the grated garlic into the yoghurt with a pinch of salt. Warm the naan in a dry frying pan or the toaster. Serve the curry with the garlic yoghurt, coriander and naan."
     }
    ],
    "baby": {
@@ -1349,17 +1442,26 @@
    ],
    "steps": [
     {
-     "t": "Soften the sliced onion in the oil for 5 minutes. Add the garlic, grated ginger, cumin, turmeric and ground coriander and stir for 1 minute."
+     "t": "Get ready: slice the onion, crush the garlic and grate the ginger. Cut the potato into 2 cm cubes (no need to peel) and the cauliflower into small florets. Drain and rinse the chickpeas. Chop the coriander."
     },
     {
-     "t": "Add the potato (2 cm cubes), the cauliflower (small florets), the drained chickpeas, the tomatoes and {{150|ml}} water. Cover and cook on a low heat for 25 minutes, stirring now and then, until the potato is tender and the sauce clings."
+     "t": "Heat the oil in a large saucepan with a lid over a medium heat. Add the onion and cook for 5 minutes until softening."
+    },
+    {
+     "t": "Add the garlic, ginger, cumin, turmeric and ground coriander and stir for 1 minute."
+    },
+    {
+     "t": "Add the potato, cauliflower, chickpeas, tomatoes and {{150|ml}} water and stir. Bring to a simmer, cover and cook on a low heat for 25 minutes, stirring now and then, until the potato is tender. Add a splash of water if it starts to stick."
     },
     {
      "t": "Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Stir the garam masala and chilli into the rest and season with salt. Scatter with coriander and serve with yoghurt and warm chapatis."
+     "t": "Stir the garam masala and chilli flakes into the rest, season with salt and scatter with the coriander."
+    },
+    {
+     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve with the yoghurt."
     }
    ],
    "baby": {
@@ -1447,17 +1549,26 @@
    ],
    "steps": [
     {
-     "t": "Cut the paneer into cubes and fry in half the oil until golden on a few sides, about 5 minutes. Tip out onto a plate."
+     "t": "Get ready: cut the paneer into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger."
     },
     {
-     "t": "Fry the chopped onion in the rest of the oil for 6 minutes. Add the garlic, grated ginger, cumin and ground coriander for 1 minute, then the spinach and a splash of water. Cook until the spinach has thawed and is hot."
+     "t": "Heat half the oil in a large frying pan over a medium-high heat. Fry the paneer for about 5 minutes, turning, until golden on a few sides. Tip it onto a plate."
     },
     {
-     "t": "Blend until smooth, adding water to loosen it to a thick sauce. Take the baby's portion out now, before the chilli and salt.",
+     "t": "Turn the heat down to medium, add the rest of the oil and the onion, and cook for 6 minutes until soft."
+    },
+    {
+     "t": "Add the garlic, ginger, cumin and ground coriander and stir for 1 minute. Add the frozen spinach and a splash of water, cover and cook for 5 minutes, stirring now and then, until it has thawed and is hot."
+    },
+    {
+     "t": "Blend until smooth with a stick blender (or in a blender), adding water to loosen it to a thick sauce. Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Return the rest to the pan with the paneer, garam masala and chilli. Simmer for 3 minutes, then stir in half the yoghurt and season with salt and lemon. Serve with the rest of the yoghurt and warm chapatis."
+     "t": "Return the rest to the pan with the paneer, garam masala and chilli flakes and simmer for 3 minutes. Take off the heat, stir in half the yoghurt and season with salt and a squeeze of lemon."
+    },
+    {
+     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve with the rest of the yoghurt."
     }
    ],
    "baby": {
@@ -1528,17 +1639,20 @@
    ],
    "steps": [
     {
-     "t": "Boil the pasta. Add the broccoli, cut into small florets, for the last 4 minutes and the peas for the last 2."
+     "t": "Get ready: put a large pan of water on to boil. Cut the broccoli into small florets. Finely grate the garlic, the cheese and the lemon zest, then cut the lemon in half for squeezing."
     },
     {
-     "t": "Meanwhile, mix the ricotta with the grated garlic, most of the grated cheese and the lemon zest."
+     "t": "Cook the pasta in the boiling water for the time on the packet, adding the broccoli for the last 4 minutes and the peas for the last 2."
     },
     {
-     "t": "Drain, keeping a mugful of the water. Take the baby's portion out now, toss with a spoon of ricotta and a splash of water, before the chilli.",
+     "t": "Meanwhile, in a large bowl, mix the ricotta with the garlic, most of the cheese and the lemon zest."
+    },
+    {
+     "t": "Scoop out a mugful of the cooking water, then drain. Take the baby's portion out now and toss it with a spoon of ricotta and a splash of water, before the chilli.",
      "baby": true
     },
     {
-     "t": "Toss the rest with the ricotta mix, the oil and enough pasta water to make it creamy. Finish with a squeeze of lemon, the chilli, black pepper and the rest of the cheese."
+     "t": "Toss the rest in the bowl with the ricotta mix, the oil and enough pasta water to make it creamy. Finish with a squeeze of lemon, the chilli flakes, black pepper and the rest of the cheese."
     }
    ],
    "baby": {
@@ -1612,14 +1726,20 @@
    ],
    "steps": [
     {
-     "t": "Put the pasta on to boil. Gently fry the sliced garlic in the oil for 1 minute, then add the tomatoes, the drained chickpeas and the oregano and simmer for 10 minutes."
+     "t": "Get ready: put a large pan of water on to boil. Thinly slice the garlic. Drain and rinse the chickpeas. Halve the olives. Grate the cheese."
+    },
+    {
+     "t": "Cook the pasta in the boiling water for the time on the packet."
+    },
+    {
+     "t": "Meanwhile, heat the oil in a frying pan over a low heat and gently fry the garlic for 1 minute, without letting it brown. Add the tomatoes, chickpeas and oregano and simmer for 10 minutes until thickened."
     },
     {
      "t": "Take the baby's portion of sauce out now, before the olives, capers and chilli.",
      "baby": true
     },
     {
-     "t": "Stir the halved olives, capers and chilli into the rest and simmer for 2 minutes. Toss with the drained pasta and a splash of its water. Finish with the grated cheese."
+     "t": "Stir the olives, capers and chilli flakes into the rest and simmer for 2 minutes. Scoop out a mugful of pasta water, drain the pasta and toss it with the sauce and a splash of the water. Finish with the cheese."
     }
    ],
    "baby": {
@@ -1693,17 +1813,23 @@
    ],
    "steps": [
     {
-     "t": "Put the pasta on to boil. Blend the drained roasted peppers, the drained beans, the garlic, smoked paprika, oil and {{80|ml}} water until smooth."
+     "t": "Get ready: put a large pan of water on to boil. Drain the roasted peppers. Drain and rinse the beans. Peel the garlic."
     },
     {
-     "t": "Warm the sauce in a pan, then drain the pasta and toss it through with the spinach until the spinach wilts. Loosen with pasta water."
+     "t": "Cook the pasta in the boiling water for the time on the packet."
+    },
+    {
+     "t": "Meanwhile, blend the peppers, beans, garlic, smoked paprika, oil and {{80|ml}} water until smooth. Pour into a large frying pan and warm over a low heat for 5 minutes, stirring now and then."
+    },
+    {
+     "t": "Scoop out a mugful of the cooking water, then drain the pasta and add it to the sauce with the spinach. Toss for 1 minute until the spinach wilts, loosening with a splash of pasta water."
     },
     {
      "t": "Take the baby's portion out now, before the feta and chilli.",
      "baby": true
     },
     {
-     "t": "Season the rest, then crumble the feta over the top and add the chilli."
+     "t": "Season the rest with salt and pepper, crumble the feta over the top and add the chilli flakes."
     }
    ],
    "baby": {
@@ -1774,17 +1900,20 @@
    ],
    "steps": [
     {
-     "t": "Fry the gnocchi in the oil in a big non-stick pan until golden in places, about 8 minutes. No need to boil them first."
+     "t": "Get ready: crush the garlic. Drain and rinse the beans. Grate the cheese. Cut the lemon in half for squeezing."
     },
     {
-     "t": "Add the garlic for 30 seconds, then the drained beans, the spinach and {{60|ml}} water. Stir until the spinach wilts, then stir in the ricotta and most of the cheese."
+     "t": "Heat the oil in a large non-stick frying pan over a medium-high heat. Add the gnocchi straight from the packet (no need to boil them) and fry for about 8 minutes, turning, until golden in places."
+    },
+    {
+     "t": "Turn the heat down to medium. Add the garlic for 30 seconds, then the beans, spinach and {{60|ml}} water. Stir for 2 minutes until the spinach wilts, then stir in the ricotta and most of the cheese."
     },
     {
      "t": "Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the rest with lemon, salt, pepper and the chilli, and finish with the last of the cheese."
+     "t": "Season the rest with a squeeze of lemon, salt, pepper and the chilli flakes, and finish with the last of the cheese."
     }
    ],
    "baby": {
@@ -1863,17 +1992,23 @@
    ],
    "steps": [
     {
-     "t": "Cut the sweet potato into 2 cm cubes and toss with the oil, cumin and smoked paprika. Air fry at 200°C for 18 minutes, shaking once (or roast at 220°C for 25 minutes)."
+     "t": "Get ready: cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Grate the cheddar. Cut the lime into wedges."
     },
     {
-     "t": "Warm the drained beans in a pan with a splash of water, squashing about half of them."
+     "t": "Toss the sweet potato with the oil, cumin and smoked paprika. Air fry at 200°C for 18 minutes, shaking halfway, until soft and browned (or roast on a tray at 220°C for 25 minutes)."
+    },
+    {
+     "t": "Meanwhile, warm the beans in a small saucepan over a low heat with a splash of water for 5 minutes, squashing about half of them with a fork."
     },
     {
      "t": "Take the baby's share of sweet potato and beans out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the rest with chilli, salt and lime. Fill the warmed tortillas with beans, sweet potato, cheese, salsa and yoghurt, then roll them up."
+     "t": "Season the rest with the chilli flakes, salt and a squeeze of lime. Warm the tortillas in a dry frying pan for about 20 seconds a side."
+    },
+    {
+     "t": "Fill each tortilla down the middle with beans, sweet potato, cheese, salsa and yoghurt, fold in the sides and roll up."
     }
    ],
    "baby": {
@@ -1962,14 +2097,23 @@
    ],
    "steps": [
     {
-     "t": "Heat the oven to 200°C. Fry the chopped pepper in the oil for 4 minutes, then add the garlic, cumin and paprika for 1 minute. Stir in the drained beans and the sweetcorn and squash some of the beans."
+     "t": "Get ready: heat the oven to 200°C. Chop the pepper and crush the garlic. Drain and rinse the beans. Grate the cheddar. Mix the passata with the oregano."
     },
     {
-     "t": "Mix the passata with the oregano. Take the baby's portion out now (some filling, a spoon of passata, a little cheese), before the chilli and salt.",
+     "t": "Heat the oil in a frying pan over a medium heat. Add the pepper and cook for 4 minutes until softening, then add the garlic, cumin and smoked paprika and stir for 1 minute."
+    },
+    {
+     "t": "Stir in the beans and sweetcorn and warm through for 2 minutes, squashing some of the beans with a fork."
+    },
+    {
+     "t": "Take the baby's portion out now (some filling, a spoon of passata and a little cheese in a small ovenproof dish), before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the filling with chilli and salt. Roll it up in the tortillas, lay them seam-down in a dish, then pour over the passata and scatter with the cheese. Bake for 20 minutes. Serve with yoghurt."
+     "t": "Season the rest of the filling with the chilli flakes and salt. Spoon it down the middle of each tortilla, roll them up and lay them seam-down in a baking dish. Pour over the passata and scatter with the cheese."
+    },
+    {
+     "t": "Bake for 20 minutes until bubbling, with the baby's dish alongside for the last 10. Serve with the yoghurt."
     }
    ],
    "baby": {
@@ -2044,14 +2188,20 @@
    ],
    "steps": [
     {
-     "t": "Slice the pepper and onion into strips and toss with the oil, cumin and smoked paprika. Air fry at 200°C for 8 minutes."
+     "t": "Get ready: slice the pepper and onion into thin strips. Cut the lime into wedges."
+    },
+    {
+     "t": "Toss the pepper and onion with the oil, cumin and smoked paprika. Air fry at 200°C for 8 minutes."
     },
     {
      "t": "Take a few soft pepper strips out for the baby now, before the halloumi and chilli.",
      "baby": true
     },
     {
-     "t": "Add the halloumi, cut into fingers, and the chilli. Air fry for 8 more minutes, shaking once, until the halloumi is golden. Squeeze over the lime and serve in warm tortillas with salsa and yoghurt."
+     "t": "Cut the halloumi into fingers. Add it to the air fryer with the chilli flakes, toss, and air fry for 8 more minutes, shaking once, until the halloumi is golden."
+    },
+    {
+     "t": "Warm the tortillas in a dry frying pan for about 20 seconds a side. Squeeze the lime over the filling and serve in the tortillas with the salsa and yoghurt."
     }
    ],
    "baby": {
@@ -2134,17 +2284,20 @@
    ],
    "steps": [
     {
-     "t": "Pat the tofu dry and tear into bite-sized chunks. Toss with the oil, cornflour, smoked paprika, cumin and grated garlic. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+     "t": "Get ready: pat the tofu dry with kitchen paper. Grate the garlic. Finely shred the cabbage and grate the carrot. Squeeze the lime juice."
     },
     {
-     "t": "Meanwhile, finely shred the cabbage and grate the carrot. Mix with half the yoghurt and the lime juice."
+     "t": "Tear the tofu into bite-sized chunks and toss in a bowl with the oil, cornflour, smoked paprika, cumin and garlic until coated. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+    },
+    {
+     "t": "Meanwhile, make the slaw: mix the cabbage and carrot with half the yoghurt and the lime juice."
     },
     {
      "t": "Take the baby's tofu out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Toss the rest of the tofu with the chilli and a pinch of salt. Pile into warm tortillas with the slaw and the rest of the yoghurt."
+     "t": "Toss the rest of the tofu with the chilli flakes and a pinch of salt. Warm the tortillas in a dry frying pan for about 20 seconds a side, then fill with the tofu, slaw and the rest of the yoghurt."
     }
    ],
    "baby": {
@@ -2228,14 +2381,23 @@
    ],
    "steps": [
     {
-     "t": "Soften the chopped onion and pepper in the oil for 6 minutes. Add the cumin and smoked paprika for 1 minute, then the tomatoes and the drained beans. Simmer for 8 minutes until thick."
+     "t": "Get ready: chop the onion and pepper. Drain and rinse the beans. Grate the cheddar. Slice the avocado and cut the lime into wedges."
+    },
+    {
+     "t": "Heat the oil in a frying pan that has a lid, over a medium heat. Add the onion and pepper and cook for 6 minutes until soft."
+    },
+    {
+     "t": "Add the cumin and smoked paprika for 1 minute, then the tomatoes and beans. Simmer for 8 minutes until thick."
     },
     {
      "t": "Take the baby's portion of sauce out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the rest. Make dips in the sauce, crack in the eggs, cover and cook gently for 6 to 8 minutes until the whites are set. Meanwhile, toast the tortillas in a dry pan. Top with cheese, sliced avocado, lime and chilli."
+     "t": "Season the rest with salt. Make a dip for each egg with the back of a spoon and crack the eggs in. Cover and cook on a low heat for 6 to 8 minutes until the whites are set."
+    },
+    {
+     "t": "Meanwhile, toast the tortillas in a dry frying pan for 1 minute a side. Serve the eggs and sauce on the tortillas, topped with the cheese, avocado, a squeeze of lime and the chilli flakes."
     }
    ],
    "baby": {
@@ -2315,17 +2477,23 @@
    ],
    "steps": [
     {
-     "t": "Cook the noodles, drain and rinse under cold water. Beat the eggs."
+     "t": "Get ready: finely shred the cabbage, cut the carrot into matchsticks and slice the spring onions. Crush the garlic and grate the ginger. Beat the eggs in a mug."
     },
     {
-     "t": "Get a wok very hot with half the oil. Scramble the eggs until just set, then tip out. Add the rest of the oil and stir-fry the shredded cabbage, the carrot (in matchsticks) and the garlic and ginger for 3 minutes."
+     "t": "Cook the noodles in a pan of boiling water following the packet. Drain and rinse under the cold tap so they don't stick together."
     },
     {
-     "t": "Add the noodles, beansprouts and egg and toss for 2 minutes. Take the baby's portion out now, before the soy and chilli.",
+     "t": "Heat half the oil in a wok or large frying pan over a high heat until very hot. Add the eggs and stir for about 1 minute until just set, then tip them onto a plate."
+    },
+    {
+     "t": "Add the rest of the oil and stir-fry the cabbage, carrot, garlic and ginger for 3 minutes."
+    },
+    {
+     "t": "Add the noodles, beansprouts and egg and toss for 2 minutes until hot. Take the baby's portion out now, before the soy and chilli.",
      "baby": true
     },
     {
-     "t": "Toss the rest with the soy sauce and most of the sliced spring onions. Finish with the sesame seeds, the rest of the spring onion and the chilli."
+     "t": "Toss the rest with the soy sauce and most of the spring onions. Finish with the sesame seeds, the rest of the spring onions and the chilli flakes."
     }
    ],
    "baby": {
@@ -2408,17 +2576,23 @@
    ],
    "steps": [
     {
-     "t": "Put the rice on. Pat the tofu dry, cut into cubes and toss with the oil and cornflour. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+     "t": "Get ready: rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Cut the broccoli into florets. Grate the garlic and ginger. Slice the spring onion."
     },
     {
-     "t": "Steam or boil the broccoli and edamame for 4 minutes."
+     "t": "Put the rice on: cook it in a pan of boiling water for 10 to 12 minutes until tender, then drain."
+    },
+    {
+     "t": "Toss the tofu with the oil and cornflour. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+    },
+    {
+     "t": "Meanwhile, boil the broccoli and edamame in a pan of water for 4 minutes, then drain."
     },
     {
      "t": "Take the baby's tofu, rice and broccoli out now, before the soy and sweet chilli.",
      "baby": true
     },
     {
-     "t": "In a pan, bubble the soy sauce, sweet chilli sauce, grated garlic and ginger and {{1|tbsp}} water for 1 minute. Toss the tofu through the glaze. Serve on rice with the greens, sesame seeds and spring onion."
+     "t": "In a frying pan over a medium heat, bubble the soy sauce, sweet chilli sauce, garlic, ginger and {{1|tbsp}} water for 1 minute until slightly sticky. Toss the tofu through. Serve on the rice with the greens, sesame seeds and spring onion."
     }
    ],
    "baby": {
@@ -2490,17 +2664,20 @@
    ],
    "steps": [
     {
-     "t": "Heat the oven to 220°C. Toss the gnocchi, the pepper and onion in chunks, the tomatoes, the drained beans and the squashed garlic with the oil and oregano on a large tray."
+     "t": "Get ready: heat the oven to 220°C. Cut the pepper and onion into chunks. Peel the garlic and squash each clove with the flat of a knife. Drain and rinse the beans."
     },
     {
-     "t": "Roast for 20 minutes, shaking halfway, until the gnocchi are golden."
+     "t": "On a large baking tray, toss the gnocchi (straight from the packet), pepper, onion, whole cherry tomatoes, beans and garlic with the oil and oregano. Spread out in one layer."
+    },
+    {
+     "t": "Roast for 20 minutes, shaking the tray halfway, until the gnocchi are golden."
     },
     {
      "t": "Take the baby's portion off the tray now, before the salt.",
      "baby": true
     },
     {
-     "t": "Tear the mozzarella over the rest, season, and roast for 5 more minutes until it melts."
+     "t": "Tear the mozzarella over the rest, season with salt and pepper, and roast for 5 more minutes until it melts."
     }
    ],
    "baby": {
@@ -2600,17 +2777,23 @@
    ],
    "steps": [
     {
-     "t": "Heat the oven to 220°C. Mix half the yoghurt with the grated garlic and ginger, the garam masala, cumin, turmeric, smoked paprika and oil."
+     "t": "Get ready: heat the oven to 220°C and line a large tray with baking paper. Cut the paneer into 2 cm cubes, the cauliflower into small florets and the onion and pepper into chunks. Grate the garlic and ginger."
     },
     {
-     "t": "Toss the paneer cubes, cauliflower florets and onion and pepper chunks in the spiced yoghurt and spread out on a lined tray. Roast for 25 minutes until charred at the edges."
+     "t": "In a large bowl, mix half the yoghurt with the garlic, ginger, garam masala, cumin, turmeric, smoked paprika and oil."
+    },
+    {
+     "t": "Add the paneer and veg and toss until coated, then spread out on the tray. Roast for 25 minutes until charred at the edges."
     },
     {
      "t": "Take the baby's portion off the tray now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the rest with chilli, salt and lemon. Grate the cucumber into the rest of the yoghurt for raita. Serve with warm naan."
+     "t": "Season the rest with the chilli flakes, salt and a squeeze of lemon. Grate the cucumber into the rest of the yoghurt to make raita."
+    },
+    {
+     "t": "Warm the naan in the oven for 2 minutes. Serve the traybake with the raita and naan."
     }
    ],
    "baby": {
@@ -2675,17 +2858,20 @@
    ],
    "steps": [
     {
-     "t": "Heat the oven to 190°C. Thaw the spinach in the microwave, then squeeze it really dry."
+     "t": "Get ready: heat the oven to 190°C and oil a small baking dish. Thaw the spinach in a bowl in the microwave for 3 to 4 minutes, let it cool a little, then squeeze it really dry in a clean tea towel. Slice the spring onions and beat the egg."
     },
     {
-     "t": "Mix the spinach with the cottage cheese, beaten eggs, sliced spring onions and plenty of black pepper."
+     "t": "In a bowl, mix the spinach with the cottage cheese, egg, spring onions and plenty of black pepper."
     },
     {
      "t": "Spoon the baby's share of the filling into a small ramekin now, before the feta goes in.",
      "baby": true
     },
     {
-     "t": "Crumble the feta into the rest. Layer half the filo in an oiled dish, brushing each sheet with oil, add the filling and scrunch the rest of the filo on top. Brush with oil and bake for 30 minutes, with the ramekin alongside for the last 20. Serve with salad."
+     "t": "Crumble the feta into the rest. Lay half the filo sheets in the dish, brushing each one with oil. Spoon in the filling, scrunch the rest of the filo on top and brush with oil."
+    },
+    {
+     "t": "Bake for 30 minutes until golden and crisp, with the ramekin alongside for the last 20. Serve with the salad."
     }
    ],
    "baby": {
@@ -2765,17 +2951,20 @@
    ],
    "steps": [
     {
-     "t": "Heat the oven to 200°C. Boil the pasta for 3 minutes less than the packet says, adding the broccoli florets for the last 2 minutes."
+     "t": "Get ready: heat the oven to 200°C. Put a large pan of water on to boil. Cut the broccoli into small florets and crush the garlic. Drain and rinse the beans. Grate the cheddar."
     },
     {
-     "t": "Meanwhile, warm the garlic in the oil, then add the passata, oregano, smoked paprika and both lots of drained beans and simmer for 5 minutes."
+     "t": "Cook the pasta for 3 minutes less than the packet says (it finishes in the oven), adding the broccoli for the last 2 minutes."
     },
     {
-     "t": "Drain the pasta and stir it into the sauce. Spoon the baby's portion into a ramekin now, before the salt.",
+     "t": "Meanwhile, heat the oil in a large saucepan over a medium heat. Add the garlic for 30 seconds, then the passata, oregano, smoked paprika and beans. Simmer for 5 minutes."
+    },
+    {
+     "t": "Drain the pasta and broccoli and stir them into the sauce. Spoon the baby's portion into a ramekin now, before the salt.",
      "baby": true
     },
     {
-     "t": "Season the rest and tip into a dish. Top both with the cheese and bake for 20 minutes until golden."
+     "t": "Season the rest and tip it into a baking dish. Scatter the cheese over both and bake for 20 minutes until golden and bubbling."
     }
    ],
    "baby": {
@@ -2832,14 +3021,20 @@
    ],
    "steps": [
     {
-     "t": "Prick the potato all over and microwave on full for 10 to 12 minutes, turning halfway, until soft. (Air fry it for 5 minutes afterwards if you want crisp skin.)"
+     "t": "Get ready: scrub the potato and prick it all over with a fork. Grate the cheddar."
     },
     {
-     "t": "Warm the beans. Take the baby's portion out now: potato flesh, a few beans and a little cheese.",
+     "t": "Microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). For crisp skin, air fry it at 200°C for 5 minutes afterwards."
+    },
+    {
+     "t": "Meanwhile, warm the beans in a small saucepan over a low heat for 4 to 5 minutes."
+    },
+    {
+     "t": "Take the baby's portion out now: potato flesh, a few beans and a little cheese.",
      "baby": true
     },
     {
-     "t": "Split the potato, add the butter, then pile on the beans, cheese and cottage cheese. Add black pepper and serve with salad."
+     "t": "Split the potato, add the butter, then pile on the beans, cheese and cottage cheese. Add black pepper and serve with the salad."
     }
    ],
    "baby": {
@@ -2918,17 +3113,26 @@
    ],
    "steps": [
     {
-     "t": "Soften the chopped onion and carrot in the oil for 6 minutes. Add the garlic and smoked paprika for 1 minute."
+     "t": "Get ready: chop the onion and carrot and crush the garlic. Rinse the lentils in a sieve. Grate the cheddar."
     },
     {
-     "t": "Add the rinsed lentils, the tomatoes and {{400|ml}} water. Simmer for 20 minutes until the lentils have collapsed, then blend until smooth."
+     "t": "Heat the oil in a large saucepan over a medium heat. Add the onion and carrot and cook for 6 minutes until soft. Add the garlic and smoked paprika and stir for 1 minute."
+    },
+    {
+     "t": "Add the lentils, the tomatoes and {{400|ml}} water. Bring to the boil, then simmer for 20 minutes, stirring now and then, until the lentils have broken down."
+    },
+    {
+     "t": "Take the pan off the heat and blend until smooth with a stick blender (or in a blender, no more than half full, holding the lid down with a tea towel)."
     },
     {
      "t": "Take the baby's portion out now, before the stock goes in.",
      "baby": true
     },
     {
-     "t": "Crumble the stock cube into the rest and simmer for 2 minutes. Add pepper. Meanwhile, make toasties from the buttered bread and cheese in a dry pan."
+     "t": "Crumble the stock cube into the rest, simmer for 2 minutes and add pepper."
+    },
+    {
+     "t": "For the toasties, butter the outside of the bread and sandwich the cheese between. Cook in a dry frying pan over a medium heat for 2 to 3 minutes a side until golden and melted."
     }
    ],
    "baby": {
@@ -3014,17 +3218,23 @@
    ],
    "steps": [
     {
-     "t": "Soften the chopped onion in the oil for 5 minutes, then add the garlic and herbs for 1 minute."
+     "t": "Get ready: chop the onion and crush the garlic. Drain and rinse the beans. Grate the cheese."
     },
     {
-     "t": "Add the frozen veg, the tomatoes, the drained beans and {{450|ml}} water. Bring to the boil, then add the pasta and simmer for 12 minutes until the pasta is tender. Stir in the spinach."
+     "t": "Heat the oil in a large saucepan over a medium heat. Add the onion and cook for 5 minutes until soft, then add the garlic and herbs and stir for 1 minute."
+    },
+    {
+     "t": "Add the frozen veg, the tomatoes, the beans and {{450|ml}} water and bring to the boil."
+    },
+    {
+     "t": "Add the pasta and simmer for 12 minutes, stirring now and then, until the pasta is tender. Stir in the spinach until it wilts."
     },
     {
      "t": "Take the baby's portion out now, before the stock and salt.",
      "baby": true
     },
     {
-     "t": "Crumble the stock cube into the rest and simmer for 2 minutes. Season, then serve with the grated cheese and bread."
+     "t": "Crumble the stock cube into the rest and simmer for 2 minutes. Season, then serve with the cheese and bread."
     }
    ],
    "baby": {
@@ -3127,17 +3337,23 @@
    ],
    "steps": [
     {
-     "t": "Soften the chopped onion in the oil for 6 minutes. Add the garlic, cumin, cinnamon and ground ginger for 1 minute."
+     "t": "Get ready: chop the onion and crush the garlic. Peel the sweet potato and cut it into 2 cm cubes. Chop the apricots. Drain and rinse the chickpeas. Chop the coriander and cut the lemon into wedges."
     },
     {
-     "t": "Add the sweet potato (2 cm cubes), the drained chickpeas, the tomatoes, the chopped apricots and {{200|ml}} water. Cover and simmer for 20 minutes until the potato is tender. Stir in the spinach to wilt."
+     "t": "Heat the oil in a large saucepan with a lid over a medium heat. Add the onion and cook for 6 minutes until soft. Add the garlic, cumin, cinnamon and ground ginger and stir for 1 minute."
+    },
+    {
+     "t": "Add the sweet potato, chickpeas, tomatoes, apricots and {{200|ml}} water. Bring to a simmer, cover and cook gently for 20 minutes until the sweet potato is tender. Stir in the spinach until it wilts."
     },
     {
      "t": "Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the rest. Pour {{75|ml}} boiling water over the couscous, cover for 5 minutes and fluff. Serve the stew on the couscous with yoghurt, lemon and coriander."
+     "t": "Season the rest with the chilli flakes and salt."
+    },
+    {
+     "t": "Put the couscous in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes, then fluff with a fork. Serve the stew on the couscous with the yoghurt, a squeeze of lemon and the coriander."
     }
    ],
    "baby": {
@@ -3216,17 +3432,26 @@
    ],
    "steps": [
     {
-     "t": "Heat the oven to 200°C. In an ovenproof pan with a lid, soften the chopped onion in the butter for 5 minutes. Add the garlic and the rice and stir for 1 minute."
+     "t": "Get ready: heat the oven to 200°C and put the kettle on. Chop the onion and crush the garlic. Grate the cheese and zest the lemon."
     },
     {
-     "t": "Pour in {{250|ml}} boiling water, cover and bake for 18 minutes. Stir in the peas, edamame and spinach (they add a little water as they thaw) and bake for 5 more minutes."
+     "t": "In an ovenproof pan with a lid (or a casserole dish), melt the butter over a medium heat. Add the onion and cook for 5 minutes until soft."
+    },
+    {
+     "t": "Add the garlic and rice and stir for 1 minute until the rice is coated."
+    },
+    {
+     "t": "Pour in {{250|ml}} boiling water, stir, cover and bake for 18 minutes."
+    },
+    {
+     "t": "Stir in the frozen peas, edamame and spinach (they add a little water as they thaw), cover again and bake for 5 more minutes."
     },
     {
      "t": "Spoon the baby's portion out now, before the stock and cheese.",
      "baby": true
     },
     {
-     "t": "Dissolve the stock cube in {{30|ml}} boiling water and stir it through the rest with most of the cheese, until creamy. Top with the ricotta, the rest of the cheese, lemon zest and black pepper."
+     "t": "Dissolve the stock cube in {{30|ml}} boiling water and stir it through the rest with most of the cheese, until creamy. Top with the ricotta, the rest of the cheese, the lemon zest and black pepper."
     }
    ],
    "baby": {
@@ -3319,17 +3544,26 @@
    ],
    "steps": [
     {
-     "t": "Boil the eggs for 8 minutes, then cool them in cold water and peel. Meanwhile, fry the sliced onion in the oil for 8 minutes until deep golden."
+     "t": "Get ready: put the kettle on. Thinly slice the onion, crush the garlic and grate the ginger. Rinse the rice in a sieve until the water runs clearer. Chop the coriander."
     },
     {
-     "t": "Add the garlic, grated ginger, cumin, turmeric and garam masala for 1 minute, then the rinsed rice, the frozen veg and {{160|ml}} boiling water. Cover tightly and cook on the lowest heat for 12 minutes, then leave to stand, covered, for 5."
+     "t": "Lower the eggs into a small pan of boiling water and boil for 8 minutes. Cool them in cold water, then peel."
+    },
+    {
+     "t": "Meanwhile, heat the oil in a saucepan with a tight-fitting lid over a medium heat. Add the onion and cook for 8 minutes, stirring often, until deep golden."
+    },
+    {
+     "t": "Add the garlic, ginger, cumin, turmeric and garam masala and stir for 1 minute. Add the rice, the frozen veg and {{160|ml}} boiling water and stir once."
+    },
+    {
+     "t": "Cover tightly and cook on the lowest heat for 12 minutes without lifting the lid. Take off the heat and leave it covered for 5 more minutes."
     },
     {
      "t": "Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the rest with chilli and salt and fluff it up. Grate the cucumber into the yoghurt for raita. Serve with the halved eggs and coriander."
+     "t": "Season the rest with the chilli flakes and salt and fluff it up with a fork. Grate the cucumber into the yoghurt to make raita. Serve with the halved eggs and coriander."
     }
    ],
    "baby": {
@@ -3413,17 +3647,20 @@
    ],
    "steps": [
     {
-     "t": "Pat the drained chickpeas dry and toss with half the oil, the oregano and paprika. Air fry at 200°C for 12 minutes, shaking once, until crisp."
+     "t": "Get ready: put the kettle on. Drain and rinse the chickpeas and pat them dry with kitchen paper. Chop the cucumber (keep a few sticks back for the baby), halve the tomatoes and thinly slice the red onion. Squeeze the lemon juice."
     },
     {
-     "t": "Pour {{75|ml}} boiling water over the couscous, cover for 5 minutes, then fluff with the rest of the oil and the lemon juice."
+     "t": "Toss the chickpeas with half the oil, the oregano and smoked paprika. Air fry at 200°C for 12 minutes, shaking once, until crisp."
+    },
+    {
+     "t": "Meanwhile, put the couscous in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes. Fluff with a fork, stirring in the rest of the oil and the lemon juice."
     },
     {
      "t": "Take the baby's couscous and a few soft chickpeas out now (squashed), plus cucumber sticks, before the feta and olives.",
      "baby": true
     },
     {
-     "t": "Chop the cucumber, tomatoes and red onion. Build the bowls: couscous, salad, chickpeas, crumbled feta, olives and a spoon of houmous."
+     "t": "Build the bowls: couscous, cucumber, tomatoes, red onion and chickpeas, with the feta crumbled over, the olives and a spoon of houmous."
     }
    ],
    "baby": {
@@ -3487,14 +3724,23 @@
    ],
    "steps": [
     {
-     "t": "Pour {{75|ml}} boiling water over the couscous with the herbs, cover and leave for 5 minutes."
+     "t": "Get ready: put the kettle on. Drain and rinse the chickpeas. Halve the cherry tomatoes. Squeeze the lemon juice."
     },
     {
-     "t": "Warm the drained chickpeas, the halved tomatoes and the spinach in half the oil until the spinach wilts. Take the baby's portion (with some couscous) out now, before the halloumi.",
+     "t": "Put the couscous and herbs in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes."
+    },
+    {
+     "t": "Meanwhile, heat half the oil in a frying pan over a medium heat. Add the chickpeas and tomatoes and cook for 3 to 4 minutes, stirring, until the tomatoes soften. Add the spinach and stir for 1 minute until it wilts. Tip into a bowl."
+    },
+    {
+     "t": "Take the baby's portion (with some couscous) out now, before the halloumi.",
      "baby": true
     },
     {
-     "t": "Fry the halloumi slices in the rest of the oil until golden on both sides. Fluff the couscous with the lemon juice and pepper, stir in the chickpeas and top with the halloumi."
+     "t": "Slice the halloumi about 1 cm thick. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the halloumi for 1 to 2 minutes a side until golden."
+    },
+    {
+     "t": "Fluff the couscous with a fork, stir in the lemon juice, black pepper and the chickpea mix, and top with the halloumi."
     }
    ],
    "baby": {
@@ -3573,14 +3819,20 @@
    ],
    "steps": [
     {
-     "t": "Spread the naans with passata and sprinkle with the oregano."
+     "t": "Get ready: heat the air fryer to 190°C (or the oven to 220°C). Thinly slice the pepper and mushrooms. Tear the mozzarella and grate the cheddar."
+    },
+    {
+     "t": "Spread the naans with the passata and sprinkle with the oregano."
     },
     {
      "t": "Make the baby's pizza now: a piece of naan with passata, a little mozzarella and some sweetcorn, before the olives and chilli.",
      "baby": true
     },
     {
-     "t": "Top the rest with the torn mozzarella, grated cheddar, sliced pepper and mushrooms, the sweetcorn and the olives. Air fry at 190°C for 6 to 8 minutes (or bake at 220°C for 10) until bubbling. Add chilli and serve with salad."
+     "t": "Top the rest with the mozzarella, cheddar, pepper, mushrooms, sweetcorn and olives."
+    },
+    {
+     "t": "Air fry for 6 to 8 minutes (or bake for 10 minutes) until bubbling, with the baby's piece alongside. Add the chilli flakes and serve with the salad."
     }
    ],
    "baby": {
@@ -3655,14 +3907,23 @@
    ],
    "steps": [
     {
-     "t": "Cut the potatoes into wedges, toss with the oil and half the paprika, and air fry at 200°C for 20 to 22 minutes, shaking halfway."
+     "t": "Get ready: cut the potatoes into wedges (no need to peel). Grate the garlic. Thinly slice the red onion."
+    },
+    {
+     "t": "Toss the wedges with the oil and half the smoked paprika. Air fry at 200°C for 20 to 22 minutes, shaking halfway, until golden outside and soft inside."
     },
     {
      "t": "Take a few wedges out for the baby now, before the salt and halloumi.",
      "baby": true
     },
     {
-     "t": "Fry the halloumi slices in a dry pan until golden on both sides. Mix the yoghurt with the grated garlic and the rest of the paprika. Salt the wedges. Build the burgers: bun, sauce, salad, halloumi, roasted peppers and red onion."
+     "t": "Slice the halloumi about 1 cm thick. Heat a dry frying pan over a medium-high heat and fry the halloumi for 1 to 2 minutes a side until golden."
+    },
+    {
+     "t": "Meanwhile, mix the yoghurt with the garlic and the rest of the paprika. Sprinkle the wedges with salt."
+    },
+    {
+     "t": "Build the burgers: bun, garlic yoghurt, salad, halloumi, roasted peppers and red onion. Serve with the wedges."
     }
    ],
    "baby": {
@@ -3748,17 +4009,23 @@
    ],
    "steps": [
     {
-     "t": "Cut the sweet potato into fries and toss with half the oil. Air fry at 200°C for 15 to 18 minutes, shaking twice."
+     "t": "Get ready: cut the sweet potato into fries about 1 cm thick. Drain the beans and pat them really dry with kitchen paper. Crush the garlic."
     },
     {
-     "t": "Pat the drained beans really dry. Blitz the oats to a coarse flour in the processor, then add the beans, garlic, cumin and paprika and pulse until they hold together but still have some texture. Shape into burgers and chill for 10 minutes so they firm up."
+     "t": "Toss the fries with half the oil. Air fry at 200°C for 15 to 18 minutes, shaking twice, until crisp at the edges."
+    },
+    {
+     "t": "Meanwhile, blitz the oats to a coarse flour in a food processor. Add the beans, garlic, cumin and smoked paprika and pulse until it holds together but still has some texture."
     },
     {
      "t": "Shape a small patty for the baby now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Add the chilli and a pinch of salt to the rest, shape into burgers, then fry them all in the rest of the oil for 4 minutes a side, adding the cheese for the last minute. Serve in buns with yoghurt and salad."
+     "t": "Add the chilli flakes and a pinch of salt to the rest and shape into burgers. Chill all the burgers in the fridge for 10 minutes so they firm up."
+    },
+    {
+     "t": "Heat the rest of the oil in a non-stick frying pan over a medium heat. Fry the burgers for 4 minutes a side, laying the cheese on top for the last minute. Serve in the buns with the yoghurt and salad."
     }
    ],
    "baby": {
@@ -3840,17 +4107,23 @@
    ],
    "steps": [
     {
-     "t": "Put the rice on, adding the edamame for the last 3 minutes. Pat the tofu dry, cube it, and toss with half the oil and the cornflour. Air fry at 200°C for 15 minutes, shaking halfway."
+     "t": "Get ready: rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Slice the pepper, onion and spring onions. Crush the garlic."
     },
     {
-     "t": "Stir-fry the sliced pepper and onion in the rest of the oil for 4 minutes, then add the garlic and ginger for 1 minute."
+     "t": "Put the rice on: cook it in a pan of boiling water for 10 to 12 minutes, adding the edamame for the last 3, then drain."
+    },
+    {
+     "t": "Toss the tofu with half the oil and the cornflour. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+    },
+    {
+     "t": "Meanwhile, heat the rest of the oil in a wok or large frying pan over a high heat. Stir-fry the pepper and onion for 4 minutes, then add the garlic and ground ginger for 1 minute."
     },
     {
      "t": "Take the baby's tofu, veg and rice out now, before the salt, pepper and chilli.",
      "baby": true
     },
     {
-     "t": "Toss the tofu into the pan with a big pinch of salt, lots of black pepper, the chilli and the spring onions. Serve with the rice and edamame."
+     "t": "Add the tofu to the pan with a big pinch of salt, lots of black pepper, the chilli flakes and the spring onions, and toss for 1 minute. Serve with the rice and edamame."
     }
    ],
    "baby": {
@@ -3912,17 +4185,23 @@
    ],
    "steps": [
     {
-     "t": "Slice the potato thinly and fry in the oil in an ovenproof non-stick pan, covered, for 10 minutes until tender. Add the spinach and spring onion to wilt."
+     "t": "Get ready: slice the potato thinly, about 3 mm (no need to peel). Slice the spring onion. Beat the eggs with some black pepper."
     },
     {
-     "t": "Beat the eggs with pepper and pour over. Cook gently for 6 minutes until the edges are set. Heat the grill."
+     "t": "Heat the oil in a medium non-stick, ovenproof frying pan over a medium heat. Add the potato, cover with a lid or plate, and cook for 10 minutes, turning now and then, until tender."
+    },
+    {
+     "t": "Add the spinach and spring onion and stir for 1 minute until the spinach wilts. Spread everything out evenly."
+    },
+    {
+     "t": "Pour the eggs over and cook on a low heat for 6 minutes until the edges are set. Meanwhile, heat the grill to high."
     },
     {
      "t": "Scatter the feta over everything except one corner, which is the baby's piece.",
      "baby": true
     },
     {
-     "t": "Grill for 4 to 5 minutes until set and golden. Rest for 2 minutes, cut into wedges and serve with salad and toasted sourdough."
+     "t": "Grill for 4 to 5 minutes until set and golden. Rest for 2 minutes, then cut into wedges. Toast the sourdough and serve with the salad."
     }
    ],
    "baby": {
@@ -3983,6 +4262,9 @@
    ],
    "steps": [
     {
+     "t": "Get ready: cut the cucumber into sticks and the lemon into wedges."
+    },
+    {
      "t": "Air fry the falafel at 190°C for 8 minutes (or follow the pack)."
     },
     {
@@ -3990,7 +4272,10 @@
      "baby": true
     },
     {
-     "t": "Fry the halloumi slices in a dry pan until golden. Fill the warmed tortillas with houmous, salad, cucumber, falafel and halloumi, then add yoghurt and a squeeze of lemon."
+     "t": "Slice the halloumi about 1 cm thick. Heat a dry frying pan over a medium-high heat and fry it for 1 to 2 minutes a side until golden."
+    },
+    {
+     "t": "Warm the tortillas in the same pan for about 20 seconds a side. Fill with houmous, salad, cucumber, falafel and halloumi, then add the yoghurt and a squeeze of lemon."
     }
    ],
    "baby": {
