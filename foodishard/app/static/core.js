@@ -18,7 +18,12 @@ const STAGES = {
   smooth: { name: "Smooth & mashed", hint: "Early weaning: blended or well mashed." },
   finger: { name: "Finger foods & soft lumps", hint: "Holding soft strips, chewing lumps, managing toast." },
   chopped: { name: "Chopped family food", hint: "Same meal as you, cut small. Still go easy on salt." },
+  family: { name: "Family food", hint: "Toddlers and up: the same meal as you, cut to a safe size. Still go easy on salt; no whole nuts under 5." },
 };
+// Recipes have notes for the first three stages; "family" uses the chopped note.
+const STAGE_NOTE = { smooth: "smooth", finger: "finger", chopped: "chopped", family: "chopped" };
+// Each child gets a colour, used wherever their portion or notes appear.
+const KID_COLOURS = ["#6B5BA8", "#1F7A75", "#B55A1E", "#2F5FA8", "#8A3F7A", "#5B7A1F"];
 
 function iso(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function parseISO(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
@@ -184,60 +189,73 @@ async function getJSON(url) {
 // Household
 // ---------------------------------------------------------------------------
 function settings() { return app.state.settings; }
+// ---- Little ones ---------------------------------------------------------------
+// settings.children = [{ id, name, born, due, stage, portion, dismissed }], settings.childrenOn.
+// Older versions had a single settings.baby; it's read as the first child until saved again.
+function kidsAll() {
+  const s = settings();
+  if (Array.isArray(s.children) && s.children.length) return s.children;
+  const b = s.baby || {};
+  return b.include || b.born ? [{ id: "c1", name: b.name || "Baby", born: b.born || "", due: b.due || "", stage: b.stage || "smooth", portion: b.portion ?? 0.25, dismissed: b.dismissed || [] }] : [];
+}
+function kidsOn() { const s = settings(); return s.childrenOn ?? !!(s.baby && s.baby.include); }
+function kids() { return kidsOn() ? kidsAll() : []; }
+function kidColour(c) { const i = Math.max(0, kidsAll().findIndex((k) => k.id === c.id)); return KID_COLOURS[i % KID_COLOURS.length]; }
+function kidStyle(c) { return `--kid:${kidColour(c)}`; }
+function saveKids(list, on = kidsOn()) { return send({ op: "settings", patch: { children: list, childrenOn: on } }); }
+function updateKid(id, patch) { saveKids(kidsAll().map((k) => (k.id === id ? { ...k, ...patch } : k))); }
+function joinNames(names) { return names.length <= 1 ? (names[0] || "") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`; }
+function kidNames(list = kids()) { return joinNames(list.map((k) => k.name || "Baby")); }
+
 function household() {
   const s = settings();
   const adults = s.people || [];
-  const baby = s.baby || {};
-  const factor = adults.reduce((t, p) => t + (+p.portion || 0), 0) + (baby.include ? (+baby.portion || 0) : 0);
-  return { adults, baby, factor: factor || 1 };
+  const little = kids();
+  const factor = adults.reduce((t, p) => t + (+p.portion || 0), 0) + little.reduce((t, k) => t + (+k.portion || 0), 0);
+  return { adults, kids: little, factor: factor || 1 };
 }
-function babyInfo() {
-  const b = household().baby;
-  const ageActual = b.born ? monthsBetween(parseISO(b.born), new Date()) : null;
-  const ageCorrected = b.due ? monthsBetween(parseISO(b.due), new Date()) : ageActual;
+function kidInfo(c) {
+  const ageActual = c.born ? monthsBetween(parseISO(c.born), new Date()) : null;
+  const ageCorrected = c.due ? monthsBetween(parseISO(c.due), new Date()) : ageActual;
   let firstBirthday = null;
-  if (b.born) { firstBirthday = parseISO(b.born); firstBirthday.setFullYear(firstBirthday.getFullYear() + 1); }
+  if (c.born) { firstBirthday = parseISO(c.born); firstBirthday.setFullYear(firstBirthday.getFullYear() + 1); }
   const months = ageActual ? ageActual.m : 9;
   const saltLimit = months < 12 ? 1 : months < 48 ? 2 : 3; // NHS daily maximums
-  return { b, ageActual, ageCorrected, firstBirthday, underOne: months < 12, saltLimit };
+  return { ageActual, ageCorrected, firstBirthday, underOne: months < 12, saltLimit };
 }
 // Gentle, dismissible suggestions as the baby grows. They never change anything by
 // themselves: babies vary, and portions should follow their appetite. Ages use the
 // corrected age when a due date is given (premature babies), otherwise the real age.
 // These are rough general guides, not professional advice.
-const BABY_STAGE_FROM = [["smooth", 0], ["finger", 7], ["chopped", 10]]; // months
+const BABY_STAGE_FROM = [["smooth", 0], ["finger", 7], ["chopped", 10], ["family", 24]]; // months
 const BABY_PORTION_FROM = [[6, 0.2], [9, 0.25], [12, 0.33], [24, 0.4], [48, 0.5]]; // months, share of an adult portion
 const PORTION_WORDS = { 0.2: "a fifth", 0.25: "a quarter", 0.33: "a third", 0.4: "two-fifths", 0.5: "half" };
-function babySuggestions() {
-  const s = settings(), b = (s.baby || {});
-  if (!b.include || !b.born) return [];
-  const bi = babyInfo(), age = bi.ageCorrected || bi.ageActual;
+function kidSuggestions(c) {
+  if (!c.born) return [];
+  const info = kidInfo(c), age = info.ageCorrected || info.ageActual;
   if (!age || age.m < 0) return [];
-  const name = b.name || "Baby", m = age.m, corrected = b.due && b.due !== b.born;
-  const ageWords = `${ageText(corrected ? b.due : b.born)}${corrected ? " (corrected)" : ""}`;
-  const dismissed = b.dismissed || [], out = [];
-  if (m < 6) {
-    out.push({ key: "start", text: `${name} is ${ageWords}. Most babies start solid food at around 6 months${corrected ? "; for babies born early, ask your health visitor when to start" : ""}. The baby portions are here for when you're ready.`, info: true });
-  }
+  const name = c.name || "Baby", m = age.m, corrected = c.due && c.due !== c.born;
+  const ageWords = `${ageText(corrected ? c.due : c.born)}${corrected ? " (corrected)" : ""}`;
+  const out = [];
+  if (m < 6) out.push({ key: "start", info: true, text: `${name} is ${ageWords}. Most babies start solid food at around 6 months${corrected ? "; for babies born early, ask your health visitor when to start" : ""}. Their portions are here for when you're ready.` });
   const order = BABY_STAGE_FROM.map(([k]) => k);
   const due = BABY_STAGE_FROM.filter(([, from]) => m >= from).pop()[0];
-  if (order.indexOf(due) > order.indexOf(b.stage || "smooth")) {
-    out.push({
-      key: `stage:${due}`, set: { stage: due },
-      text: due === "finger"
-        ? `${name} is ${ageWords}. Many babies are ready for soft lumps and finger foods from about 7 months. Switch the baby notes to "${STAGES.finger.name}"?`
-        : `${name} is ${ageWords}. Many babies move on to chopped family food from about 10 to 12 months. Switch the baby notes to "${STAGES.chopped.name}"?`,
-    });
+  if (order.indexOf(due) > order.indexOf(c.stage || "smooth")) {
+    const why = { finger: "Many babies are ready for soft lumps and finger foods from about 7 months.",
+      chopped: "Many babies move on to chopped family food from about 10 to 12 months.",
+      family: "Many toddlers eat the same family meals from about 2 years, cut to a safe size." }[due];
+    out.push({ key: `stage:${due}`, set: { stage: due }, text: `${name} is ${ageWords}. ${why} Switch ${name}'s notes to "${STAGES[due].name}"?` });
   }
   const band = BABY_PORTION_FROM.filter(([from]) => m >= from).pop();
-  if (band && band[1] > (+b.portion || 0) + 0.02) {
+  if (band && band[1] > (+c.portion || 0) + 0.02) {
     out.push({ key: `portion:${band[1]}`, set: { portion: band[1] },
-      text: `As a very rough guide, many ${m >= 12 ? "toddlers" : "babies"} of ${name}'s age eat about ${PORTION_WORDS[band[1]]} of an adult portion (it's set to ${(+b.portion || 0).toFixed(2)} now). Go by their appetite. Make it ${PORTION_WORDS[band[1]]}?` });
+      text: `As a very rough guide, many ${m >= 12 ? "children" : "babies"} of ${name}'s age eat about ${PORTION_WORDS[band[1]]} of an adult portion (it's set to ${(+c.portion || 0).toFixed(2)} now). Go by their appetite. Make it ${PORTION_WORDS[band[1]]}?` });
   }
-  return out.filter((x) => !dismissed.includes(x.key));
+  return out.filter((x) => !(c.dismissed || []).includes(x.key)).map((x) => ({ ...x, kid: c.id, name }));
 }
+function babySuggestions() { return kids().flatMap(kidSuggestions); }
 
-function babyName() { const b = household().baby; return b.name || "Baby"; }
+function babyName() { return kidNames(); }
 function prefsFor(id) { return app.state.prefs[id] || {}; }
 function family(id) { return app.famById[id] || { id, name: id, plural: id }; }
 
@@ -459,9 +477,15 @@ function fmtQty(q, u, { forShopping = false } = {}) {
 }
 function scaleStep(text, factor) { return text.replace(/\{\{(\d+(?:\.\d+)?)\|(\w+)\}\}/g, (_, n, u) => fmtQty(+n * factor, u)); }
 function personaliseStep(text) {
-  if (!household().baby.include) return text;
-  const n = babyName();
-  return text.replace(/\b[Tt]he baby's\b/g, `${n}'s`).replace(/\bfor the baby\b/g, `for ${n}`);
+  const little = kids();
+  if (!little.length) return text;
+  const n = kidNames(little), many = little.length > 1;
+  return text
+    .replace(/\b[Tt]he baby's portion\b/g, many ? `${n}'s portions` : `${n}'s portion`)
+    .replace(/\b[Tt]he baby's share\b/g, many ? `${n}'s shares` : `${n}'s share`)
+    .replace(/\b[Tt]he baby's\b/g, `${n}'s`)
+    .replace(/\bfor the baby\b/g, `for ${n}`)
+    .replace(/\bthe baby\b/g, many ? "the little ones" : n);
 }
 
 // ---------------------------------------------------------------------------

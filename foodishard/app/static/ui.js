@@ -106,12 +106,22 @@ function proteinTiles(r, onHero) {
       <span class="k"><span>${esc(p.name)}</span><span aria-hidden="true">›</span></span><span class="v">${proteinFor(r, p.portion)} g protein</span></button>`).join("");
 }
 function proteinShort(r) { return household().adults.map((p) => proteinFor(r, p.portion)).join(" / ") + " g"; }
-function visibleSteps(r) { const inc = household().baby.include; return r.steps.filter((s) => inc || !s.baby); }
+function visibleSteps(r) { const inc = kids().length > 0; return r.steps.filter((s) => inc || !s.baby); }
+/** Coloured name chips, one per child. */
+function kidChips(list = kids()) { return list.map((k) => `<span class="kid-chip" style="${kidStyle(k)}">${esc(k.name || "Baby")}</span>`).join(""); }
+/** One coloured note per child for a recipe, at their own stage. */
+function kidNotes(r, { withRules = false } = {}) {
+  return kids().map((k) => {
+    const info = kidInfo(k), note = personaliseStep((r.baby || {})[STAGE_NOTE[k.stage] || "smooth"] || "") || "Take their portion out before salt, stock or chilli, and cut it to a size they can manage.";
+    return `<div class="baby-box kid" style="${kidStyle(k)}"><p class="kid-head"><span class="kid-dot"></span><b>${esc(k.name || "Baby")}</b> · ${esc(STAGES[k.stage]?.name || "")}</p><p style="margin:0">${esc(note)}</p>
+      ${withRules ? `<ul><li>No added salt or stock in their portion.</li>${info.underOne ? `<li>No honey until ${info.firstBirthday ? `${niceDate(info.firstBirthday)} ${info.firstBirthday.getFullYear()}` : "their first birthday"}.</li>` : ""}<li>Quarter cherry tomatoes and grapes. Nuts ground or smooth only.</li></ul>` : ""}</div>`;
+  }).join("");
+}
 
 function babySuggestionCard(sg) {
   return `<div class="baby-suggest"><p>${esc(sg.text)}</p>${sg.info
-    ? `<button class="btn sm" data-act="babyDismiss" data-k="${esc(sg.key)}">Got it</button>`
-    : `<div class="row" style="gap:8px"><button class="btn sm primary" data-act="babyAccept" data-k="${esc(sg.key)}">Yes, change it</button><button class="btn sm" data-act="babyDismiss" data-k="${esc(sg.key)}">Not yet</button></div>`}</div>`;
+    ? `<button class="btn sm" data-act="babyDismiss" data-kid="${esc(sg.kid)}" data-k="${esc(sg.key)}">Got it</button>`
+    : `<div class="row" style="gap:8px"><button class="btn sm primary" data-act="babyAccept" data-kid="${esc(sg.kid)}" data-k="${esc(sg.key)}">Yes, change it</button><button class="btn sm" data-act="babyDismiss" data-kid="${esc(sg.kid)}" data-k="${esc(sg.key)}">Not yet</button></div>`}</div>`;
 }
 
 // ----- Tonight -----
@@ -120,7 +130,7 @@ function viewTonight() {
   const i = (mondayIndex(today) - (settings().weekStartDay || 0) + 7) % 7;
   const d = planFor(week)[i];
   const r = d.recipe && app.byId[d.recipe];
-  const { factor, baby } = household();
+  const { factor, kids: little } = household();
   const eyebrow = `${DOW_LONG[mondayIndex(today)]} ${today.getDate()} ${MONTHS_LONG[today.getMonth()]}`;
   let hero;
   if (d.status === "cook" && r) {
@@ -131,7 +141,7 @@ function viewTonight() {
       <h1>${esc(r.name)}</h1>
       ${headlineSwaps(r).length ? `<span class="tag" style="align-self:flex-start">Made with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}
       <div class="tiles">${proteinTiles(r, true)}</div>
-      ${baby.include && babyStep >= 0 ? `<div class="baby-note">${icon("baby")}<span>${esc(babyName())}'s portion comes out at <b>step ${babyStep + 1}</b></span></div>` : ""}
+      ${little.length && babyStep >= 0 ? `<div class="baby-note">${icon("baby")}<span>${kidChips(little)} ${little.length > 1 ? "portions come" : "portion comes"} out at <b>step ${babyStep + 1}</b></span></div>` : ""}
       <div class="row"><button class="btn lg white grow" data-act="cook" data-id="${r.id}">${icon("play", 18)}Start cooking</button>
       <button class="btn lg outline" data-act="quicker" data-i="${i}">${icon("bolt", 18)}Quicker</button></div>
     </section>`;
@@ -160,8 +170,9 @@ function viewTonight() {
   const list = buildList(week).filter((x) => x.active && (!x.cupboard || x.need));
   const left = list.filter((x) => !x.done).length, total = list.reduce((t, x) => t + (x.cost || 0), 0);
   const growing = babySuggestions().filter((x) => !x.info);
+  const growNames = joinNames([...new Set(growing.map((x) => x.name))]);
   return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
-    ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(babyName())} is growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals. Tap to review.</span></span><span class="muted">›</span></button>` : ""}
+    ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(growNames)} ${growing.length && new Set(growing.map((x) => x.kid)).size > 1 ? "are" : "is"} growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals. Tap to review.</span></span><span class="muted">›</span></button>` : ""}
     ${hero}
     <div class="row between" style="margin:22px 4px 10px"><h2 class="h2">Coming up</h2><button class="btn sm ghost" data-act="go" data-to="week">See the week</button></div>
     <div class="list week-mini">${upcoming.join("")}</div>
@@ -338,7 +349,7 @@ function viewRecipes() {
 
 // ----- Settings -----
 function viewSettings() {
-  const s = settings(), bi = babyInfo(), b = bi.b;
+  const s = settings();
   const stepper = (act, idx, val, step, fmt = (v) => v) => `<div class="stepper"><button data-act="${act}" data-i="${idx}" data-d="${-step}" aria-label="Less">−</button><span>${fmt(val)}</span><button data-act="${act}" data-i="${idx}" data-d="${step}" aria-label="More">+</button></div>`;
   const people = s.people.map((p, i) => `<div class="stack" style="padding:14px 16px;gap:10px">
       <div class="row"><input class="input grow" value="${esc(p.name)}" data-set="personName" data-i="${i}" aria-label="Name">
@@ -375,19 +386,23 @@ function viewSettings() {
     <p class="section-label">${app.host === "Cloudflare" ? "Grown-ups (portions)" : "Grown-ups"}</p>
     <div class="list">${people}<div style="padding:12px 16px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a person</button></div></div>
 
-    <p class="section-label">Baby</p>
+    <p class="section-label">Little ones</p>
     <div class="list">
-      <label class="row" style="padding:13px 16px"><span class="grow"><b>Cooking for a baby</b><br><span class="small muted">Adds baby portions and weaning steps to every recipe</span></span>
-        <span class="switch"><input type="checkbox" data-set="babyInclude" ${b.include ? "checked" : ""}><i></i></span></label>
-      ${b.include ? `<div class="stack" style="padding:14px 16px;gap:10px">
-        <input class="input" value="${esc(b.name)}" data-set="baby" data-f="name" aria-label="Baby's name">
-        <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input" type="date" value="${esc(b.born)}" data-set="baby" data-f="born"></label>
-          <label class="grow"><span class="small muted">Due date</span><input class="input" type="date" value="${esc(b.due)}" data-set="baby" data-f="due"></label></div>
-        <span class="small muted">${b.born ? `${esc(ageText(b.born))} old${b.due && b.due !== b.born ? ` · ${esc(ageText(b.due))} corrected` : ""}` : "Add the birth date. If they arrived early, add the due date too, for their corrected age."}</span>
-        <label><span class="small muted">Eating stage</span><select class="input" data-set="baby" data-f="stage">${Object.entries(STAGES).map(([k, v]) => `<option value="${k}" ${b.stage === k ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
-        <span class="small muted">${esc(STAGES[b.stage]?.hint || "")}</span>
-        ${babySuggestions().map(babySuggestionCard).join("")}
-        <div class="row between"><span class="small muted">Portion size</span>${stepper("babyPortion", 0, b.portion, 0.05, (v) => (+v).toFixed(2))}</div></div>` : ""}
+      <label class="row" style="padding:13px 16px"><span class="grow"><b>Cooking for little ones</b><br><span class="small muted">Babies and young children: their own portions, stages and safety notes in every recipe</span></span>
+        <span class="switch"><input type="checkbox" data-set="kidsOn" ${kidsOn() ? "checked" : ""}><i></i></span></label>
+      ${kidsOn() ? kidsAll().map((k) => {
+        const corrected = k.due && k.due !== k.born;
+        return `<div class="stack kid-card" style="padding:14px 16px;gap:10px;${kidStyle(k)}">
+        <div class="row"><span class="kid-dot" aria-hidden="true"></span><input class="input grow" value="${esc(k.name)}" placeholder="Name" data-set="kid" data-id="${esc(k.id)}" data-f="name" aria-label="Child's name">
+          <button class="icon-btn plain" data-act="kidRemove" data-id="${esc(k.id)}" aria-label="Remove ${esc(k.name || "child")}">${icon("trash", 18)}</button></div>
+        <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input" type="date" value="${esc(k.born)}" data-set="kid" data-id="${esc(k.id)}" data-f="born"></label>
+          <label class="grow"><span class="small muted">Due date (if early)</span><input class="input" type="date" value="${esc(k.due)}" data-set="kid" data-id="${esc(k.id)}" data-f="due"></label></div>
+        <span class="small muted">${k.born ? `${esc(ageText(k.born))} old${corrected ? ` · ${esc(ageText(k.due))} corrected` : ""}` : "Add their birth date. If they arrived early, add the due date too, for their corrected age."}</span>
+        <label><span class="small muted">Eating stage</span><select class="input" data-set="kid" data-id="${esc(k.id)}" data-f="stage">${Object.entries(STAGES).map(([s2, v]) => `<option value="${s2}" ${k.stage === s2 ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
+        <span class="small muted">${esc(STAGES[k.stage]?.hint || "")}</span>
+        ${kidSuggestions(k).map(babySuggestionCard).join("")}
+        <div class="row between"><span class="small muted">Portion size (share of an adult's)</span><div class="stepper"><button data-act="kidPortion" data-id="${esc(k.id)}" data-d="-0.05" aria-label="Less">−</button><span>${(+k.portion || 0).toFixed(2)}</span><button data-act="kidPortion" data-id="${esc(k.id)}" data-d="0.05" aria-label="More">+</button></div></div>
+      </div>`; }).join("") + `<div style="padding:12px 16px"><button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a child</button></div>` : ""}
     </div>
 
     <p class="section-label">Food</p>
@@ -431,7 +446,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.2</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.3</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -462,7 +477,7 @@ window.addEventListener("popstate", () => {
 
 function openRecipe(id, { pickDay = null } = {}) {
   const r = app.byId[id]; if (!r) return;
-  const { factor, baby } = household(), p = prefsFor(id), bi = babyInfo();
+  const { factor } = household(), p = prefsFor(id);
   const ings = effectiveIngredients(r), main = ings.filter((i) => i.q != null && !ingMeta(i.k).c), rack = ings.filter((i) => i.q != null && ingMeta(i.k).c), cupboard = ings.filter((i) => i.q == null);
   const fb = feedbackFor(id), lastFb = fb[fb.length - 1];
   const blocked = blockedBy(r), cost = recipeCost(r), avoid = avoidList().map((a) => app.ing.allergens[a] || a);
@@ -496,21 +511,21 @@ function openRecipe(id, { pickDay = null } = {}) {
     <p class="section-label">Ingredients · for ${niceNumber(factor)} portions</p>
     <div class="card"><ul class="ing-list">${ingHTML}</ul></div>
     ${rack.length || cupboard.length ? `<p class="section-label">From the spice rack &amp; cupboard</p><div class="card"><ul class="ing-list">${rack.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted" style="white-space:nowrap">${esc(fmtQty(i.q * factor, i.u))}</span></li>`).join("")}${cupboard.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted">to taste</span></li>`).join("")}</ul></div>` : ""}
-    ${baby.include ? `<p class="section-label">${esc(babyName())} · ${esc(STAGES[baby.stage]?.name || "")}</p><div class="baby-box"><p style="margin:0">${esc(personaliseStep((r.baby || {})[baby.stage] || "") || "Take their portion out before salt, stock or chilli, and cut it to a size they can manage.")}</p>
-      <ul><li>No added salt or stock in their portion.</li>${bi.underOne ? `<li>No honey until ${bi.firstBirthday ? `${niceDate(bi.firstBirthday)} ${bi.firstBirthday.getFullYear()}` : "their first birthday"}.</li>` : ""}<li>Quarter cherry tomatoes and grapes. Nuts ground or smooth only.</li></ul></div>` : ""}
+    ${kids().length ? `<p class="section-label">Little ones</p><div class="stack" style="gap:8px">${kidNotes(r, { withRules: true })}</div>` : ""}
     <p class="section-label">Method</p>
-    <ol class="steps">${steps.map((s) => `<li class="${s.baby ? "baby" : ""}">${esc(personaliseStep(scaleStep(s.t, factor)))}</li>`).join("")}</ol>`);
+    <ol class="steps">${steps.map((s) => `<li class="${s.baby ? "baby" : ""}">${s.baby ? `<span class="kid-chips">${kidChips()}</span>` : ""}${esc(personaliseStep(scaleStep(s.t, factor)))}</li>`).join("")}</ol>`);
 }
 
 function openMacros(id, who) {
   const r = app.byId[id]; if (!r) return;
-  const { adults, baby } = household(), bi = babyInfo();
+  const { adults, kids: little } = household();
   const per = nutritionPerPortion(r);
   const tabs = adults.map((p, i) => `<button class="${String(who) === String(i) ? "on" : ""}" data-act="macros" data-id="${id}" data-who="${i}">${esc(p.name)} · ${(+p.portion).toFixed(1).replace(".0", "")}</button>`).join("")
-    + (baby.include ? `<button class="${who === "baby" ? "on" : ""}" data-act="macros" data-id="${id}" data-who="baby">${esc(babyName())}</button>` : "");
+    + little.map((k) => `<button class="${who === `kid:${k.id}` ? "on" : ""}" data-act="macros" data-id="${id}" data-who="kid:${esc(k.id)}">${esc(k.name || "Baby")}</button>`).join("");
   let body;
-  if (who === "baby") {
-    const n = nutritionPerPortion(r, { forBaby: true }), f = +baby.portion || 0.25;
+  const kid = String(who).startsWith("kid:") && little.find((k) => `kid:${k.id}` === who);
+  if (kid) {
+    const bi = kidInfo(kid), n = nutritionPerPortion(r, { forBaby: true }), f = +kid.portion || 0.25;
     const salt = n.salt * f, pct = Math.min(100, Math.round(salt / bi.saltLimit * 100));
     body = `<div class="row" style="align-items:baseline;gap:8px"><span class="big-number">${Math.round(n.kcal * f)}</span><span class="muted">kcal</span></div>
       <div class="list"><div class="stack" style="padding:13px 16px;gap:6px"><div class="row between"><b>Salt</b><b>${salt.toFixed(2)} g</b></div>
@@ -665,13 +680,13 @@ function openRack() {
     <p class="section-label">Cupboard</p><div class="list">${cupboard.map(row).join("")}</div>`);
 }
 
-const FEEDBACK_TAGS = ["Too bland", "Too spicy", "Too salty", "Took longer", "Too fiddly", "Too much food", "Not enough", "Baby loved it", "Baby wasn't keen"];
+const FEEDBACK_TAGS = ["Too bland", "Too spicy", "Too salty", "Took longer", "Too fiddly", "Too much food", "Not enough", "Little ones loved it", "Little ones weren't keen"];
 function openFeedback(id) {
   const r = app.byId[id]; app.fbRating = null;
   openSheet(`<p class="eyebrow">${esc(r.name)}</p><h1 class="title" style="font-size:26px">How was it?</h1>
     <form data-form="feedback" data-id="${id}" class="stack" style="margin-top:12px">
       <div class="seg"><button type="button" data-act="feedbackRate" data-r="loved">Loved it</button><button type="button" data-act="feedbackRate" data-r="fine">Fine</button><button type="button" data-act="feedbackRate" data-r="never">Not again</button></div>
-      <div class="chips wrap">${FEEDBACK_TAGS.filter((t) => household().baby.include || !t.startsWith("Baby")).map((t) => `<button type="button" class="chip" data-act="feedbackTag" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+      <div class="chips wrap">${FEEDBACK_TAGS.filter((t) => kids().length || !t.startsWith("Little ones")).map((t) => `<button type="button" class="chip" data-act="feedbackTag" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
       <input class="input" name="note" placeholder="Anything else? e.g. needed more salt" autocomplete="off">
       <button class="btn lg primary" id="fbSave" disabled>Save</button><button type="button" class="btn" data-close>Skip</button></form>`);
 }
@@ -714,7 +729,7 @@ function stopCooking({ fromBack = false, handOver = false } = {}) {
 function stepMinutes(text) { const m = text.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*min(?:ute)?s?/i); return m ? +(m[2] || m[1]) : null; }
 function renderCook() {
   const c = app.cook; if (!c) return;
-  const r = app.byId[c.id], steps = visibleSteps(r), s = steps[c.step], { factor, baby } = household();
+  const r = app.byId[c.id], steps = visibleSteps(r), s = steps[c.step], { factor } = household();
   const text = personaliseStep(scaleStep(s.t, factor)), mins = stepMinutes(text);
   const prog = steps.map((st, i) => `<span class="${i < c.step ? "done" : i === c.step && st.baby ? "baby" : i === c.step ? "done" : ""}"></span>`).join("");
   const timers = c.timers.map((t, i) => {
@@ -731,9 +746,9 @@ function renderCook() {
     <div class="cook-progress">${prog}</div>
     <div class="grow" style="overflow-y:auto;padding:18px 0;display:flex;flex-direction:column;gap:16px">
       ${c.showIng ? `<div class="card"><ul class="ing-list">${ingList}</ul></div>` : ""}
-      <p class="eyebrow" style="color:${s.baby ? "var(--baby)" : "var(--muted)"}">Step ${c.step + 1} of ${steps.length}${s.baby ? ` · ${esc(babyName())}'s portion` : ""}</p>
+      <p class="eyebrow" style="color:${s.baby ? "var(--baby)" : "var(--muted)"}">Step ${c.step + 1} of ${steps.length}${s.baby ? ` · ${esc(kidNames())}'s ${kids().length > 1 ? "portions" : "portion"}` : ""}</p>
       <section class="cook-panel ${s.baby ? "baby" : ""}"><p class="cook-step">${esc(text)}</p>
-        ${s.baby && baby.include ? `<p style="margin:12px 0 0">${esc(personaliseStep((r.baby || {})[baby.stage] || ""))}</p>` : ""}</section>
+        ${s.baby && kids().length ? `<div class="stack" style="gap:8px;margin-top:12px">${kidNotes(r)}</div>` : ""}</section>
       ${mins ? `<button class="btn" data-act="timerStart" data-m="${mins}">${icon("clock", 18)}Start a ${mins}-minute timer</button>` : ""}
       ${timers}
     </div>
@@ -959,13 +974,18 @@ const ACTIONS = {
   goal: (d) => { const people = clone(settings().people); people[+d.i].goal = Math.max(10, (+people[+d.i].goal || 40) + +d.d); send({ op: "settings", patch: { people } }); },
   babyReview: () => { go("settings"); setTimeout(() => { const el = $(".baby-suggest"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, 120); },
   babyAccept: (d) => {
-    const sg = babySuggestions().find((x) => x.key === d.k); if (!sg) return;
-    const b = settings().baby;
-    send({ op: "settings", patch: { baby: { ...b, ...sg.set, dismissed: [...(b.dismissed || []), d.k] } } });
+    const sg = babySuggestions().find((x) => x.kid === d.kid && x.key === d.k); if (!sg) return;
+    const k = kidsAll().find((x) => x.id === d.kid);
+    updateKid(d.kid, { ...sg.set, dismissed: [...(k.dismissed || []), d.k] });
     toast("Updated. You can change it any time.");
   },
-  babyDismiss: (d) => { const b = settings().baby; send({ op: "settings", patch: { baby: { ...b, dismissed: [...new Set([...(b.dismissed || []), d.k])] } } }); },
-  babyPortion: (d) => { const b = settings().baby; send({ op: "settings", patch: { baby: { ...b, portion: Math.max(0.05, Math.round((+b.portion + +d.d) * 100) / 100) } } }); },
+  babyDismiss: (d) => { const k = kidsAll().find((x) => x.id === d.kid); if (k) updateKid(d.kid, { dismissed: [...new Set([...(k.dismissed || []), d.k])] }); },
+  kidPortion: (d) => { const k = kidsAll().find((x) => x.id === d.id); if (k) updateKid(d.id, { portion: Math.max(0.05, Math.round(((+k.portion || 0) + +d.d) * 100) / 100) }); },
+  kidAdd: () => { saveKids([...kidsAll(), { id: uid(), name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); },
+  kidRemove: (d) => {
+    const k = kidsAll().find((x) => x.id === d.id);
+    if (window.confirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) saveKids(kidsAll().filter((x) => x.id !== d.id));
+  },
   addPerson: () => { const people = clone(settings().people); people.push({ id: uid(), name: `Adult ${people.length + 1}`, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); },
   removePerson: (d) => { const people = clone(settings().people); people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); },
   avoid: (d) => { const a = new Set(settings().avoid || []); a.has(d.k) ? a.delete(d.k) : a.add(d.k); send({ op: "settings", patch: { avoid: [...a] } }); },
@@ -998,8 +1018,8 @@ function onChange(e) {
   const people = () => clone(s.people), staples = () => clone(s.staples || []);
   switch (d.set) {
     case "personName": { const p = people(); p[+d.i].name = el.value.trim() || p[+d.i].name; return send({ op: "settings", patch: { people: p } }); }
-    case "babyInclude": return send({ op: "settings", patch: { baby: { ...s.baby, include: el.checked } } });
-    case "baby": return send({ op: "settings", patch: { baby: { ...s.baby, [d.f]: el.value } } });
+    case "kidsOn": { const list = kidsAll(); return saveKids(el.checked && !list.length ? [{ id: uid(), name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }] : list, el.checked); }
+    case "kid": return updateKid(d.id, { [d.f]: d.f === "name" ? el.value.trim() : el.value });
     case "text": return send({ op: "settings", patch: { [d.f]: el.value } });
     case "num": {
       send({ op: "settings", patch: { [d.f]: +el.value } });
@@ -1079,7 +1099,7 @@ function openAbout() {
     ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data${app.region === "eu" ? " in its EU data centres" : ""} and sends the sign-in codes.</p>
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, and when you last used the app (so unused places can be freed up).</li>
-         <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you turn baby mode on, your baby's name and birth date) and recipe feedback.</li>
+         <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, their names and birth dates) and recipe feedback.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
        </ul>
@@ -1253,7 +1273,7 @@ function viewAdmin() {
     ${own ? `<div class="list" style="margin-top:18px"><div class="stack" style="padding:14px 16px;gap:8px"><b>Your own household: ${esc(own.name)}</b>
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
-    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.2</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.3</p>`;
 }
 function adminFind(email) {
   for (const h of (app.adminInfo || { households: [] }).households) { const m = h.members.find((x) => x.email === email); if (m) return { m, h }; }

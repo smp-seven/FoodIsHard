@@ -14,14 +14,6 @@
         "goal": 40
       }
     ],
-    "baby": {
-      "name": "Baby",
-      "born": "",
-      "due": "",
-      "stage": "finger",
-      "portion": 0.25,
-      "include": false
-    },
     "weekStartDay": 0,
     "weeknightMax": 40,
     "weekendMax": 90,

@@ -95,3 +95,8 @@
 
 ## 0.9.2
 - Baby mode: gentle suggestions as the baby grows, based on their corrected age if a due date is set. It suggests moving on to finger foods (from about 7 months) and chopped family food (from about 10 to 12 months), and a rough baby portion size for their age. Nothing changes until you tap "Yes, change it", and "Not yet" hides a suggestion. Under 6 months it reminds you that most babies start solids around then. A card on Today shows when there's something to review.
+
+## 0.9.3
+- "Cooking for little ones": add as many babies and young children as you like, each with their own name, birth date (and due date if early), eating stage and portion. Each child has a colour. Recipes and cooking mode show a coloured note for each child at their own stage, the "take their portions out" step names them all, and each child gets their own salt check for their age. Growing-up suggestions work per child.
+- New eating stage, "Family food", for toddlers and older (suggested from about 2 years).
+- Existing baby settings carry over automatically as the first child.
