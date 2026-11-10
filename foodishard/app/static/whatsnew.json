@@ -2,6 +2,14 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.10.4",
+   "notes": [
+    "New households are asked about allergies on first use.",
+    "Budget mode no longer swaps in something your household avoids (e.g. bottled lemon juice if you avoid sulphites).",
+    "Small recipe fixes for little ones' portions, and more security tightening."
+   ]
+  },
+  {
    "version": "0.10.3",
    "notes": [
     "Safety review: baby portions now use full-fat yoghurt, squashed edamame and soft (not crispy) chickpeas, beansprouts are always cooked through, and eggs for little ones are always fully set.",

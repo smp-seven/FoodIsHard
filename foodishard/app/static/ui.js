@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.10.3"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.10.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -185,6 +185,19 @@ function babySuggestionCard(sg) {
 }
 
 // ----- Tonight -----
+/** Asked once, on Today, for a household that hasn't set any allergies yet. */
+function allergyPrompt() {
+  const s = settings();
+  if (s.allergyAsked || ((s.avoid || []).length && !app.allergyPromptOpen)) return "";
+  app.allergyPromptOpen = true; // stays open while they tap, until Done
+  const avoid = s.avoid || [];
+  return `<div class="card stack" style="margin-bottom:12px;padding:14px 16px;gap:10px">
+    <b>Any food allergies in your household?</b>
+    <span class="small muted">Tap any that apply. Recipes containing them are hidden, and the shopping list reminds you to check labels. You can change this any time in Settings.</span>
+    <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-act="allergyDone">Done</button><button class="btn" data-act="allergyDone">No allergies</button></div>
+  </div>`;
+}
 /** Where today sits in the plan. */
 function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date()) - (settings().weekStartDay || 0) + 7) % 7 }; }
 /** Today's rating for this recipe, if someone has left one. */
@@ -247,6 +260,7 @@ function viewTonight() {
   const growNames = joinNames([...new Set(growing.map((x) => x.name))]);
   return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
     ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(growNames)} ${growing.length && new Set(growing.map((x) => x.kid)).size > 1 ? "are" : "is"} growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals. Tap to review.</span></span><span class="muted">›</span></button>` : ""}
+    ${allergyPrompt()}
     ${hero}
     <div class="row between" style="margin:22px 4px 10px"><h2 class="h2">Coming up</h2><button class="btn sm ghost" data-act="go" data-to="week">See the week</button></div>
     <div class="list week-mini">${upcoming.join("")}</div>
@@ -1125,6 +1139,7 @@ const ACTIONS = {
   },
   addPerson: () => { const people = clone(settings().people); people.push({ id: uid(), name: `Adult ${people.length + 1}`, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); },
   removePerson: (d) => { const people = clone(settings().people); people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); },
+  allergyDone: () => { app.allergyPromptOpen = false; send({ op: "settings", patch: { allergyAsked: true } }); toast(avoidList().length ? "Saved. Recipes with those are hidden" : "Saved"); },
   avoid: (d) => { const a = new Set(settings().avoid || []); a.has(d.k) ? a.delete(d.k) : a.add(d.k); send({ op: "settings", patch: { avoid: [...a] } }); },
   shopToggle: (d) => {
     const on = new Set(settings().shops || SHOP_ORDER); on.has(d.k) ? on.delete(d.k) : on.add(d.k);

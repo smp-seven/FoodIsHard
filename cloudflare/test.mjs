@@ -440,6 +440,11 @@ await test("security: crafted keys are refused and can't touch shared objects", 
     { op: "check", week: "2026-11-09", key: "i:x", field: "__proto__", value: true },
   ]) assert.equal((await c("/api/op", { email: "alex@example.com", body })).status, 400, JSON.stringify(body));
   assert.equal(({}).polluted, undefined);
+  for (const body of [
+    { op: "pref", recipe: "toString", patch: { fav: true } },
+    { op: "extra_add", week: "2026-11-09", item: { id: "a", name: "x".repeat(500) } },
+    { op: "feedback", recipe: "r", rating: "fine", tags: ["y".repeat(100)] },
+  ]) assert.equal((await c("/api/op", { email: "alex@example.com", body })).status, 400, JSON.stringify(body).slice(0, 60));
   assert.equal((await c("/api/op", { email: "alex@example.com", body: { op: "check", week: "2026-11-09", key: "i:x", field: "done", value: true } })).status, 200);
 });
 await test("security: changes must come as JSON from the app's own site", async () => {

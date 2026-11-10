@@ -529,11 +529,14 @@
      "t": "Add the garlic, ginger, cumin, ground coriander and turmeric and stir for 1 minute. Add the tomatoes and {{75|ml}} water and simmer for 8 minutes until slightly thickened."
     },
     {
-     "t": "Add the peas and paneer and simmer for 3 minutes. Take the pan off the heat and stir in the yoghurt (off the heat so it doesn't split)."
+     "t": "Add the peas and paneer and simmer for 3 minutes, then take the pan off the heat."
     },
     {
-     "t": "Take the baby's portion out now, before the garam masala, chilli and salt.",
+     "t": "Take the baby's portion out now, before the yoghurt, garam masala, chilli and salt. Stir a spoon of full-fat plain yoghurt into the baby's portion if you like.",
      "baby": true
+    },
+    {
+     "t": "Stir the yoghurt into the rest off the heat (so it doesn't split)."
     },
     {
      "t": "Stir the garam masala and chilli flakes into the rest and season with salt. Scatter over the coriander and serve with the rice."
@@ -745,7 +748,7 @@
    "baby": {
     "smooth": "Mash the roast veg and chickpeas with full-fat plain yoghurt.",
     "finger": "Soft roast pepper and courgette strips, squashed chickpeas, flatbread fingers and full-fat plain yoghurt. No halloumi: it's very salty.",
-    "chopped": "As yours, with a little halloumi at most."
+    "chopped": "As yours before the salt and halloumi, with the held-back chickpeas squashed and everything cut small."
    },
    "tags": [
     "oven"
@@ -1050,7 +1053,7 @@
      "t": "Warm the beans in a small saucepan over a low heat for 4 to 5 minutes, stirring now and then."
     },
     {
-     "t": "Meanwhile, heat the oil in a frying pan over a medium heat, crack in the eggs and fry for 3 to 4 minutes until the whites are set. Toast the bread and butter it."
+     "t": "Meanwhile, heat the oil in a frying pan over a medium heat, crack in the eggs and fry for 3 to 4 minutes until the whites are set[[ (fry the baby's a little longer, turning it, until the yolk is firm)]]. Toast the bread and butter it."
     },
     {
      "t": "Take the baby's portion out now: toast fingers, a spoon of mashed beans and an egg cooked until the yolk is firm.",

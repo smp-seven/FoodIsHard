@@ -153,3 +153,11 @@
   - Bread and coriander amounts use consistent units, and the jacket potato gives times for more than one.
 - **New in recipes:** text in `[[double brackets]]` inside a step only shows to households with little ones, e.g. "keep a spoonful back for the baby".
 - **Security:** tighter checks on every change sent to the server, in both versions. The online version only accepts changes from the app's own pages, adds standard browser protection headers, and requires the sign-in token's issuer. CLOUDFLARE.md now recommends the Lax cookie setting for the sign-in.
+
+## 0.10.4
+- **Allergy question on first use:** a household with no allergies set is asked once, on the Today screen. Households that have already set theirs never see it.
+- **Allergen-aware budget swaps:** budget mode never automatically swaps in an ingredient carrying something the household avoids, e.g. bottled lemon juice when avoiding sulphites.
+- **Recipe checker:** fails if any ingredient's name or note mentions coconut without being tagged with it, so a new product can't slip past the coconut setting.
+- **Recipe fixes:** the paneer curry takes the baby's portion before the (0% fat) yoghurt goes in. Cheesy beans on toast says to fry the baby's egg until the yolk is firm. The traybake's chopped-stage note no longer suggests halloumi.
+- **Security:** both versions refuse keys named after JavaScript's built-in object properties, and cap the length of shopping items and feedback tags. The online version adds a full content security policy, so only the app's own files can run, including on error pages and recipe data.
+- Local test server: passes the Worker's headers through, so it behaves like the real thing.

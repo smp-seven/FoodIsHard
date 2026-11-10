@@ -109,7 +109,9 @@ def _save():
 # Operations - keep in step with applyOp() in static/app.js
 # --------------------------------------------------------------------------
 
-UNSAFE_KEYS = {"__proto__", "constructor", "prototype"}
+# Names JavaScript objects inherit (Object.prototype), refused here too so both versions agree.
+UNSAFE_KEYS = {"__proto__", "constructor", "prototype", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable",
+               "toLocaleString", "toString", "valueOf", "__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__"}
 
 
 def check_op(op):
@@ -142,6 +144,19 @@ def check_op(op):
         bad()
     if op["op"] == "check" and op.get("field") not in ("done", "have", "need"):
         bad()
+
+    def long(v, n):
+        return v is not None and len(str(v)) > n
+    if op["op"] == "extra_add":
+        item = op.get("item")
+        if not isinstance(item, dict) or long(item.get("name"), 120) or long(item.get("amount"), 120) or long(item.get("id"), 60):
+            bad()
+    if op["op"] == "extra_update" and isinstance(op.get("patch"), dict) and long(op["patch"].get("name"), 120):
+        bad()
+    if op["op"] == "feedback" and op.get("tags") is not None:
+        tags = op["tags"]
+        if not isinstance(tags, list) or len(tags) > 12 or any(long(t, 40) for t in tags):
+            bad()
 
 
 def apply_op(state, op, user):

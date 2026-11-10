@@ -306,7 +306,10 @@ function resolveIng(k, r = null) {
   const chosen = local !== undefined ? local : global;
   let alt = null;
   if (chosen !== undefined) alt = options.find((o) => o.k === chosen) || null;
-  else if (settings().budget && !isHeadline(k, r)) alt = options.find((o) => o.auto) || null;
+  else if (settings().budget && !isHeadline(k, r)) {
+    const avoid = avoidList(), clashes = (o) => [...(ingMeta(o.k).al || []), ...(ingMeta(o.k).mc || [])].some((a) => avoid.includes(a));
+    alt = options.find((o) => o.auto && !clashes(o)) || null; // never swap in something the household avoids
+  }
   return alt ? { k: alt.k, r: alt.r, from: k, local: local !== undefined } : { k, r: 1, from: null };
 }
 /** Swaps that change what the dish is (shown on the week card), e.g. "with firm tofu". */

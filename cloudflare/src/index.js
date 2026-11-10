@@ -38,7 +38,9 @@ const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "same-origin",
-  "Content-Security-Policy": "frame-ancestors 'none'", // no other site can show the app inside a frame
+  // Only the app's own files may run or load, and no other site can show it inside a frame. A safety net
+  // in case typed text ever slips through unescaped. (Inline styles are used throughout, so they're allowed.)
+  "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
   "X-Frame-Options": "DENY",
 };
 const withSecurityHeaders = (res) => {
@@ -52,7 +54,7 @@ const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
 const page = (title, body, status) => new Response(
   `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
   <body style="font:16px/1.5 system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;color:#222"><h1 style="font-size:1.4rem">${title}</h1>${body}</body>`,
-  { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+  { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", ...SECURITY_HEADERS } });
 
 // Where data is stored. "eu" (the default) keeps every household's data, and the directory of
 // names and emails, in Cloudflare's EU data centres. Set DATA_REGION to "auto" to let
@@ -279,7 +281,7 @@ export default {
 
     const name = path.split("/").pop();
     if (path.startsWith("/data/") && DATA[name]) {
-      return new Response(JSON.stringify(DATA[name]), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache" } });
+      return new Response(JSON.stringify(DATA[name]), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache", ...SECURITY_HEADERS } });
     }
 
     if (path.startsWith("/api/")) {

@@ -113,6 +113,12 @@ for r in recipes["recipes"]:
         if len(s["t"]) > 320:
             warn(r, f"step {i + 1} is long ({len(s['t'])} characters)")
 
+# Coconut (and anything made from it) must be tagged, so a household avoiding it is warned.
+for k, m in items.items():
+    words = f"{m.get('n', '')} {m.get('note', '')}".lower()
+    if "coconut" in words and "coconut" not in (m.get("al") or []) + (m.get("mc") or []):
+        errors.append(f"ingredient {k}: mentions coconut but isn't tagged with it (al or mc)")
+
 # Theme nights: every rule must point at something real, and category themes need enough dinners.
 cuisines = {r.get("cuisine") for r in recipes["recipes"]}
 for t in recipes.get("themes", []):

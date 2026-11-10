@@ -76,11 +76,12 @@ createServer(async (req, res) => {
   const as = url.searchParams.get("as") || (/(?:^|; )as=([^;]+)/.exec(req.headers.cookie || "") || [])[1];
   const headers = new Headers();
   if (as) headers.set("Cf-Access-Jwt-Assertion", await token(decodeURIComponent(as)));
-  if (req.headers["content-type"]) headers.set("Content-Type", req.headers["content-type"]);
+  for (const h of ["content-type", "origin"]) if (req.headers[h]) headers.set(h, req.headers[h]);
   const chunks = []; for await (const c of req) chunks.push(c);
   const r = await worker.default.fetch(new Request(url, { method: req.method, headers, body: chunks.length ? Buffer.concat(chunks) : undefined }), env);
-  const out = { "Content-Type": r.headers.get("Content-Type") || "text/plain" };
-  if (url.searchParams.get("as")) out["Set-Cookie"] = `as=${encodeURIComponent(url.searchParams.get("as"))}; Path=/; SameSite=Lax`;
+  const out = Object.fromEntries(r.headers); // pass on everything the Worker sets, security headers included
+  out["content-type"] = out["content-type"] || "text/plain";
+  if (url.searchParams.get("as")) out["set-cookie"] = `as=${encodeURIComponent(url.searchParams.get("as"))}; Path=/; SameSite=Lax`;
   res.writeHead(r.status, out);
   res.end(Buffer.from(await r.arrayBuffer()));
 }).listen(PORT, "127.0.0.1", () => console.log(`FoodIsHard (online version, local test) on http://localhost:${PORT}/?as=${ADMIN}`));

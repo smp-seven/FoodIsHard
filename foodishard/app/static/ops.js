@@ -4,7 +4,7 @@
 /* eslint-disable no-unused-vars */
 // Names that would reach JavaScript's shared object machinery if used as keys. Changes come
 // from phones, so every key in one is checked before it touches the data.
-const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype", ...Object.getOwnPropertyNames(Object.prototype)]);
 function checkOp(op) {
   const bad = () => { throw new Error("That change doesn't look right"); };
   const key = (k) => { if (k == null) return; if (typeof k !== "string" || !k || k.length > 200 || UNSAFE_KEYS.has(k)) bad(); };
@@ -15,6 +15,11 @@ function checkOp(op) {
   if (op.patch != null) { if (typeof op.patch !== "object" || Array.isArray(op.patch)) bad(); Object.keys(op.patch).forEach(key); }
   if (op.op === "day" && !(Number.isInteger(op.i) && op.i >= 0 && op.i < 7)) bad();
   if (op.op === "check" && !["done", "have", "need"].includes(op.field)) bad();
+  // sensible sizes for things people type
+  const long = (v, n) => v != null && String(v).length > n;
+  if (op.op === "extra_add" && (!op.item || typeof op.item !== "object" || long(op.item.name, 120) || long(op.item.amount, 120) || long(op.item.id, 60))) bad();
+  if (op.op === "extra_update" && op.patch && long(op.patch.name, 120)) bad();
+  if (op.op === "feedback" && (op.tags != null && (!Array.isArray(op.tags) || op.tags.length > 12 || op.tags.some((t) => long(t, 40))))) bad();
 }
 function applyOp(state, op, user) {
   checkOp(op);
