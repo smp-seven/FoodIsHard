@@ -398,7 +398,9 @@ function viewSettings() {
       <div class="row" style="padding:13px 16px"><span class="grow"><b>Restore from a backup</b><br><span class="small muted">Replaces everything here, for everyone in your household</span></span><label class="btn sm">Choose file<input type="file" accept="application/json,.json" data-set="importFile" hidden></label></div></div>
     <p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.0</p>`;
+    <p class="section-label">About</p>
+    <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.1</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -839,6 +841,7 @@ const ACTIONS = {
   feedbackRate: (d, el) => { $$("#sheetBody [data-act=feedbackRate]").forEach((b) => b.classList.toggle("on", b === el)); app.fbRating = d.r; $("#fbSave").disabled = false; },
   feedbackTag: (d, el) => { el.classList.toggle("on"); },
   copyFeedback: () => copyText(feedbackText()),
+  about: () => openAbout(),
   acctReload: () => { app.account = null; render(); loadAccount(); },
   acctInvite: () => openInviteForm("member"),
   adminNewHousehold: () => openInviteForm("household"),
@@ -1010,6 +1013,40 @@ function onSubmit(e) {
 }
 
 let searchTimer;
+// ---------------------------------------------------------------------------
+// About: what's stored and the safety notes. Written so anyone running their own copy can use it.
+// ---------------------------------------------------------------------------
+function openAbout() {
+  const online = app.host === "Cloudflare", ha = app.mode === "live" && !online;
+  const where = online
+    ? `<p>This copy runs on a Cloudflare account belonging to whoever invited you (or invited your household). They run it as a favour, not as a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data and sends the sign-in codes.</p>
+       <ul>
+         <li><b>About you:</b> your name, your email (to sign in), your household's name and who invited you.</li>
+         <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you turn baby mode on, your baby's name and birth date) and recipe feedback.</li>
+         <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
+         <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
+       </ul>
+       <p>You can <b>download a backup</b> of your household's data any time (Settings → Your data). To have it deleted, ask the person who runs this copy.</p>`
+    : ha ? `<p>Everything is stored on your own Home Assistant, and only people with a Home Assistant login can open it. Nothing is sent anywhere else.</p>`
+    : `<p>This is a preview. Everything is saved in this browser only.</p>`;
+  openSheet(`<p class="eyebrow">About</p><h1 class="title" style="font-size:26px">FoodIsHard</h1>
+    <div class="stack about" style="gap:6px">
+      <p>A free, personal, hobby meal planner for vegetarian households. It isn't a business or a professional service, and it comes with no guarantees: you use it at your own risk.</p>
+      <h2 class="h2">Food safety: please read</h2>
+      <ul>
+        <li><b>Recipes haven't been checked by a dietitian or doctor.</b> Treat them, the nutrition figures and the prices as rough guides.</li>
+        <li><b>Allergies:</b> the allergy settings hide recipes that list an allergen, but they can't know what's in the products you buy. Products and labels change, so <b>always check the label</b>, every time.</li>
+        <li><b>Vegetarian:</b> some cheeses and other products use animal rennet or gelatine. Check for the vegetarian symbol.</li>
+        <li><b>Babies:</b> the baby notes are general ideas, not medical advice. Follow NHS weaning guidance and your health visitor, cut food to a safe size, avoid whole nuts and added salt, and never leave a baby alone while eating.</li>
+        <li>If you have a medical condition or a serious allergy, check with a professional.</li>
+      </ul>
+      <h2 class="h2">Your data</h2>
+      ${where}
+      <p>Once a week the app looks up the UK food price index from the Office for National Statistics. That request contains no personal data.</p>
+      <p class="small muted">FoodIsHard is open source: <a href="https://github.com/smp-seven/FoodIsHard" target="_blank" rel="noopener">github.com/smp-seven/FoodIsHard</a>. Anyone can run their own copy. If you do, you're responsible for your copy and the people you invite.</p>
+    </div>`);
+}
+
 // ---------------------------------------------------------------------------
 // Households and invites (online version only)
 // ---------------------------------------------------------------------------

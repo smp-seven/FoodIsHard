@@ -245,3 +245,9 @@ details.fold summary::-webkit-details-marker { display: none; }
   .print-only li::before { content: "☐  "; font-size: 13pt; }
   .print-only .where { color: #555; font-size: 9.5pt; }
 }
+
+/* About sheet */
+.about ul { margin: 0 0 6px; padding-left: 20px; display: grid; gap: 6px; }
+.about p { margin: 0 0 6px; }
+.about h2 { margin: 12px 0 4px; }
+.about a { color: var(--accent); }

@@ -70,3 +70,6 @@
 - Online version: households and invites now live in a small database instead of a settings file. Admins invite new households from Settings → Admin; anyone can invite their partner from Settings → Who's in your household. With an optional Cloudflare API token, invites and removals update the sign-in list automatically.
 - Online version: rename yourself and your household; admins can delete a household (and its data).
 - Home Assistant version: no changes beyond the version number.
+
+## 0.8.1
+- Settings → About: what is stored and who can see it (worded for whichever version you run), plus food-safety notes on allergies, vegetarian labels and babies.
