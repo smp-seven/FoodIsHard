@@ -457,6 +457,7 @@ function maxTimeFor(week, i) {
 }
 function pickRecipe(week, i, days, { exclude = new Set(), emergency = false, fam = null } = {}) {
   const recent = previousWeekRecipes(week), recent3 = previousWeekRecipes(week, 3); // try to avoid the last 3 weeks, at least the last 1
+  const waste = { days, i, base: wasteOf(days.map((d, j) => (j === i ? { ...d, recipe: null } : d))) }; // part-packs without this day
   const others = days.map((d, j) => (j !== i && d.status === "cook" ? d.recipe : null)).filter(Boolean);
   const used = new Set(others);
   const famCount = {};
@@ -484,7 +485,7 @@ function pickRecipe(week, i, days, { exclude = new Set(), emergency = false, fam
   for (const ok of tiers) {
     const options = pool.filter(ok);
     if (!options.length) continue;
-    const weights = options.map((r) => recipeWeight(r.id));
+    const weights = options.map((r) => recipeWeight(r.id) * useUpBonus(r, waste));
     let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
     for (let k = 0; k < options.length; k++) { roll -= weights[k]; if (roll <= 0) return options[k].id; }
     return options[options.length - 1].id;
@@ -687,6 +688,34 @@ const GOES_OFF = new Set(["spinach", "red_pepper", "courgette", "broccoli", "mus
   "spring_onion", "cucumber", "salad_leaves", "white_cabbage", "beansprouts", "avocado", "celery", "ricotta", "cottage_cheese",
   "mozzarella", "feta", "tofu", "paneer", "halloumi", "gnocchi", "hummus", "chopped_tomatoes", "black_beans", "kidney_beans",
   "chickpeas", "green_lentils", "baked_beans", "passata", "cannellini"]);
+/** Perishables the other planned days will leave part-packs of: Map ingredient → share of a pack left over. */
+function partPacks(days, except = -1) {
+  const need = new Map();
+  days.forEach((d, j) => {
+    if (j === except || d.status !== "cook" || !d.recipe || !app.byId[d.recipe]) return;
+    const f = dayFactor(d);
+    effectiveIngredients(app.byId[d.recipe]).forEach((i) => {
+      const m = ingMeta(i.k);
+      if (i.q == null || !GOES_OFF.has(i.k) || !m.pk || (m.pk[1] || "") !== (i.u || "")) return;
+      need.set(i.k, (need.get(i.k) || 0) + i.q * f);
+    });
+  });
+  const out = new Map();
+  need.forEach((q, k) => {
+    const pq = ingMeta(k).pk[0], packs = Math.max(1, Math.ceil(q / pq - 0.02)), left = (packs * pq - q) / pq;
+    if (left >= 0.25) out.set(k, left);
+  });
+  return out;
+}
+const wasteOf = (days) => [...partPacks(days).values()].reduce((a, b) => a + b, 0);
+/** How much the planner favours a recipe for this day by what it does to the week's part-packs:
+ *  using up half a cauliflower scores well, opening a new tub of ricotta for 50 g scores badly. */
+function useUpBonus(r, ctx) {
+  if (!ctx) return 1;
+  const days = ctx.days.map((d, j) => (j === ctx.i ? { ...d, status: "cook", recipe: r.id } : d));
+  const change = wasteOf(days) - ctx.base;
+  return change <= -0.25 ? 4 : change <= 0.15 ? 2 : change >= 0.6 ? 0.5 : 1;
+}
 function leftoverText(k, q, u) {
   const m = ingMeta(k);
   if (!m.pk || !GOES_OFF.has(k)) return null;

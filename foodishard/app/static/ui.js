@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.10.6"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.10.7"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -130,9 +130,10 @@ function header(eyebrow, title, right = "", { logo = false } = {}) {
   return `<header class="head">${logo ? `<img class="brand" src="icon-192.png" alt="FoodIsHard" width="44" height="44">` : ""}<div class="grow"><p class="eyebrow">${eyebrow}</p><h1 class="title">${title}</h1></div>${right}</header>`;
 }
 function settingsButton() {
+  const glow = nudges().length ? " nudge" : "";
   return app.update
-    ? `<button class="icon-btn has-dot" data-act="go" data-to="settings" aria-label="Settings: an update is ready">${icon("gear")}<span class="update-dot" aria-hidden="true">!</span></button>`
-    : `<button class="icon-btn" data-act="go" data-to="settings" aria-label="Settings">${icon("gear")}</button>`;
+    ? `<button class="icon-btn has-dot${glow}" data-act="go" data-to="settings" aria-label="Settings: an update is ready">${icon("gear")}<span class="update-dot" aria-hidden="true">!</span></button>`
+    : `<button class="icon-btn${glow}" data-act="go" data-to="settings" aria-label="${glow ? "Settings: something needs setting up" : "Settings"}">${icon("gear")}</button>`;
 }
 function offlineBadge() { return app.offline ? `<span class="badge-offline">${icon("nosignal", 16)}No signal · ticks saved</span>` : ""; }
 
@@ -186,7 +187,15 @@ function babySuggestionCard(sg) {
 }
 
 // ----- Tonight -----
-/** Asked once, on Today, for a household that hasn't set any allergies yet. */
+/** Important things a household hasn't set yet. The Settings button glows, and so does each field, until they're done. */
+function nudges() {
+  if (!app.state) return [];
+  const s = settings(), out = [];
+  if (!s.allergyAsked && !(s.avoid || []).length) out.push("allergies");
+  if (kids().some((k) => !k.born)) out.push("kidBorn");
+  return out;
+}
+/** (No longer shown: replaced by the glowing Settings button. Kept so older links don't break.) */
 function allergyPrompt() {
   const s = settings();
   if (s.allergyAsked || ((s.avoid || []).length && !app.allergyPromptOpen)) return "";
@@ -327,7 +336,6 @@ function viewTonight() {
   const growNames = joinNames([...new Set(growing.map((x) => x.name))]);
   return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
     ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(growNames)} ${growing.length && new Set(growing.map((x) => x.kid)).size > 1 ? "are" : "is"} growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals. Tap to review.</span></span><span class="muted">›</span></button>` : ""}
-    ${allergyPrompt()}
     ${hero}
     <div class="row between" style="margin:22px 4px 10px"><h2 class="h2">Coming up</h2><button class="btn sm ghost" data-act="go" data-to="week">See the week</button></div>
     <div class="list week-mini">${upcoming.join("")}</div>
@@ -579,7 +587,7 @@ function viewSettings() {
         return `<div class="stack kid-card" style="padding:14px 16px;gap:10px;${kidStyle(k)}">
         <div class="row"><span class="kid-dot" aria-hidden="true"></span><input class="input grow" value="${esc(k.name)}" placeholder="Name" data-set="kid" data-id="${esc(k.id)}" data-f="name" aria-label="Child's name">
           <button class="icon-btn plain" data-act="kidRemove" data-id="${esc(k.id)}" aria-label="Remove ${esc(k.name || "child")}">${icon("trash", 18)}</button></div>
-        <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input" type="date" value="${esc(k.born)}" data-set="kid" data-id="${esc(k.id)}" data-f="born"></label>
+        <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input ${k.born ? "" : "nudge-field"}" type="date" value="${esc(k.born)}" data-set="kid" data-id="${esc(k.id)}" data-f="born"></label>
           <label class="grow"><span class="small muted">Due date (if early)</span><input class="input" type="date" value="${esc(k.due)}" data-set="kid" data-id="${esc(k.id)}" data-f="due"></label></div>
         <span class="small muted">${k.born ? `${esc(ageText(k.born))} old${corrected ? ` · ${esc(ageText(k.due))} corrected` : ""}` : "Add their birth date. If they arrived early, add the due date too, for their corrected age."}</span>
         <label><span class="small muted">Eating stage</span><select class="input" data-set="kid" data-id="${esc(k.id)}" data-f="stage">${Object.entries(STAGES).map(([s2, v]) => `<option value="${s2}" ${k.stage === s2 ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
@@ -591,9 +599,10 @@ function viewSettings() {
 
     <p class="section-label">Food</p>
     <div class="list">
-      <div class="stack" style="padding:14px 16px;gap:8px"><b>Allergies: never include</b>
+      <div class="stack ${nudges().includes("allergies") ? "nudge-field" : ""}" style="padding:14px 16px;gap:8px"><b>Allergies: never include</b>
         <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
-        <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.</span></div>
+        <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.</span>
+        ${nudges().includes("allergies") ? `<button class="btn sm" style="align-self:flex-start" data-act="allergyDone">No allergies in our household</button>` : ""}</div>
       <div class="stack" style="padding:14px 16px;gap:8px"><b>Dislikes</b><input class="input" value="${esc(s.dislikes || "")}" placeholder="e.g. mushroom, feta" data-set="text" data-f="dislikes"><span class="small muted">Separate with commas.</span></div>
       <div class="stack" style="padding:14px 16px 8px;gap:4px"><b>Theme nights</b><span class="small muted">Optional. Days without a theme stay random.</span></div>
       <div style="padding-bottom:8px">${themeRows}</div>
@@ -795,6 +804,25 @@ function openSwap(k, reopen, itemKey = null) {
   if (reopen) app.sheetBack = () => openRecipe(reopen);
   else if (itemKey) app.sheetBack = () => openItem(itemKey);
 }
+/** On a shopping item with some left over: recipes that use up the rest, not already planned this week. */
+function useUpCard(it) {
+  if (!it.leftover || !it.k) return "";
+  const planned = new Set(planFor(currentWeek()).map((d) => d.recipe).filter(Boolean));
+  const ideas = app.recipes.filter((r) => usable(r) && !planned.has(r.id) && effectiveIngredients(r).some((i) => i.k === it.k))
+    .sort((a, b) => recipeWeight(b.id) - recipeWeight(a.id) || a.time - b.time).slice(0, 4);
+  if (!ideas.length) return "";
+  return `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Use up the rest</b><span class="small muted">You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left. These use it too:</span>
+    <div class="list">${ideas.map((r) => `<button class="rrow" data-act="useUpPick" data-id="${r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(r.name)}</span><span class="small muted">${r.time} min</span></button>`).join("")}</div></div>`;
+}
+function openUseUp(id, itemKey) {
+  const week = currentWeek(), days = planFor(week), r = app.byId[id], start = parseISO(week), today = iso(new Date());
+  const slots = days.map((d, i) => ({ d, i, date: addDays(start, i) })).filter(({ d, date }) => iso(date) >= today && !d.locked && d.status !== "skip");
+  openSheet(`<p class="eyebrow">Use up the rest</p><h1 class="title" style="font-size:26px">${esc(r.name)}</h1>
+    <p class="muted">Which day should it go on?</p>
+    <div class="list">${slots.map(({ d, i, date }) => { const cur = d.recipe && app.byId[d.recipe];
+      return `<button class="rrow" data-act="useUpPut" data-id="${id}" data-i="${i}"><span class="grow"><b>${DOW_LONG[mondayIndex(date)]}</b><br><span class="small muted">${d.status === "leftovers" ? "Instead of leftovers" : cur ? `Instead of ${esc(cur.name.toLowerCase())}` : "Nothing planned yet"}</span></span></button>`; }).join("") || `<div class="row" style="padding:14px 16px"><span class="muted">No free days left this week.</span></div>`}</div>`);
+  app.sheetBack = () => openItem(itemKey);
+}
 function openItem(key) {
   const it = buildList(currentWeek()).find((i) => i.key === key); if (!it) return;
   const bp = it.k ? basePrice(it.k) : null, m = it.k ? ingMeta(it.k) : null;
@@ -813,6 +841,7 @@ function openItem(key) {
         <div class="row"><span style="font-weight:700">£</span><input class="input" name="price" inputmode="decimal" value="${bp ? (bp.p * shopMult(shopNow)).toFixed(2) : ""}" aria-label="Price">
           <select class="input" name="shop" style="width:140px" aria-label="Seen at">${enabledShops().map((s) => `<option value="${s}" ${s === shopNow ? "selected" : ""}>${esc(shopName(s))}</option>`).join("")}</select></div>
         <div class="row"><button class="btn primary">Save price</button>${bp && bp.own ? `<button type="button" class="btn" data-act="resetPrice" data-k="${esc(it.k)}">Use the estimate</button>` : ""}</div></form>` : ""}
+      ${useUpCard(it)}
       ${it.swappable.length ? `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Swap</b><div class="row wrap">${it.swappable.map((k) => `<button class="btn sm" data-act="swapIng" data-k="${esc(k)}" data-item="${esc(it.key)}">${esc(ingMeta(k).n)}…</button>`).join("")}</div></div>` : ""}
       <div class="card stack" style="padding:14px 16px;gap:8px"><b>Get it at</b>
         <div class="shop-grid">${shopOrder().map((s) => `<button class="${it.shop === s ? "on" : ""}" data-act="moveTo" data-keys="${esc(key)}" data-s="${s}">${esc(shopName(s))}</button>`).join("")}</div>
@@ -1115,6 +1144,8 @@ const ACTIONS = {
     render();
   },
   rack: () => openRack(),
+  useUpPick: (d) => openUseUp(d.id, d.item),
+  useUpPut: (d) => { dayUpdate(+d.i, { status: "cook", recipe: d.id, from: null }, currentWeek()); app.sheetBack = null; closeSheet(); toast(`${app.byId[d.id].name} is on ${DOW_LONG[mondayIndex(addDays(parseISO(currentWeek()), +d.i))]}`); },
   aisles: () => openAisles(),
   aisleMove: (d) => {
     const order = aisleOrder(), n = order.indexOf(d.id), to = n + +d.d;
@@ -1251,7 +1282,7 @@ const ACTIONS = {
   },
   addPerson: () => { const people = clone(settings().people); people.push({ id: uid(), name: `Adult ${people.length + 1}`, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); },
   removePerson: (d) => { const people = clone(settings().people); people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); },
-  allergyDone: () => { app.allergyPromptOpen = false; send({ op: "settings", patch: { allergyAsked: true } }); toast(avoidList().length ? "Saved. Recipes with those are hidden" : "Saved"); },
+  allergyDone: () => { app.allergyPromptOpen = false; send({ op: "settings", patch: { allergyAsked: true } }); toast(avoidList().length ? "Saved. Recipes with those are hidden" : "Saved: no allergies"); },
   avoid: (d) => { const a = new Set(settings().avoid || []); a.has(d.k) ? a.delete(d.k) : a.add(d.k); send({ op: "settings", patch: { avoid: [...a] } }); },
   shopToggle: (d) => {
     const on = new Set(settings().shops || SHOP_ORDER); on.has(d.k) ? on.delete(d.k) : on.add(d.k);

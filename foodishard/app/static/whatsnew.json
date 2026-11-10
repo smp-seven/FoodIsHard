@@ -2,6 +2,14 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.10.7",
+   "notes": [
+    "The planner now picks dinners that use up each other's part-packs: about 30% less left over each week.",
+    "Tap a shopping item with some left over to see recipes that use the rest, and put one on a day.",
+    "If something important isn't set, like allergies or a child's birth date, the Settings button glows until it is."
+   ]
+  },
+  {
    "version": "0.10.6",
    "notes": [
     "Guests, or someone out? Tap ⋯ on a day, then 'Who's eating', and the shopping list and amounts follow.",
