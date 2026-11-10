@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -243,10 +243,10 @@ function openEating(week, i, { keepScroll = false } = {}) {
   const days = planFor(week), d = days[i], next = days[i + 1], { adults, kids: little } = household();
   const date = addDays(parseISO(week), i), guests = +(d.guests != null ? d.guests : Math.max(0, +d.extra || 0)) || 0, away = new Set(d.away || []), r = d.recipe && app.byId[d.recipe];
   const nextR = next && next.status === "cook" && next.recipe && app.byId[next.recipe];
-  const who = [...adults.map((p, n) => ({ key: personKey(p, n), name: p.name, sub: sizeLabel(+p.portion || 1) })), ...little.map((k) => ({ key: k.id, name: k.name || "Little one", sub: `${PORTION_WORDS[k.portion] || ""} portion`, kid: k }))];
+  const who = [...adults.map((p, n) => ({ key: personKey(p, n), name: p.name, sub: sizeLabel(+p.portion || 1) })), ...little.map((k) => ({ key: k.id, name: k.name || "Little one", sub: `${portionShort(k.portion)} portion`, kid: k }))];
   openSheet(`<p class="eyebrow">${DOW_LONG[mondayIndex(date)]} ${date.getDate()} ${MONTHS[date.getMonth()]}${r ? ` · ${esc(r.name)}` : ""}</p><h1 class="title" style="font-size:26px">Who's eating?</h1>
     <div class="list" style="margin-bottom:12px">
-      ${who.map((w) => `<label class="row between" style="padding:12px 16px;${w.kid ? kidStyle(w.kid) : ""}"><span>${w.kid ? `<span class="kid-dot" aria-hidden="true"></span> ` : ""}<b>${esc(w.name)}</b> <span class="small muted">${esc(w.sub)}</span></span>
+      ${who.map((w) => `<label class="row between ${w.kid ? "kid-stripe" : ""}" style="padding:12px 16px;${w.kid ? kidStyle(w.kid) : ""}"><span class="row" style="gap:10px"><span><b>${esc(w.name)}</b><br><span class="small muted">${esc(w.sub)}</span></span></span>
         <span class="switch"><input type="checkbox" data-act="eatingWho" data-week="${week}" data-i="${i}" data-k="${esc(w.key)}" ${away.has(w.key) ? "" : "checked"} aria-label="${esc(w.name)} eating"><i></i></span></label>`).join("")}
       <div class="row between" style="padding:12px 16px;border-top:1px solid var(--line-soft)"><span><b>Guests</b><br><span class="small muted">Regular portions</span></span>
         <div class="stepper"><button data-act="eatingGuests" data-week="${week}" data-i="${i}" data-d="-1" aria-label="One fewer guest" ${guests <= 0 ? "disabled" : ""}>−</button><span>${guests}</span><button data-act="eatingGuests" data-week="${week}" data-i="${i}" data-d="1" aria-label="One more guest">+</button></div></div>
@@ -1299,7 +1299,7 @@ const ACTIONS = {
   kidAdd: () => { const id = uid(); saveKids([...kidsAll(), { id, name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); openKid(id); },
   kidRemove: (d) => {
     const k = kidsAll().find((x) => x.id === d.id);
-    if (window.confirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) { const left = kidsAll().filter((x) => x.id !== d.id); saveKids(left, left.length > 0 && kidsOn()); closeSheet(); }
+    if (window.confirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) { saveKids(kidsAll().filter((x) => x.id !== d.id)); closeSheet(); }
   },
   addPerson: () => openAddPerson(),
   removePerson: (d) => { const people = clone(settings().people); if (people.length <= 1 || !window.confirm(`Remove ${people[+d.i].name}? Portions and the shopping list will be for one fewer.`)) return; people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); closeSheet(); },
@@ -1334,7 +1334,11 @@ function onChange(e) {
   const people = () => clone(s.people), staples = () => clone(s.staples || []);
   switch (d.set) {
     case "personName": { const p = people(); p[+d.i].name = el.value.trim() || p[+d.i].name; return send({ op: "settings", patch: { people: p } }); }
-    case "kidsOn": { const list = kidsAll(); return saveKids(el.checked && !list.length ? [{ id: uid(), name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }] : list, el.checked); }
+    case "kidsOn": { // the switch: on with nobody yet adds a little one and opens their details
+      const list = kidsAll();
+      if (el.checked && !list.length) { const id = uid(); saveKids([{ id, name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); openKid(id); return; }
+      return saveKids(list, el.checked);
+    }
     case "kid": { updateKid(d.id, { [d.f]: d.f === "name" ? el.value.trim() : el.value }); if (d.f !== "name") refreshPanel(); return; }
     case "text": return send({ op: "settings", patch: { [d.f]: el.value } });
     case "num": {
@@ -1456,6 +1460,8 @@ async function accountCall(path, body) {
 }
 // ---- Who you cook for: one list of everyone who eats dinner (sizes, little ones) ----
 const SIZES = [["Smaller", 0.75], ["Regular", 1], ["Larger", 1.25], ["Extra", 1.5]];
+const PORTION_FRACTIONS = { 0.2: "⅕", 0.25: "¼", 0.33: "⅓", 0.4: "⅖", 0.5: "½" };
+function portionShort(p) { return PORTION_FRACTIONS[p] || `${Math.round((+p || 0) * 100)}%`; }
 function sizeLabel(portion) { const hit = SIZES.find(([, v]) => Math.abs(v - portion) < 0.01); return hit ? hit[0] : `×${(+portion).toFixed(2).replace(/0$/, "")}`; }
 let typicalKcal = null;
 /** Calories in a typical dinner here: the middle of all the recipes, per standard portion. */
@@ -1465,14 +1471,17 @@ function typicalDinnerKcal() {
 }
 function whoYouCookFor() {
   const s = settings(), { factor } = household(), kidsHere = kidsOn() ? kidsAll() : [], paused = !kidsOn() && kidsAll().length;
-  const adults = s.people.map((p, i) => `<button class="rrow" data-act="person" data-i="${i}" style="padding:12px 16px"><span class="grow"><b>${esc(p.name)}</b> <span class="small muted">${esc(sizeLabel(+p.portion || 1))} · about ${Math.round(typicalDinnerKcal() * (+p.portion || 1) / 10) * 10} kcal</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
-  const little = kidsHere.map((k) => `<button class="rrow ${k.born ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="kid-dot" aria-hidden="true"></span><span class="grow"><b>${esc(k.name || "Little one")}</b> <span class="small muted">${k.born ? esc(ageText(k.born).split(",")[0]) : "add a birth date"} · ${esc(STAGES[k.stage]?.name || "")} · ${esc(PORTION_WORDS[k.portion] || `${Math.round((+k.portion || 0) * 100)}%`)} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
+  const adults = s.people.map((p, i) => `<button class="rrow" data-act="person" data-i="${i}" style="padding:12px 16px"><span class="grow"><b>${esc(p.name)}</b><br><span class="small muted">${esc(sizeLabel(+p.portion || 1))} · about ${Math.round(typicalDinnerKcal() * (+p.portion || 1) / 10) * 10} kcal</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
+  const little = kidsHere.map((k) => `<button class="rrow kid-stripe ${k.born ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="grow"><b>${esc(k.name || "Little one")}</b><br><span class="small muted">${k.born ? esc(ageText(k.born).split(",")[0]) : "add a birth date"} · ${esc((STAGES[k.stage]?.name || "").split(" &")[0])} · ${esc(portionShort(k.portion))} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   return `<p class="section-label">Who you cook for</p>
     <div class="list">
       <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner. They don't need to sign in.</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
-      ${adults}${little}
-      ${paused ? `<div class="row" style="padding:12px 16px"><span class="grow small muted">Little ones are switched off, so their portions and notes are hidden.</span><button class="btn sm" data-act="kidsOnNow">Switch on</button></div>` : ""}
-      <div class="row wrap" style="padding:12px 16px;gap:8px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button><button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button></div>
+      ${adults}
+      <div style="padding:4px 16px 12px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button></div>
+      <label class="row between" style="padding:13px 16px;border-top:1px solid var(--line-soft);gap:12px"><span><b>Cooking for little ones</b><br><span class="small muted">${paused ? `${esc(kidNames(kidsAll()))} ${kidsAll().length > 1 ? "are" : "is"} saved but left out for now` : "Their own portions, stages and safety notes in every recipe"}</span></span>
+        <span class="switch"><input type="checkbox" data-set="kidsOn" ${kidsOn() ? "checked" : ""} aria-label="Cooking for little ones"><i></i></span></label>
+      ${little}
+      ${kidsOn() ? `<div style="padding:4px 16px 12px"><button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button></div>` : ""}
     </div>`;
 }
 /** A grown-up's panel: name, named size (with what it means), optional protein goal. */

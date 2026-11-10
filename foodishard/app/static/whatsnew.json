@@ -2,6 +2,13 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.1",
+   "notes": [
+    "The 'Cooking for little ones' switch is back, in Who you cook for. Switching it off keeps their details for later.",
+    "Tidier lists: names line up, with the details underneath."
+   ]
+  },
+  {
    "version": "0.11.0",
    "notes": [
     "Settings has one 'Who you cook for' list: grown-ups and little ones together, with simple sizes (Smaller, Regular, Larger, Extra) and what they mean in calories.",

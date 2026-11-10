@@ -300,3 +300,6 @@ body.admin-only .view { padding-bottom: 32px; }
 .icon-btn.nudge { border-color: var(--accent); animation: nudge-glow 2.2s ease-in-out infinite; }
 .nudge-field { border-radius: 14px; outline: 2px solid var(--accent); outline-offset: -2px; animation: nudge-glow 2.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .icon-btn.nudge, .nudge-field { animation: none; } }
+
+/* a little one's colour as a stripe down the left, so names line up with the grown-ups' */
+.kid-stripe { box-shadow: inset 4px 0 0 var(--kid); }

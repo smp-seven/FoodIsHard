@@ -204,3 +204,7 @@ Fixes from a review of the new features:
   Tapping a little one opens their details and growing-up suggestions. In the online version, adding a grown-up offers your household members' names. The separate on/off switch for little ones has gone: adding one switches them on, and removing the last switches them off.
 - **Who's eating, by name:** each night's panel lists everyone with a switch, plus guests and cook double. Every dinner in the week shows a chip, e.g. "Everyone eating" or "Alex out · +2 guests", which opens it. Nights saved with the older +/- adjustment still work.
 - **Calmer leftovers:** one "Left over this week" card at the bottom of the shopping list replaces the amber note on each line. "Ideas" appears only where a recipe would use the rest without opening more. The storing and reheating guidance in each recipe starts folded.
+
+## 0.11.1
+- **"Cooking for little ones" switch is back**, in Who you cook for, between the grown-ups and the little ones. Off leaves their portions and notes out but keeps their details ("Bo is saved but left out for now"). Switching on with nobody added opens a new little one's details.
+- **Tidier rows** in Who you cook for and Who's eating: each name sits on its own line with the details underneath, so names line up whatever their length. A little one's colour is a stripe down the left instead of a dot, and their details are shorter ("9 months · Finger foods · ¼ portion").
