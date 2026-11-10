@@ -143,6 +143,35 @@ If you named the policy something other than `FoodIsHard people`, also add
 > policies too. That's a good reason to give FoodIsHard its own Cloudflare account. The app
 > only ever changes the email list of the one policy it's named after.
 
+### 7. Optional: "Sign in with Google" as well as email codes
+
+This lets people sign in with their Google account in one tap, while keeping email codes for
+everyone else. It only works when the email you invited is their Google account's email.
+
+1. **Google Cloud Console** ([console.cloud.google.com](https://console.cloud.google.com)):
+   1. Create a project, e.g. *FoodIsHard sign-in*.
+   2. Set up the **OAuth consent screen** (or *Google Auth Platform*):
+      - app name FoodIsHard, with your email as the contact
+      - audience **External**
+      - no extra scopes
+   3. **Publish app**, so it's *in production*. In Testing mode, only Google accounts you list
+      can sign in.
+   4. Go to **Credentials → Create credentials → OAuth client ID** and choose **Web
+      application**:
+      - **Authorized JavaScript origins:** `https://<team-name>.cloudflareaccess.com`
+      - **Authorized redirect URIs:**
+        `https://<team-name>.cloudflareaccess.com/cdn-cgi/access/callback`
+   5. Copy the Client ID and Client secret.
+2. **Zero Trust:**
+   1. Go to **Integrations → Identity providers → Add new → Google**, paste both values, save,
+      and press **Test**.
+   2. In the FoodIsHard **Access application → Login methods**:
+      - tick **Google** and **One-time PIN**
+      - untick **Cloudflare**
+      - turn **Instant Auth** off so people can choose
+
+If you change your team name later, update both Google URIs as well.
+
 ---
 
 ## Day to day
@@ -195,6 +224,8 @@ anything. After that it's ignored, and you can delete it.
 | "Please sign in" | The sign-in has expired or isn't valid for this app. Reload the page. If it keeps happening, check that `ACCESS_AUD` matches the AUD tag. |
 | "Not set up yet" | They signed in, but nobody has invited that email. Invite it from Settings. If it's **you**, `ADMINS` doesn't exactly match the email you signed in with. |
 | Only "Sign in with Cloudflare" is offered | Add **One-time PIN** under Integrations → Identity providers, and tick it in the application's Login methods (steps 1 and 4). |
+| Google sign-in says "redirect_uri_mismatch" | The Google URIs don't exactly match your current team name (step 7). |
+| Google sign-in works but says "Not set up yet" | Their Google account's email isn't the one you invited. Invite that address, or they sign in with an email code instead. |
 | The sign-in page shows an old team name | Changes take a few minutes. Try a private window. |
 | The code email never arrives | That email isn't in the **FoodIsHard people** policy. Cloudflare silently ignores unknown addresses. Press **Update sign-in list now**, or add the email to the policy by hand. |
 | Invite says "add their email to your Access policy" | Step 6 isn't set up yet, so add the email to the policy by hand. |

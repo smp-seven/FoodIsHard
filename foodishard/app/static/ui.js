@@ -400,7 +400,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.2</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.3</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1112,7 +1112,7 @@ function openInviteForm(kind) {
       <button class="btn lg primary">Add them</button></form>`);
 }
 function inviteMessage(name, email) {
-  return `Hi ${name}! I've added you to FoodIsHard, our meal planner. Open ${location.origin}${location.pathname.replace(/[^/]*$/, "")} on your phone and sign in with ${email}. You'll get a 6-digit code by email. Tip: in Chrome, use ⋮ → Add to Home screen so it opens like an app.`;
+  return `Hi ${name}! I've added you to FoodIsHard, our meal planner. Open ${location.origin}${location.pathname.replace(/[^/]*$/, "")} on your phone and sign in with ${email}: choose Google if that's a Google/Gmail account, or ask for a code by email. Tip: in Chrome, use ⋮ → Add to Home screen so it opens like an app.`;
 }
 function showInviteResult(name, email, signIn) {
   const msg = inviteMessage(name, email);

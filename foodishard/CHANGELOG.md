@@ -77,3 +77,6 @@
 ## 0.8.2
 - Both versions: old shopping lists are deleted after 8 weeks and meal plans after a year, so data stays small and tidy.
 - Online version: data is kept in Cloudflare's EU data centres (DATA_REGION, default "eu").
+
+## 0.8.3
+- Online version: invite messages mention signing in with Google or an email code. Set-up guide covers adding Google sign-in.
