@@ -111,3 +111,4 @@
 ## 0.9.5
 - Online version: admins get a **Recipe feedback** screen, off the admin dashboard. It shows every household's ratings and notes, newest first or grouped by recipe, with filters, search and a "new" count, plus a button that copies them for Claude without anyone's names.
 - The rating sheet and About now say that ratings and notes are visible to whoever runs FoodIsHard. The Home Assistant version is unchanged.
+- Online version: the "Copy your feedback" setting is gone, since the admin sees everyone's feedback. Home Assistant keeps it.
