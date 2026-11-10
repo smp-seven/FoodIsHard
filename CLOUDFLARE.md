@@ -75,6 +75,10 @@ these steps.
    - under **Login methods**, tick **One-time PIN** and untick **Cloudflare**
    - turn on **Instant Auth** if it's offered
    - copy the **Application Audience (AUD) Tag**
+   - under **Settings → Cookie settings** (sometimes called **Advanced settings**), set
+     **SameSite attribute** to **Lax** and turn on **HTTP Only**. This stops other websites
+     from using your friends' sign-in. The app also refuses changes that don't come from
+     its own page, but this closes the door at Cloudflare too.
 
 ### 5. The basic settings
 

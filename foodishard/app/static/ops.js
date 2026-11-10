@@ -2,7 +2,22 @@
 // in Python form, server.py. Every change to a household is one of these small ops.
 // Keep server.py apply_op() in step with this file.
 /* eslint-disable no-unused-vars */
+// Names that would reach JavaScript's shared object machinery if used as keys. Changes come
+// from phones, so every key in one is checked before it touches the data.
+const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+function checkOp(op) {
+  const bad = () => { throw new Error("That change doesn't look right"); };
+  const key = (k) => { if (k == null) return; if (typeof k !== "string" || !k || k.length > 200 || UNSAFE_KEYS.has(k)) bad(); };
+  if (!op || typeof op !== "object" || typeof op.op !== "string") bad();
+  if (op.week != null && !/^\d{4}-\d{2}-\d{2}$/.test(op.week)) bad();
+  [op.key, op.recipe, op.id].forEach(key);
+  if (op.keys != null) { if (!Array.isArray(op.keys) || op.keys.length > 500) bad(); op.keys.forEach(key); }
+  if (op.patch != null) { if (typeof op.patch !== "object" || Array.isArray(op.patch)) bad(); Object.keys(op.patch).forEach(key); }
+  if (op.op === "day" && !(Number.isInteger(op.i) && op.i >= 0 && op.i < 7)) bad();
+  if (op.op === "check" && !["done", "have", "need"].includes(op.field)) bad();
+}
 function applyOp(state, op, user) {
+  checkOp(op);
   const now = Math.floor(Date.now() / 1000);
   const bag = (k) => state[k] || (state[k] = {});
   switch (op.op) {

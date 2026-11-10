@@ -35,8 +35,19 @@ const POLL_SECONDS = 8; // how often open phones check for changes (keeps well i
 const WHO_CACHE_MS = 60_000; // remember who's who for a minute, to halve requests
 
 const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
+const SECURITY_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "same-origin",
+  "Content-Security-Policy": "frame-ancestors 'none'", // no other site can show the app inside a frame
+  "X-Frame-Options": "DENY",
+};
+const withSecurityHeaders = (res) => {
+  const out = new Response(res.body, res);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
+  return out;
+};
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
-  status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+  status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SECURITY_HEADERS },
 });
 const page = (title, body, status) => new Response(
   `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
@@ -101,6 +112,13 @@ async function readBody(request) {
 
 async function api(request, env, who, url) {
   const path = url.pathname, post = request.method === "POST";
+  // Only the app itself may make changes: a page on another site can't send JSON here without the
+  // browser asking first (which this Worker never agrees to), and its Origin wouldn't match.
+  if (post) {
+    const origin = request.headers.get("Origin");
+    if (origin && origin !== url.origin) return json({ error: "Changes must come from the app itself" }, 403);
+    if (!(request.headers.get("Content-Type") || "").toLowerCase().startsWith("application/json")) return json({ error: "Expected JSON" }, 415);
+  }
   const dir = directory(env);
   const signInInfo = () => ({ manageSignIn: !!(env.CF_API_TOKEN && env.CF_ACCOUNT_ID) });
 
@@ -176,8 +194,11 @@ async function api(request, env, who, url) {
       const items = [];
       households.forEach((h, i) => {
         for (const [recipe, list] of Object.entries(lists[i] || {})) {
-          for (const f of list || []) {
-            items.push({ household: h.name, householdId: h.id, recipe, recipeName: RECIPE_NAMES[recipe] || recipe, rating: f.rating, tags: f.tags || [], note: f.note || "", at: f.at || 0, by: f.by || "" });
+          if (!Array.isArray(list)) continue; // one household's odd data shouldn't break the screen
+          for (const f of list) {
+            if (!f || typeof f !== "object") continue;
+            items.push({ household: h.name, householdId: h.id, recipe, recipeName: RECIPE_NAMES[recipe] || recipe, rating: String(f.rating || ""),
+              tags: Array.isArray(f.tags) ? f.tags.map(String) : [], note: String(f.note || ""), at: Number(f.at) || 0, by: String(f.by || "") });
           }
         }
       });
@@ -270,9 +291,9 @@ export default {
     }
 
     // Static files (the app itself). Unknown paths fall back to the app shell.
-    const asset = await env.ASSETS.fetch(request);
-    if (asset.status !== 404) return asset;
-    return env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
+    let asset = await env.ASSETS.fetch(request);
+    if (asset.status === 404) asset = await env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
+    return withSecurityHeaders(asset);
   },
 
   /** Weekly: fetch the ONS food price index once and share it with every household; tidy the sign-in list. */

@@ -83,4 +83,4 @@ createServer(async (req, res) => {
   if (url.searchParams.get("as")) out["Set-Cookie"] = `as=${encodeURIComponent(url.searchParams.get("as"))}; Path=/; SameSite=Lax`;
   res.writeHead(r.status, out);
   res.end(Buffer.from(await r.arrayBuffer()));
-}).listen(PORT, () => console.log(`FoodIsHard (online version, local test) on http://localhost:${PORT}/?as=${ADMIN}`));
+}).listen(PORT, "127.0.0.1", () => console.log(`FoodIsHard (online version, local test) on http://localhost:${PORT}/?as=${ADMIN}`));

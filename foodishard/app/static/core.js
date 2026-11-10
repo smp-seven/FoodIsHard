@@ -515,6 +515,8 @@ function kidNote(note) {
 }
 function personaliseStep(text) {
   const little = kids();
+  // [[...]] is baby-only text inside a normal step, e.g. "(keep a spoonful back for the baby)"
+  text = text.replace(/\[\[(.*?)\]\]/g, little.length ? "$1" : "");
   if (!little.length) return text;
   const n = kidNames(little), many = little.length > 1;
   return text

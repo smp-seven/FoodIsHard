@@ -95,7 +95,7 @@
      "t": "Add the lentils, the tomatoes and {{300|ml}} water. Bring to the boil, then turn down to a gentle simmer for 20 minutes, stirring now and then, until the lentils have broken down and it's thick. Add a splash of water if it starts to stick."
     },
     {
-     "t": "Spoon the baby's portion into a bowl now, before the chilli and salt. Stir a little spinach into it so it wilts in the heat.",
+     "t": "Spoon the baby's portion into a bowl now, before the chilli and salt, and stir a little spinach into the baby's bowl so it wilts in the heat.",
      "baby": true
     },
     {
@@ -106,8 +106,8 @@
     }
    ],
    "baby": {
-    "smooth": "Blend or mash until smooth and loosen with their usual milk. Serve with a little plain yoghurt.",
-    "finger": "Keep it thick and let it cool to warm. Chapati or toast fingers to scoop with, plus a spoon of plain yoghurt.",
+    "smooth": "Blend or mash until smooth and loosen with their usual milk. Serve with a little full-fat plain yoghurt.",
+    "finger": "Keep it thick and let it cool to warm. Chapati or toast fingers to scoop with, plus a spoon of full-fat plain yoghurt.",
     "chopped": "As yours before the chilli and salt, with small pieces of chapati."
    },
    "tags": []
@@ -221,7 +221,7 @@
     }
    ],
    "baby": {
-    "smooth": "Mash the beans and sweet potato smooth with a little yoghurt.",
+    "smooth": "Mash the beans and sweet potato smooth with a little full-fat plain yoghurt.",
     "finger": "Lightly squashed beans, soft sweet potato cubes to pick up, sticky rice and a pinch of cheese.",
     "chopped": "As yours before the chilli, with a little cheese."
    },
@@ -306,7 +306,7 @@
      "t": "In a bowl, whisk the peanut butter with the garlic, ginger, lime juice and a splash of the noodle water until smooth and pourable."
     },
     {
-     "t": "Take the baby's portion out now: tofu fingers, soft broccoli and short noodles with a little sauce, before the soy and chilli.",
+     "t": "Take the baby's portion out now: tofu fingers, soft broccoli and short noodles with a little sauce, before the soy and chilli. Squash any edamame in the baby's portion flat with a fork.",
      "baby": true
     },
     {
@@ -475,7 +475,8 @@
     },
     {
      "k": "coriander",
-     "q": 0.25
+     "q": 5,
+     "u": "g"
     },
     {
      "k": "oil",
@@ -628,7 +629,7 @@
      "t": "Add the tomatoes and chickpeas and simmer, uncovered, for 8 minutes, until thick enough that a spoon drawn through it leaves a gap."
     },
     {
-     "t": "Spoon the baby's portion of sauce into a small pan, crack in one egg, cover and cook on a low heat for about 8 minutes, until the white and yolk are both fully set. Do this before any salt, chilli or feta goes in.",
+     "t": "Spoon the baby's portion of sauce into a small pan, crack in one egg, cover and cook on a low heat for about 8 minutes, until the white and yolk are both fully set. Do the baby's egg before any salt, chilli or feta goes in.",
      "baby": true
     },
     {
@@ -722,13 +723,13 @@
    ],
    "steps": [
     {
-     "t": "Get ready: heat the oven to 200°C fan. Cut the onion, courgette and pepper into chunks about 3 cm across. Drain and rinse the chickpeas and pat them dry with kitchen paper."
+     "t": "Get ready: heat the oven to 200°C fan. Cut the onion, courgette and pepper into chunks about 3 cm across. Drain and rinse the chickpeas[[ (keep a spoonful back for the baby)]] and pat them dry with kitchen paper."
     },
     {
      "t": "On a large baking tray, toss the veg and chickpeas with the oil, smoked paprika and cumin, then spread them out in one layer. Roast for 20 minutes."
     },
     {
-     "t": "Take the baby's veg and chickpeas off the tray now, before the salt and halloumi.",
+     "t": "Take the baby's veg off the tray now, before the salt and halloumi. Warm the baby's spoonful of chickpeas in the microwave until hot and squash them flat.",
      "baby": true
     },
     {
@@ -742,8 +743,8 @@
     }
    ],
    "baby": {
-    "smooth": "Mash the roast veg and chickpeas with plain yoghurt.",
-    "finger": "Soft roast pepper and courgette strips, squashed chickpeas, quartered cherry tomatoes, flatbread fingers and plain yoghurt. No halloumi: it's very salty.",
+    "smooth": "Mash the roast veg and chickpeas with full-fat plain yoghurt.",
+    "finger": "Soft roast pepper and courgette strips, squashed chickpeas, flatbread fingers and full-fat plain yoghurt. No halloumi: it's very salty.",
     "chopped": "As yours, with a little halloumi at most."
    },
    "tags": [
@@ -985,7 +986,7 @@
      "t": "Push the rice to one side, pour the eggs into the gap and stir for about 1 minute until scrambled and set, then mix them through the rice."
     },
     {
-     "t": "Take the baby's portion out now, before the soy sauce.",
+     "t": "Take the baby's portion out now, before the soy sauce. Squash any edamame and peas in the baby's portion flat with a fork.",
      "baby": true
     },
     {
@@ -1060,7 +1061,7 @@
     }
    ],
    "baby": {
-    "smooth": "Mash a few beans with soft-cooked egg.",
+    "smooth": "Mash a few beans with egg cooked until the yolk is completely firm.",
     "finger": "Toast fingers, a small spoon of mashed reduced-salt beans, and egg cooked through, in strips. Go easy on the cheese.",
     "chopped": "As yours, cut small, with a little cheese."
    },
@@ -1157,8 +1158,8 @@
     }
    ],
    "baby": {
-    "smooth": "Blend with a spoon of yoghurt until smooth.",
-    "finger": "Squashed chickpeas and spinach to scoop with rice, plus plain yoghurt.",
+    "smooth": "Blend with a spoon of full-fat plain yoghurt until smooth.",
+    "finger": "Squashed chickpeas and spinach to scoop with rice, plus full-fat plain yoghurt.",
     "chopped": "As yours, before the chilli and salt."
    },
    "tags": []
@@ -1227,8 +1228,8 @@
     }
    ],
    "baby": {
-    "smooth": "Mash the beans with yoghurt.",
-    "finger": "Quesadilla cut into strips once cooled, with yoghurt to dip.",
+    "smooth": "Mash the beans with full-fat plain yoghurt.",
+    "finger": "Quesadilla cut into strips once cooled, with full-fat plain yoghurt to dip.",
     "chopped": "Small wedges of yours without the chilli."
    },
    "tags": []
@@ -1343,7 +1344,7 @@
     }
    ],
    "baby": {
-    "smooth": "Blend with a spoon of plain yoghurt until smooth.",
+    "smooth": "Blend with a spoon of full-fat plain yoghurt until smooth.",
     "finger": "Squash the chickpeas with a fork so they're soft and flat. Strips of naan to dip.",
     "chopped": "As yours before the chilli and salt, chickpeas squashed, with naan pieces."
    }
@@ -1465,7 +1466,7 @@
     }
    ],
    "baby": {
-    "smooth": "Blend with a little yoghurt until smooth.",
+    "smooth": "Blend with a little full-fat plain yoghurt until smooth.",
     "finger": "Soft potato and cauliflower pieces and squashed chickpeas, with chapati fingers.",
     "chopped": "As yours before the chilli and salt, cut small."
    }
@@ -1561,7 +1562,10 @@
      "t": "Add the garlic, ginger, cumin and ground coriander and stir for 1 minute. Add the frozen spinach and a splash of water, cover and cook for 5 minutes, stirring now and then, until it has thawed and is hot."
     },
     {
-     "t": "Blend until smooth with a stick blender (or in a blender), adding water to loosen it to a thick sauce. Take the baby's portion out now, before the chilli and salt.",
+     "t": "Take the pan off the heat and blend until smooth with a stick blender (or in a blender), adding water to loosen it to a thick sauce."
+    },
+    {
+     "t": "Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
@@ -1572,7 +1576,7 @@
     }
    ],
    "baby": {
-    "smooth": "The blended spinach is perfect as it is, loosened with a little yoghurt.",
+    "smooth": "The blended spinach is perfect as it is, loosened with a little full-fat plain yoghurt.",
     "finger": "Paneer cut into fingers, plus spinach sauce to dip chapati into.",
     "chopped": "As yours before the chilli and salt, paneer cut small."
    }
@@ -1645,10 +1649,13 @@
      "t": "Cook the pasta in the boiling water for the time on the packet, adding the broccoli for the last 4 minutes and the peas for the last 2."
     },
     {
-     "t": "Meanwhile, in a large bowl, mix the ricotta with the garlic, most of the cheese and the lemon zest."
+     "t": "Meanwhile, in a large bowl, mix the ricotta with the garlic, most of the cheese and the lemon zest[[, keeping a spoonful of plain ricotta back for the baby first]]."
     },
     {
-     "t": "Scoop out a mugful of the cooking water, then drain. Take the baby's portion out now and toss it with a spoon of ricotta and a splash of water, before the chilli.",
+     "t": "Scoop out a mugful of the cooking water, then drain."
+    },
+    {
+     "t": "Take the baby's portion out now and toss it with the baby's plain ricotta and a splash of the water, before the chilli.",
      "baby": true
     },
     {
@@ -2012,7 +2019,7 @@
     }
    ],
    "baby": {
-    "smooth": "Blend the sweet potato and beans with a little yoghurt.",
+    "smooth": "Blend the sweet potato and beans with a little full-fat plain yoghurt.",
     "finger": "Sweet potato cubes, squashed beans and strips of tortilla.",
     "chopped": "Sweet potato, beans and grated cheese, cut small."
    }
@@ -2106,7 +2113,7 @@
      "t": "Stir in the beans and sweetcorn and warm through for 2 minutes, squashing some of the beans with a fork."
     },
     {
-     "t": "Take the baby's portion out now (some filling, a spoon of passata and a little cheese in a small ovenproof dish), before the chilli and salt.",
+     "t": "Take the baby's portion out now, before the chilli and salt: roll a little filling in a piece of tortilla and lay it in a small ovenproof dish with a spoon of passata and a little cheese for the baby.",
      "baby": true
     },
     {
@@ -2205,9 +2212,9 @@
     }
    ],
    "baby": {
-    "smooth": "Blend the peppers with plain yoghurt.",
-    "finger": "Soft pepper strips and tortilla strips spread with yoghurt.",
-    "chopped": "Peppers and tortilla cut small, with yoghurt."
+    "smooth": "Blend the peppers with full-fat plain yoghurt.",
+    "finger": "Soft pepper strips and tortilla strips spread with full-fat plain yoghurt.",
+    "chopped": "Peppers and tortilla cut small, with full-fat plain yoghurt."
    }
   },
   {
@@ -2301,8 +2308,8 @@
     }
    ],
    "baby": {
-    "smooth": "Blend the tofu with plain yoghurt.",
-    "finger": "Tofu fingers, soft grated carrot and tortilla strips.",
+    "smooth": "Blend the tofu with full-fat plain yoghurt.",
+    "finger": "Soft pieces of tofu (pick the least crispy), grated carrot and tortilla strips.",
     "chopped": "Tofu and tortilla cut small, a little grated carrot."
    }
   },
@@ -2390,7 +2397,7 @@
      "t": "Add the cumin and smoked paprika for 1 minute, then the tomatoes and beans. Simmer for 8 minutes until thick."
     },
     {
-     "t": "Take the baby's portion of sauce out now, before the chilli and salt.",
+     "t": "Spoon the baby's portion of sauce into a small pan, crack in one egg, cover and cook on a low heat for about 8 minutes, until the baby's egg is set right through, white and yolk. Do the baby's before the chilli and salt.",
      "baby": true
     },
     {
@@ -2489,11 +2496,14 @@
      "t": "Add the rest of the oil and stir-fry the cabbage, carrot, garlic and ginger for 3 minutes."
     },
     {
-     "t": "Add the noodles, beansprouts and egg and toss for 2 minutes until hot. Take the baby's portion out now, before the soy and chilli.",
+     "t": "Add the noodles and egg and toss for 2 minutes until hot."
+    },
+    {
+     "t": "Take the baby's portion out now, before the beansprouts, soy and chilli.",
      "baby": true
     },
     {
-     "t": "Toss the rest with the soy sauce and most of the spring onions. Finish with the sesame seeds, the rest of the spring onions and the chilli flakes."
+     "t": "Add the beansprouts and stir-fry for 2 minutes until they're piping hot all the way through. Toss with the soy sauce and most of the spring onions, then finish with the sesame seeds, the rest of the spring onions and the chilli flakes."
     }
    ],
    "baby": {
@@ -2588,7 +2598,7 @@
      "t": "Meanwhile, boil the broccoli and edamame in a pan of water for 4 minutes, then drain."
     },
     {
-     "t": "Take the baby's tofu, rice and broccoli out now, before the soy and sweet chilli.",
+     "t": "Take the baby's tofu, rice and broccoli out now, before the soy and sweet chilli. Squash any edamame in the baby's portion flat with a fork.",
      "baby": true
     },
     {
@@ -2797,8 +2807,8 @@
     }
    ],
    "baby": {
-    "smooth": "Blend the veg with plain yoghurt.",
-    "finger": "Paneer fingers, soft cauliflower and naan strips, with raita to dip.",
+    "smooth": "Blend the veg with full-fat plain yoghurt.",
+    "finger": "Paneer fingers, soft cauliflower and naan strips, with full-fat plain yoghurt to dip.",
     "chopped": "As yours, cut small."
    }
   },
@@ -2960,7 +2970,10 @@
      "t": "Meanwhile, heat the oil in a large saucepan over a medium heat. Add the garlic for 30 seconds, then the passata, oregano, smoked paprika and beans. Simmer for 5 minutes."
     },
     {
-     "t": "Drain the pasta and broccoli and stir them into the sauce. Spoon the baby's portion into a ramekin now, before the salt.",
+     "t": "Drain the pasta and broccoli and stir them into the sauce."
+    },
+    {
+     "t": "Spoon the baby's portion into a ramekin now, before the salt.",
      "baby": true
     },
     {
@@ -3024,7 +3037,7 @@
      "t": "Get ready: scrub the potato and prick it all over with a fork. Grate the cheddar."
     },
     {
-     "t": "Microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). For crisp skin, air fry it at 200°C for 5 minutes afterwards."
+     "t": "Microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). Add 4 to 5 minutes for each extra potato. For crisp skin, air fry at 200°C for 5 minutes afterwards."
     },
     {
      "t": "Meanwhile, warm the beans in a small saucepan over a low heat for 4 to 5 minutes."
@@ -3081,7 +3094,8 @@
     },
     {
      "k": "bread",
-     "q": 2
+     "q": 2,
+     "u": "slices"
     },
     {
      "k": "cheddar",
@@ -3193,7 +3207,8 @@
     },
     {
      "k": "bread",
-     "q": 1
+     "q": 1,
+     "u": "slices"
     },
     {
      "k": "oil",
@@ -3357,7 +3372,7 @@
     }
    ],
    "baby": {
-    "smooth": "Blend with a little yoghurt.",
+    "smooth": "Blend with a little full-fat plain yoghurt.",
     "finger": "Sweet potato pieces, squashed chickpeas and couscous pressed into small balls.",
     "chopped": "As yours, cut small."
    }
@@ -3447,7 +3462,7 @@
      "t": "Stir in the frozen peas, edamame and spinach (they add a little water as they thaw), cover again and bake for 5 more minutes."
     },
     {
-     "t": "Spoon the baby's portion out now, before the stock and cheese.",
+     "t": "Spoon the baby's portion out now, before the stock and cheese. Squash any edamame and peas in the baby's portion flat with a fork.",
      "baby": true
     },
     {
@@ -3567,7 +3582,7 @@
     }
    ],
    "baby": {
-    "smooth": "Blend the rice and veg with a little yoghurt and egg.",
+    "smooth": "Blend the rice and veg with a little full-fat plain yoghurt and egg.",
     "finger": "Squashed rice balls, soft veg and egg quarters (fully set).",
     "chopped": "As yours before the chilli and salt, with chopped egg."
    }
@@ -3647,7 +3662,7 @@
    ],
    "steps": [
     {
-     "t": "Get ready: put the kettle on. Drain and rinse the chickpeas and pat them dry with kitchen paper. Chop the cucumber (keep a few sticks back for the baby), halve the tomatoes and thinly slice the red onion. Squeeze the lemon juice."
+     "t": "Get ready: put the kettle on. Drain and rinse the chickpeas[[, keep a spoonful back for the baby,]] and pat them dry with kitchen paper. Chop the cucumber[[ (keep a few sticks back for the baby)]], halve the tomatoes and thinly slice the red onion. Squeeze the lemon juice."
     },
     {
      "t": "Toss the chickpeas with half the oil, the oregano and smoked paprika. Air fry at 200°C for 12 minutes, shaking once, until crisp."
@@ -3656,7 +3671,7 @@
      "t": "Meanwhile, put the couscous in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes. Fluff with a fork, stirring in the rest of the oil and the lemon juice."
     },
     {
-     "t": "Take the baby's couscous and a few soft chickpeas out now (squashed), plus cucumber sticks, before the feta and olives.",
+     "t": "Warm the baby's spoonful of chickpeas in the microwave until hot, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the feta and olives.",
      "baby": true
     },
     {
@@ -3927,9 +3942,9 @@
     }
    ],
    "baby": {
-    "smooth": "Mash the potato with plain yoghurt.",
+    "smooth": "Mash the potato with full-fat plain yoghurt.",
     "finger": "Potato wedges, a strip of roasted pepper and toast-like bun fingers.",
-    "chopped": "Wedges and pepper, cut small, with yoghurt."
+    "chopped": "Wedges and pepper, cut small, with full-fat plain yoghurt."
    }
   },
   {
@@ -4029,7 +4044,7 @@
     }
    ],
    "baby": {
-    "smooth": "Mash the patty and sweet potato with yoghurt.",
+    "smooth": "Mash the patty and sweet potato with full-fat plain yoghurt.",
     "finger": "Patty cut into fingers, plus soft fries.",
     "chopped": "Patty and fries cut small."
    }
@@ -4119,7 +4134,7 @@
      "t": "Meanwhile, heat the rest of the oil in a wok or large frying pan over a high heat. Stir-fry the pepper and onion for 4 minutes, then add the garlic and ground ginger for 1 minute."
     },
     {
-     "t": "Take the baby's tofu, veg and rice out now, before the salt, pepper and chilli.",
+     "t": "Take the baby's tofu, veg and rice out now, before the salt, pepper and chilli. Squash any edamame in the baby's portion flat with a fork.",
      "baby": true
     },
     {
@@ -4167,7 +4182,8 @@
     },
     {
      "k": "sourdough",
-     "q": 1
+     "q": 1,
+     "u": "slices"
     },
     {
      "k": "salad_leaves",
@@ -4197,8 +4213,11 @@
      "t": "Pour the eggs over and cook on a low heat for 6 minutes until the edges are set. Meanwhile, heat the grill to high."
     },
     {
-     "t": "Scatter the feta over everything except one corner, which is the baby's piece.",
+     "t": "Pick one corner to be the baby's piece: no feta goes on the baby's corner.",
      "baby": true
+    },
+    {
+     "t": "Scatter the feta over the top[[, leaving the baby's corner bare]]."
     },
     {
      "t": "Grill for 4 to 5 minutes until set and golden. Rest for 2 minutes, then cut into wedges. Toast the sourdough and serve with the salad."

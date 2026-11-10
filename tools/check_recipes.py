@@ -96,6 +96,16 @@ for r in recipes["recipes"]:
             m = SEASONING.search(s["t"])
             if m and "before" not in s["t"].lower():
                 err(r, f"step {i + 1} adds '{m.group(0)}' before the baby's portion comes out")
+    # Households without children never see the baby step, so it must hold nothing anyone else needs:
+    # every sentence in it is about the baby. Baby-only asides elsewhere go in [[double brackets]].
+    for s in steps:
+        if s.get("baby"):
+            for sentence in re.split(r"(?<=[.!?])\s+", s["t"].strip()):
+                if sentence and "baby" not in sentence.lower():
+                    err(r, f"baby step has a sentence everyone needs (it's hidden without children): {sentence[:60]!r}")
+        for aside in re.findall(r"\[\[(.*?)\]\]", s["t"]):
+            if "baby" not in aside.lower():
+                err(r, f"[[...]] is for baby-only text, but this doesn't mention the baby: {aside[:50]!r}")
     for stage in STAGES:
         if not r.get("baby", {}).get(stage):
             err(r, f"missing baby note for stage '{stage}'")

@@ -2,6 +2,15 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.10.3",
+   "notes": [
+    "Safety review: baby portions now use full-fat yoghurt, squashed edamame and soft (not crispy) chickpeas, beansprouts are always cooked through, and eggs for little ones are always fully set.",
+    "A warning shows when shop-bought foods make a little one's portion salty, and for babies under 6 months.",
+    "Fixed five recipes that were missing a step when you're not cooking for little ones.",
+    "Security improvements."
+   ]
+  },
+  {
    "version": "0.10.2",
    "notes": [
     "Updates now wait for you: a blue ! on Settings means a new version is ready, with what's new."

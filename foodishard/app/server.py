@@ -9,6 +9,7 @@ import datetime
 import json
 import mimetypes
 import os
+import re
 import tempfile
 import threading
 import time
@@ -108,7 +109,43 @@ def _save():
 # Operations - keep in step with applyOp() in static/app.js
 # --------------------------------------------------------------------------
 
+UNSAFE_KEYS = {"__proto__", "constructor", "prototype"}
+
+
+def check_op(op):
+    """Same checks as checkOp() in ops.js, so both versions refuse the same changes."""
+    def bad():
+        raise ValueError("That change doesn't look right")
+
+    def key(k):
+        if k is None:
+            return
+        if not isinstance(k, str) or not k or len(k) > 200 or k in UNSAFE_KEYS:
+            bad()
+    if not isinstance(op, dict) or not isinstance(op.get("op"), str):
+        bad()
+    if op.get("week") is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(op["week"])):
+        bad()
+    for k in (op.get("key"), op.get("recipe"), op.get("id")):
+        key(k)
+    if op.get("keys") is not None:
+        if not isinstance(op["keys"], list) or len(op["keys"]) > 500:
+            bad()
+        for k in op["keys"]:
+            key(k)
+    if op.get("patch") is not None:
+        if not isinstance(op["patch"], dict):
+            bad()
+        for k in op["patch"]:
+            key(k)
+    if op["op"] == "day" and not (isinstance(op.get("i"), int) and 0 <= op["i"] < 7):
+        bad()
+    if op["op"] == "check" and op.get("field") not in ("done", "have", "need"):
+        bad()
+
+
 def apply_op(state, op, user):
+    check_op(op)
     kind = op.get("op")
     now = int(time.time())
 
@@ -319,6 +356,9 @@ class Handler(BaseHTTPRequestHandler):
         if not self._allowed():
             return
         path = self._route_path()
+        # Only the app sends JSON; a page on another site can't without the browser asking first.
+        if not (self.headers.get("Content-Type") or "").lower().startswith("application/json"):
+            return self._send_json({"error": "Expected JSON"}, HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
         if path.endswith("/api/import"):
             return self._import()
         if not path.endswith("/api/op"):
@@ -330,6 +370,8 @@ class Handler(BaseHTTPRequestHandler):
             op = json.loads(self.rfile.read(length))
         except json.JSONDecodeError:
             return self._send_json({"error": "bad json"}, HTTPStatus.BAD_REQUEST)
+        if not isinstance(op, dict):
+            return self._send_json({"error": "bad op"}, HTTPStatus.BAD_REQUEST)
 
         user = _user_from(self.headers) or op.get("by") or ""
         with _lock:

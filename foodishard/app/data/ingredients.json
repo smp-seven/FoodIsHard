@@ -577,7 +577,10 @@
     4,
     1.0
    ],
-   "g": 45
+   "g": 45,
+   "mc": [
+    "milk"
+   ]
   },
   "flatbread": {
    "n": "Flatbreads / pittas",
@@ -746,7 +749,8 @@
     0,
     0.1
    ],
-   "g": 1
+   "g": 1,
+   "note": "For the baby: under-2s need full-fat dairy, so get a small pot of full-fat plain yoghurt for the baby too."
   },
   "natural_yoghurt": {
    "n": "Natural yoghurt",
@@ -852,7 +856,8 @@
     "milk"
    ],
    "f": [
-    "veg"
+    "veg",
+    "salt"
    ],
    "nu": [
     270,
@@ -1499,7 +1504,10 @@
     0,
     0
    ],
-   "g": 15
+   "g": 15,
+   "mc": [
+    "sulphites"
+   ]
   },
   "lime_juice": {
    "n": "Bottled lime juice",
@@ -1520,7 +1528,10 @@
     0,
     0
    ],
-   "g": 15
+   "g": 15,
+   "mc": [
+    "sulphites"
+   ]
   },
   "peas": {
    "n": "Frozen peas",
@@ -2099,6 +2110,11 @@
    "g": 60,
    "al": [
     "gluten"
+   ],
+   "mc": [
+    "sesame",
+    "milk",
+    "egg"
    ]
   },
   "ricotta": {
@@ -2262,7 +2278,8 @@
     1.0
    ],
    "mc": [
-    "sesame"
+    "sesame",
+    "gluten"
    ],
    "g": 1
   },
@@ -2463,7 +2480,10 @@
     7.3,
     0.03
    ],
-   "g": 1
+   "g": 1,
+   "mc": [
+    "sulphites"
+   ]
   },
   "sweetcorn": {
    "n": "Frozen sweetcorn",

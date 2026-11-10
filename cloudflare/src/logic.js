@@ -75,7 +75,7 @@ export async function verifyAccessToken(token, { teamDomain, aud, fetchImpl = fe
   if (!ok) throw new Error("bad signature");
   const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
   if (!audiences.includes(aud)) throw new Error("token is for a different application");
-  if (payload.iss && payload.iss !== `https://${teamDomain}`) throw new Error("token from a different team");
+  if (payload.iss !== `https://${teamDomain}`) throw new Error("token from a different team");
   const secs = Math.floor(now / 1000);
   if (!payload.exp || payload.exp < secs) throw new Error("sign-in has expired");
   if (payload.nbf && payload.nbf > secs + 60) throw new Error("token not valid yet");

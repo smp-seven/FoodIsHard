@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.10.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.10.3"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -147,10 +147,33 @@ function visibleSteps(r) { const inc = kids().length > 0; return r.steps.filter(
 /** Coloured name chips, one per child. */
 function kidChips(list = kids()) { return list.map((k) => `<span class="kid-chip" style="${kidStyle(k)}">${esc(k.name || "Baby")}</span>`).join(""); }
 /** One coloured note per child for a recipe, at their own stage. */
+/** Things worth flagging for one child and one recipe: salt from shop-bought foods, and being too young for solids. */
+function kidWarnings(r, k, info) {
+  const out = [], name = k.name || "the baby";
+  const age = (info.ageCorrected || info.ageActual || {}).m;
+  if (age != null && age < 6) out.push(`${name} is under 6 months${k.due ? " (corrected age)" : ""}. The NHS advises starting solids at around 6 months, so check with your health visitor first.`);
+  const portion = +k.portion || 0;
+  if (portion > 0) {
+    // salt the steps can't take out: bread, wraps, gnocchi, beans and the like
+    const parts = effectiveIngredients(r).map((i) => {
+      const m = ingMeta(i.k);
+      if (!m.nu || i.k === "salt" || (m.f || []).includes("salt")) return null;
+      return { n: m.n.split(/[(/]/)[0].trim().toLowerCase(), salt: gramsFor(i.k, i.q, i.u) / 100 * m.nu[7] * portion };
+    }).filter((x) => x && x.salt > 0.05).sort((a, b) => b.salt - a.salt);
+    const total = parts.reduce((t, x) => t + x.salt, 0);
+    if (total >= info.saltLimit / 2) {
+      const from = parts.slice(0, 2).map((x) => x.n).join(" and ");
+      out.push(`About ${total.toFixed(1)} g of salt in ${name}'s portion, mostly from the ${from}. The NHS limit at this age is ${info.saltLimit} g a day, so go easy on those and keep the rest of the day low in salt.`);
+    }
+  }
+  return out;
+}
 function kidNotes(r, { withRules = false } = {}) {
   return kids().map((k) => {
     const info = kidInfo(k), note = personaliseStep((r.baby || {})[STAGE_NOTE[k.stage] || "smooth"] || "") || "Take their portion out before salt, stock or chilli, and cut it to a size they can manage.";
+    const warn = kidWarnings(r, k, info);
     return `<div class="baby-box kid" style="${kidStyle(k)}"><p class="kid-head"><span class="kid-dot"></span><b>${esc(k.name || "Baby")}</b> · ${esc(STAGES[k.stage]?.name || "")}</p><p style="margin:0">${esc(note)}</p>
+      ${warn.map((w) => `<p class="small" style="margin:6px 0 0;color:var(--warn-ink);background:var(--warn-soft);padding:6px 10px;border-radius:10px">${esc(w)}</p>`).join("")}
       ${withRules ? `<ul><li>No added salt or stock in their portion.</li>${info.underOne ? `<li>No honey until ${info.firstBirthday ? `${niceDate(info.firstBirthday)} ${info.firstBirthday.getFullYear()}` : "their first birthday"}.</li>` : ""}<li>Quarter cherry tomatoes and grapes. Nuts ground or smooth only.</li></ul>` : ""}</div>`;
   }).join("");
 }
@@ -1215,7 +1238,7 @@ function openAbout() {
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), and whether you've read the latest message from the host.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, their names and birth dates) and recipe feedback.</li>
-         <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard, with your household's name, so they can improve the recipes. Nothing else of your household's is shown to them in the app.</li>
+         <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard, with your household's name and your first name, so they can improve the recipes. Nothing else of your household's is shown to them in the app.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
        </ul>

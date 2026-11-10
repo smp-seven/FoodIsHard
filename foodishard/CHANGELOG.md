@@ -141,3 +141,15 @@
 - Each version's files are now kept together. Before, files were refreshed one at a time, so a phone could briefly run a mix of old and new code. That caused, for example, Done shopping to clear the list and then put it all back.
 - If the server ever refuses a change, the app now says so instead of quietly undoing it.
 - New file `whatsnew.json`: the short notes shown in the Update ready card.
+
+## 0.10.3
+- **Recipe and baby-safety review:**
+  - Five recipes hid a step everyone needs inside the baby step: saag paneer, lemon ricotta pasta, veg chow mein, the cheesy bean pasta bake and the frittata. Those steps now show for every household, and the recipe checker refuses a baby step that holds anything else.
+  - Baby notes say **full-fat** plain yoghurt, since under-2s need full-fat dairy. With little ones, the shopping list suggests a small pot.
+  - Little ones get soft chickpeas held back from the tin, not crispy roasted ones. Beansprouts are always cooked until piping hot, and only after the baby's portion comes out. Edamame and peas are squashed. Eggs for little ones are always fully set.
+  - Fixed baby notes that didn't match their steps (traybake, tacos, enchiladas). Huevos rancheros now cooks the baby's egg in its own pan, and the baby's ricotta in the lemon ricotta pasta is taken before the raw garlic goes in.
+  - The recipe panel warns when shop-bought foods (bread, wraps, gnocchi, beans and so on) put a child's portion over half their daily salt limit, and when a child is under 6 months.
+  - Feta is marked as salty. Allergen prompts were added for sulphites (bottled lemon and lime juice, dried apricots), milk (chapatis), gluten (falafel), and sesame, milk and egg (burger buns).
+  - Bread and coriander amounts use consistent units, and the jacket potato gives times for more than one.
+- **New in recipes:** text in `[[double brackets]]` inside a step only shows to households with little ones, e.g. "keep a spoonful back for the baby".
+- **Security:** tighter checks on every change sent to the server, in both versions. The online version only accepts changes from the app's own pages, adds standard browser protection headers, and requires the sign-in token's issuer. CLOUDFLARE.md now recommends the Lax cookie setting for the sign-in.

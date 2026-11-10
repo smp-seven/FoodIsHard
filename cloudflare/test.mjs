@@ -112,8 +112,8 @@ let env = makeEnv({
   HOUSEHOLDS: JSON.stringify({ smiths: { "alex@example.com": "Alex", "Sam@Example.com": "Sam" }, patels: { "priya@example.com": "Priya" } }),
 });
 
-const call = async (path, { email, method, body, tok, e = env } = {}) => {
-  const headers = {};
+const call = async (path, { email, method, body, tok, e = env, extraHeaders = {} } = {}) => {
+  const headers = body ? { "Content-Type": "application/json", ...extraHeaders } : { ...extraHeaders };
   if (tok !== undefined) headers["Cf-Access-Jwt-Assertion"] = tok;
   else if (email) headers["Cf-Access-Jwt-Assertion"] = await token({ email });
   const res = await worker.default.fetch(new Request("https://foodishard.example.workers.dev" + path, { method: method || (body ? "POST" : "GET"), headers, body: body && JSON.stringify(body) }), e);
@@ -426,6 +426,35 @@ await test("admin message: everyone sees it once, until they dismiss it; a new o
   await c("/api/admin/notice/clear", { email: "admin@example.com", body: {} });
   assert.equal((await c("/api/notice", { email: "priya@example.com" })).body.notice, null);
   assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.notice, null);
+});
+await test("security: crafted keys are refused and can't touch shared objects", async () => {
+  const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "alex@example.com": "Alex" } }) });
+  const c = (p, o = {}) => call(p, { e, ...o });
+  for (const body of [
+    { op: "shop_for", week: "__proto__", key: "polluted", shop: "evil" },
+    { op: "check", week: "2026-11-09", key: "__proto__", field: "done", value: true },
+    { op: "pref", recipe: "constructor", patch: { fav: true } },
+    { op: "settings", patch: { ["__proto__"]: { polluted: "evil" } } },
+    { op: "trip", week: "2026-11-09", keys: ["ok", "prototype"] },
+    { op: "day", week: "2026-11-09", i: "__proto__", day: {} },
+    { op: "check", week: "2026-11-09", key: "i:x", field: "__proto__", value: true },
+  ]) assert.equal((await c("/api/op", { email: "alex@example.com", body })).status, 400, JSON.stringify(body));
+  assert.equal(({}).polluted, undefined);
+  assert.equal((await c("/api/op", { email: "alex@example.com", body: { op: "check", week: "2026-11-09", key: "i:x", field: "done", value: true } })).status, 200);
+});
+await test("security: changes must come as JSON from the app's own site", async () => {
+  const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "alex@example.com": "Alex" } }) });
+  const c = (p, o = {}) => call(p, { e, ...o });
+  const body = { email: "evil@example.com", name: "Evil" };
+  assert.equal((await c("/api/account/invite", { email: "alex@example.com", body, extraHeaders: { Origin: "https://evil.example" } })).status, 403);
+  assert.equal((await c("/api/account/invite", { email: "alex@example.com", body, extraHeaders: { "Content-Type": "text/plain" } })).status, 415);
+  assert.equal((await c("/api/account", { email: "alex@example.com" })).body.household.members.length, 1);
+  assert.equal((await c("/api/account/invite", { email: "alex@example.com", body: { email: "sam@example.com", name: "Sam" }, extraHeaders: { Origin: "https://foodishard.example.workers.dev" } })).status, 200);
+});
+await test("security: tokens without the right issuer are refused; responses forbid framing", async () => {
+  assert.equal((await call("/api/state", { tok: await token({ email: "alex@example.com", iss: undefined }) })).status, 401);
+  const res = await worker.default.fetch(new Request("https://foodishard.example.workers.dev/api/health"), env);
+  assert.equal(res.headers.get("X-Frame-Options"), "DENY");
 });
 await test("DATA_REGION=auto lets Cloudflare choose", async () => {
   const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ z: { "z@example.com": "Z" } }), DATA_REGION: "auto" });
