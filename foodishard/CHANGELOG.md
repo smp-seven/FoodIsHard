@@ -89,3 +89,6 @@
 - The FoodIsHard logo is in the app, on the home screen icon and in the browser tab. Adding the app to your home screen opens it full-screen.
 - The first tab is now "Today", and Settings (a clearer cog) is at the top of every main screen. Back returns you to where you were.
 - New households start with no staples (the test porridge, milk and yoghurt are gone).
+
+## 0.9.1
+- Cleaner settings cog.
