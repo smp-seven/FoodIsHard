@@ -463,7 +463,8 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>`}
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.5</p>`;
+    ${accountFooter()}
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.6</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -908,6 +909,9 @@ const ACTIONS = {
   about: () => openAbout(),
   signInAgain: () => { location.reload(); },
   acctReload: () => { loadAccount(); toast("Refreshed"); },
+  signOut: () => signOut(),
+  deleteAccount: () => openDeleteAccount(),
+  deleteAccountConfirm: () => deleteAccount(),
   fbReload: () => { app.fbAdmin = null; render(); },
   fbFilter: (d) => { app.fbFilter = d.f; render(); },
   fbGroup: (d) => { app.fbGroup = d.g; render(); },
@@ -1128,7 +1132,7 @@ function openAbout() {
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
        </ul>
        <p>Old shopping lists are deleted after 8 weeks and meal plans after a year.</p>
-       <p>You can <b>download a backup</b> of your household's data any time (Settings → Your data). To have it deleted, ask the person who runs this copy.</p>`
+       <p>You can <b>download a backup</b> of your household's data any time (Settings → Your data), and <b>delete your account</b> yourself (Settings → Your account). If you're the last person in your household, that deletes the household's data too.</p>`
     : ha ? `<p>Everything is stored on your own Home Assistant, and only people with a Home Assistant login can open it. Nothing is sent anywhere else. Old shopping lists are deleted after 8 weeks and meal plans after a year.</p>`
     : `<p>This is a preview. Everything is saved in this browser only.</p>`;
   openSheet(`<div class="row" style="gap:14px;margin-bottom:6px"><img src="icon-192.png" alt="" width="56" height="56" style="border-radius:14px"><div><p class="eyebrow">About</p><h1 class="title" style="font-size:26px;margin:0">FoodIsHard</h1></div></div>
@@ -1159,6 +1163,45 @@ async function accountCall(path, body) {
   if (!r.ok) throw new Error(res.error || `Something went wrong (${r.status})`);
   return res;
 }
+// ---- Sign out and delete my account (online version) ----
+/** Forget this device's copy (so the next person can't see it offline), then end the Cloudflare sign-in. */
+async function signOut({ ask = true } = {}) {
+  if (ask && load(QUEUE_KEY, []).length) {
+    try { await flushQueue(); } catch { /* checked below */ }
+    const left = load(QUEUE_KEY, []).length;
+    if (left && !window.confirm(`${left} change${left === 1 ? " hasn't" : "s haven't"} been sent yet (no signal?). Sign out anyway and lose ${left === 1 ? "it" : "them"}?`)) return;
+  }
+  [CACHE_KEY, QUEUE_KEY, HOST_KEY].forEach((k) => { try { localStorage.removeItem(k); } catch { /* fine */ } });
+  location.href = "/cdn-cgi/access/logout";
+}
+function openDeleteAccount() {
+  const a = app.account; if (!a || !a.household) return;
+  const last = a.household.members.length <= 1;
+  openSheet(`<p class="eyebrow">Your account</p><h1 class="title" style="font-size:26px">Delete my account?</h1>
+    <div class="stack about" style="gap:6px">
+      <p>This removes <b>${esc(a.me.email)}</b> from FoodIsHard straight away, and you won't be able to sign in any more.</p>
+      ${last
+        ? `<p><b>You're the only person in ${esc(a.household.name)}</b>, so the household is deleted too: every plan, list, price, setting and rating, for good. Download a backup first if you might want it.</p>
+           <button class="btn" data-act="exportData">${icon("download", 16)}Download a backup first</button>`
+        : `<p>${esc(a.household.name)} carries on for everyone else, with its plans and lists. Your name is taken off past ticks and notes.</p>`}
+      ${a.admin ? `<p class="small muted">You're an admin, so you'll still be able to open the admin dashboard until your email is taken out of ADMINS in Cloudflare.</p>` : ""}
+      <p class="small muted">To join again later, someone will need to invite you.</p>
+    </div>
+    <div class="stack" style="margin-top:14px">
+      <button class="btn lg" style="color:var(--warm)" data-act="deleteAccountConfirm">${icon("trash", 16)}${last ? `Delete my account and ${esc(a.household.name)}` : "Delete my account"}</button>
+      <button class="btn" data-close>Keep my account</button>
+    </div>`);
+}
+async function deleteAccount() {
+  const a = app.account; if (!a || !a.household) return;
+  if (!window.confirm(a.household.members.length <= 1 ? `Really delete your account and all of ${a.household.name}'s data? This can't be undone.` : "Really delete your account? This can't be undone.")) return;
+  try {
+    await accountCall("api/account/delete", {});
+  } catch (err) { return toast(`Couldn't delete: ${err.message}`); }
+  closeSheet();
+  $("#view").innerHTML = `<div class="empty" style="margin-top:20vh">Your account has been deleted.<br>Signing you out…</div>`;
+  setTimeout(() => signOut({ ask: false }), 1500);
+}
 async function loadAccount() {
   try {
     app.account = await accountCall("api/account");
@@ -1166,6 +1209,16 @@ async function loadAccount() {
   } catch (err) { app.account = { error: err.message }; }
   if ((app.tab === "admin" || app.tab === "feedback") && app.mode !== "admin" && !(app.account && app.account.admin)) { app.tab = "settings"; history.replaceState(null, "", "#settings"); }
   if (app.tab === "settings" || app.tab === "admin") render();
+}
+/** Sign out and delete my account: the bottom of Settings, online version only. */
+function accountFooter() {
+  const a = app.account;
+  if (app.host !== "Cloudflare") return "";
+  return `<p class="section-label">Your account</p>
+    <div class="list">
+      <div class="row" style="padding:13px 16px"><span class="grow"><b>Sign out</b><br><span class="small muted">You'll need to sign in again on this device</span></span><button class="btn sm" data-act="signOut">Sign out</button></div>
+      ${a && a.household ? `<div class="row" style="padding:13px 16px"><span class="grow"><b>Delete my account</b><br><span class="small muted">Removes you from ${esc(app.account.household.name)} and FoodIsHard</span></span><button class="btn sm" style="color:var(--warm)" data-act="deleteAccount">Delete…</button></div>` : ""}
+    </div>`;
 }
 function accountSection() {
   if (app.host !== "Cloudflare") return "";
@@ -1302,7 +1355,8 @@ function viewAdmin() {
     ${own ? `<div class="list" style="margin-top:18px"><div class="stack" style="padding:14px 16px;gap:8px"><b>Your own household: ${esc(own.name)}</b>
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
-    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.5</p>`;
+    <div style="text-align:center;margin-top:24px"><button class="btn sm" data-act="signOut">Sign out</button></div>
+    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.6</p>`;
 }
 // ---- Recipe feedback from every household (its own screen, off the dashboard) ----
 const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };

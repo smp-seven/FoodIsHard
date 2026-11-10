@@ -182,6 +182,12 @@ you can create households, add, move or remove people, rename or delete househol
 someone's invite message again, and re-sync the sign-in list. If your admin email is already in a
 household, open **Settings → Admin dashboard → Make this an admin-only account**.
 
+**Signing out and deleting accounts:** anyone can sign out, or delete their own account, from
+**Settings → Your account**. Deleting removes them from the sign-in list. If they were the last
+person in their household, the household and all its data go too. Admins also have **Sign out**
+at the bottom of the admin dashboard. An email in `ADMINS` can still open the dashboard after
+deleting its household account, until you take it out of `ADMINS`.
+
 **Recipe feedback (admin):** the **Recipe feedback** button on the admin dashboard shows the
 ratings and notes every household leaves after cooking, with a "new" count since you last looked.
 You can see them newest first or grouped by recipe, filter them, and press **Copy for Claude** to

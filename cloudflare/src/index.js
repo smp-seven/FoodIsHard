@@ -142,6 +142,19 @@ async function api(request, env, who, url) {
     try { acct = await dir.account(who.email); } catch { /* removed themselves */ }
     return json({ ...acct, admin: who.admin, ...signInInfo(), signIn });
   }
+  if (path === "/api/account/delete" && post) {
+    // Delete my account: leave the household (deleting it, and all its data, if I'm the last one),
+    // take my name off the household's ticks and notes, and drop my email from the sign-in list.
+    const res = await dir.leave(who.email);
+    if (res.deleted) await household(env, res.deleted).wipe();
+    else {
+      const others = (await dir.householdMembers(res.left)).map((m) => m.name);
+      if (!others.includes(who.name)) await household(env, res.left).forgetPerson(who.name);
+    }
+    whoCache.clear();
+    const signIn = await syncSignIn(env);
+    return json({ deleted: true, householdDeleted: !!res.deleted, stillAdmin: who.admin, signIn });
+  }
   if (path === "/api/account/rename" && post) {
     const acct = await dir.rename(who.email, await readBody(request));
     whoCache.clear();
@@ -317,6 +330,19 @@ export class Household extends DurableObject {
   async feedbackList() {
     const state = await this.load();
     return state.feedback || {};
+  }
+  /** Someone deleted their account: replace their name on ticks, items and notes. */
+  async forgetPerson(name) {
+    const state = await this.load();
+    const walk = (o) => {
+      if (!o || typeof o !== "object") return;
+      if (o.by === name) o.by = "a former member";
+      Object.values(o).forEach(walk);
+    };
+    walk(state);
+    state.rev = (state.rev || 0) + 1;
+    await this.save();
+    return { ok: true };
   }
   /** Called when an admin deletes a household: removes all its data. */
   async wipe() {

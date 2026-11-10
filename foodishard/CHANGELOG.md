@@ -112,3 +112,8 @@
 - Online version: admins get a **Recipe feedback** screen, off the admin dashboard. It shows every household's ratings and notes, newest first or grouped by recipe, with filters, search and a "new" count, plus a button that copies them for Claude without anyone's names.
 - The rating sheet and About now say that ratings and notes are visible to whoever runs FoodIsHard. The Home Assistant version is unchanged.
 - Online version: the "Copy your feedback" setting is gone, since the admin sees everyone's feedback. Home Assistant keeps it.
+
+## 0.9.6
+- Online version: **Sign out** in Settings → Your account and on the admin dashboard. It clears this device's copy, so the next person can't see it offline, then ends the sign-in.
+- Online version: **Delete my account** in Settings → Your account. It removes you and your email from the sign-in list, and takes your name off the household's past ticks and notes. If you're the last person in the household, it deletes the household and all its data too, with an offer to download a backup first.
+- About and the privacy policy explain both. Home Assistant is unchanged.
