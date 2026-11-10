@@ -1,0 +1,36 @@
+{
+ "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
+ "versions": [
+  {
+   "version": "0.10.2",
+   "notes": [
+    "Updates now wait for you: a blue ! on Settings means a new version is ready, with what's new."
+   ]
+  },
+  {
+   "version": "0.10.1",
+   "notes": [
+    "The app checks for new versions whenever you switch back to it."
+   ]
+  },
+  {
+   "version": "0.10.0",
+   "notes": [
+    "Done shopping moves ticked items into 'Bought this week', so the list shows only what's left and what it'll cost.",
+    "Once tonight's dinner is cooked, the Today card asks how it was."
+   ]
+  },
+  {
+   "version": "0.9.8",
+   "notes": [
+    "Calories now show on the Today card, week and recipes. Tap a name for protein and the full breakdown."
+   ]
+  },
+  {
+   "version": "0.9.7",
+   "notes": [
+    "Every recipe's method has been rewritten step by step, starting with the chopping and prep."
+   ]
+  }
+ ]
+}

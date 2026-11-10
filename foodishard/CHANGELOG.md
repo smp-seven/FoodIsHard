@@ -135,3 +135,9 @@
 
 ## 0.10.1
 - Online version: updates arrive faster. The app checks for a new version whenever you switch back to it, and reloads itself once the new version has downloaded. It waits if you're cooking or have a panel open. Previously the first open after an update showed the old version.
+
+## 0.10.2
+- Online version: **updates wait for you.** When a new version has downloaded, a blue **!** appears on the Settings button, and Settings shows **Update ready** with what's new and an **Update now** button. Otherwise it updates the next time the app is fully closed and reopened.
+- Each version's files are now kept together. Before, files were refreshed one at a time, so a phone could briefly run a mix of old and new code. That caused, for example, Done shopping to clear the list and then put it all back.
+- If the server ever refuses a change, the app now says so instead of quietly undoing it.
+- New file `whatsnew.json`: the short notes shown in the Update ready card.

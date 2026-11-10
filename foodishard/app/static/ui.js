@@ -56,15 +56,16 @@ async function boot() {
   }
   // Online version only: keep a copy of the app on the phone so it opens without signal.
   if (app.host === "Cloudflare" && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-    // Updates: check whenever the app comes back to the front, and switch to a new version
-    // as soon as it has downloaded (not mid-recipe or with a panel open: then it waits for the next open).
-    let hadCopy = !!navigator.serviceWorker.controller;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!hadCopy) { hadCopy = true; return; } // first time: nothing to update from
-      if (app.cook || !$("#sheet").hidden || app.selecting.size) return;
-      location.reload();
-    });
+    // Updates: check whenever the app comes back to the front. A new version downloads quietly,
+    // then waits: Settings shows "Update ready" with what's new until you press Update now.
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (app.updating) location.reload(); });
     navigator.serviceWorker.register("sw.js").then((reg) => {
+      const ready = () => { if (reg.waiting && navigator.serviceWorker.controller) updateReady(reg.waiting); };
+      ready();
+      reg.addEventListener("updatefound", () => {
+        const w = reg.installing;
+        if (w) w.addEventListener("statechange", () => { if (w.state === "installed") ready(); });
+      });
       document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
     }).catch((err) => console.warn("offline copy unavailable", err));
   }
@@ -99,6 +100,8 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
+const APP_VERSION = "0.10.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+
 // ---------------------------------------------------------------------------
 // Render
 // ---------------------------------------------------------------------------
@@ -126,7 +129,11 @@ function currentWeek() { return iso(weekStartFor(new Date(), settings().weekStar
 function header(eyebrow, title, right = "", { logo = false } = {}) {
   return `<header class="head">${logo ? `<img class="brand" src="icon-192.png" alt="FoodIsHard" width="44" height="44">` : ""}<div class="grow"><p class="eyebrow">${eyebrow}</p><h1 class="title">${title}</h1></div>${right}</header>`;
 }
-function settingsButton() { return `<button class="icon-btn" data-act="go" data-to="settings" aria-label="Settings">${icon("gear")}</button>`; }
+function settingsButton() {
+  return app.update
+    ? `<button class="icon-btn has-dot" data-act="go" data-to="settings" aria-label="Settings: an update is ready">${icon("gear")}<span class="update-dot" aria-hidden="true">!</span></button>`
+    : `<button class="icon-btn" data-act="go" data-to="settings" aria-label="Settings">${icon("gear")}</button>`;
+}
 function offlineBadge() { return app.offline ? `<span class="badge-offline">${icon("nosignal", 16)}No signal · ticks saved</span>` : ""; }
 
 function kcalTiles(r, onHero) {
@@ -450,6 +457,7 @@ function viewSettings() {
         <button class="icon-btn plain" data-act="stapleDel" data-i="${i}" aria-label="Remove">${icon("trash", 18)}</button></div></div>`).join("");
 
   return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="${app.prevTab || "tonight"}" aria-label="Back">${icon("left", 18)}</button>`)}
+    ${updateCard()}
     <p class="small muted" style="margin:-6px 4px 6px">${app.host === "Cloudflare" ? "Saved privately for your household, not in the app's code." : app.mode === "live" ? "Saved on your Home Assistant, not in the app's code." : "Saved on this device only."}</p>
     ${accountSection()}
 
@@ -517,7 +525,7 @@ function viewSettings() {
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
     ${accountFooter()}
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.10.1</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard ${APP_VERSION}</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -978,6 +986,7 @@ const ACTIONS = {
   signInAgain: () => { location.reload(); },
   acctReload: () => { loadAccount(); toast("Refreshed"); },
   noticeDismiss: () => dismissNotice(),
+  updateNow: () => updateNow(),
   adminNotice: () => openAdminNotice(),
   adminNoticeClear: () => { if (window.confirm("Take the message down? Anyone who hasn't seen it yet won't.")) adminDo("api/admin/notice/clear", {}, () => toast("Message taken down")); },
   signOut: () => signOut(),
@@ -1242,6 +1251,35 @@ async function accountCall(path, body) {
   if (!r.ok) throw new Error(res.error || `Something went wrong (${r.status})`);
   return res;
 }
+// ---- "Update ready" (online version) ----
+const newerThan = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };
+async function updateReady(worker) {
+  app.update = { worker, notes: [] };
+  try {
+    const res = await fetch("whatsnew.json", { cache: "no-store" });
+    const { versions = [] } = await res.json();
+    const fresh = versions.filter((v) => newerThan(v.version, APP_VERSION));
+    app.update.version = fresh.length ? fresh[0].version : null;
+    app.update.notes = fresh.flatMap((v) => v.notes).slice(0, 6);
+  } catch { /* no notes: the button still works */ }
+  if (["tonight", "week", "shop", "recipes", "settings"].includes(app.tab) && !app.cook) render();
+}
+function updateCard() {
+  const u = app.update;
+  if (!u) return "";
+  return `<div class="update-card" role="status">
+    <div class="row between"><b>Update ready${u.version ? ` · FoodIsHard ${esc(u.version)}` : ""}</b><span class="update-dot" style="position:static" aria-hidden="true">!</span></div>
+    ${u.notes.length ? `<span class="small">What's new:</span><ul class="small">${u.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
+    <button class="btn primary" style="align-self:flex-start" data-act="updateNow">Update now</button>
+    <span class="small muted">Takes a second. Anything you've ticked is kept.</span></div>`;
+}
+function updateNow() {
+  const u = app.update; if (!u) return;
+  app.updating = true;
+  u.worker.postMessage("skipWaiting");
+  setTimeout(() => location.reload(), 3000); // in case the switch-over message is missed
+}
+
 // ---- A message from the admin, shown once to each person (online version) ----
 let noticeChecked = 0;
 async function loadNotice() {
@@ -1470,7 +1508,7 @@ function viewAdmin() {
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
     <div style="text-align:center;margin-top:24px"><button class="btn sm" data-act="signOut">Sign out</button></div>
-    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.10.1</p>`;
+    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard ${APP_VERSION}</p>`;
 }
 // ---- Recipe feedback from every household (its own screen, off the dashboard) ----
 const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };

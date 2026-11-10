@@ -1,8 +1,10 @@
 // FoodIsHard offline copy (online version only; the Home Assistant app never registers this).
-// Keeps the app's own files on the phone so it opens without signal. Household data isn't
+// Keeps the app's own files on the phone so it opens without signal. Each version's files are
+// kept together and never mixed: a new version downloads in the background, then waits until
+// you press "Update now" in Settings (or the app is fully closed and reopened). Household data isn't
 // cached here: the app already keeps the latest plan and list on the phone, and queues
 // ticks until it's back online.
-const VERSION = "foodishard-0.10.1";
+const VERSION = "foodishard-0.10.2";
 const SHELL = [
   "./", "index.html", "style.css", "ops.js", "core.js", "ui.js",
   "data/recipes.json", "data/ingredients.json", "data/defaults.json",
@@ -20,9 +22,11 @@ self.addEventListener("install", (event) => {
         if (res.ok) await cache.put(path === "./" ? "index.html" : path, res);
       } catch { /* offline during install: it'll fill in later */ }
     }));
-    self.skipWaiting();
   })());
 });
+
+// "Update now" in Settings: switch to the new version straight away.
+self.addEventListener("message", (event) => { if (event.data === "skipWaiting") self.skipWaiting(); });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
@@ -34,15 +38,13 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request, url = new URL(req.url);
   if (req.method !== "GET" || url.origin !== location.origin) return;
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/cdn-cgi/")) return; // always live
+  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/cdn-cgi/") || url.pathname.endsWith("/whatsnew.json")) return; // always live
 
   // Opening the app: try the network (which also handles signing in), fall back to the copy.
   if (req.mode === "navigate") {
     event.respondWith((async () => {
       try {
-        const res = await fetch(req);
-        if (res.ok && res.type === "basic") (await caches.open(VERSION)).put("index.html", res.clone());
-        return res;
+        return await fetch(req); // the copy saved at install stays as this version's offline fallback
       } catch {
         return (await caches.match("index.html", { ignoreSearch: true })) || Response.error();
       }
@@ -50,16 +52,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // App files: answer from the copy straight away, refresh it in the background.
+  // App files: this version's copy. Anything missing (e.g. offline during install) comes from the network.
   event.respondWith((async () => {
     const cache = await caches.open(VERSION);
     const key = url.pathname.replace(/^\//, "") || "index.html";
     const cached = await cache.match(key);
-    const fresh = fetch(req, { redirect: "manual" }).then((res) => {
+    if (cached) return cached;
+    try {
+      const res = await fetch(req, { redirect: "manual" });
       if (res.ok && res.type === "basic") cache.put(key, res.clone());
       return res;
-    }).catch(() => null);
-    if (cached) { event.waitUntil(fresh); return cached; }
-    return (await fresh) || Response.error();
+    } catch { return Response.error(); }
   })());
 });

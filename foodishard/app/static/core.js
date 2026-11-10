@@ -141,7 +141,12 @@ async function flushQueue() {
       if (!queue.length) break;
       const r = await appFetch("api/op", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(queue[0]) });
       if (r.status === 403 && app.host === "Cloudflare") throw new SignedOutError("not in a household"); // keep the queue
-      if (r.status >= 400 && r.status < 500) console.warn("op rejected", queue[0], await r.text());
+      if (r.status >= 400 && r.status < 500) {
+        // Rejected (e.g. this phone is running an old copy of the app): say so rather than quietly undo it.
+        const why = await r.text(); console.warn("op rejected", queue[0], why);
+        let msg = ""; try { msg = JSON.parse(why).error || ""; } catch { /* not json */ }
+        if (typeof toast === "function") toast(`Couldn't save that change${msg ? `: ${msg}` : ""}. Try updating the app (Settings).`);
+      }
       else if (!r.ok) throw new Error(r.status);
       else { const res = await r.json(); app.state = res.state; }
       const now = load(QUEUE_KEY, []);

@@ -14,6 +14,7 @@
   --warm: #A8461F; --warm-soft: #F8E3D8;
   --baby: #6B5BA8; --baby-ink: #3E3270; --baby-soft: #ECE8F7;
   --warn-ink: #6B4A00; --warn-soft: #FFF1C9;
+  --info: #2563C9; --info-soft: #E2ECFB;
   --serif: Fraunces, "Iowan Old Style", Georgia, serif;
   --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --r-lg: 20px; --r-xl: 26px;
@@ -27,6 +28,7 @@
     --ink: #EEEDE6; --muted: #A7AC9F;
     --accent: #7CC49B; --accent-dark: #A6DDBD; --accent-soft: #24382B; --on-accent: #0F1A13;
     --warm: #F0946B; --warm-soft: #3A2A22;
+    --info: #7FB0FF; --info-soft: #1F2C40;
     --baby: #B9ACF0; --baby-ink: #DCD5FA; --baby-soft: #2C2843;
     --warn-ink: #F3D58A; --warn-soft: #3A3420;
   }
@@ -280,3 +282,10 @@ body.admin-only .view { padding-bottom: 32px; }
 .notice .notice-text { white-space: pre-line; overflow-wrap: anywhere; }
 @keyframes notice-in { from { opacity: 0; transform: translate(-50%, -12px); } }
 @media print { .notice { display: none !important; } }
+
+/* "Update ready" (online version) */
+.has-dot { position: relative; }
+.update-dot { position: absolute; top: -5px; right: -5px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: var(--info); color: #fff; font: 800 12px/19px var(--sans); text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+.update-card { background: var(--info-soft); border: 1px solid var(--info); border-radius: 18px; padding: 14px 16px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
+.update-card ul { margin: 0; padding-left: 20px; }
+.update-card li { margin: 2px 0; }
