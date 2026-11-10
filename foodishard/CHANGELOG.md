@@ -117,3 +117,4 @@
 - Online version: **Sign out** in Settings → Your account and on the admin dashboard. It clears this device's copy, so the next person can't see it offline, then ends the sign-in.
 - Online version: **Delete my account** in Settings → Your account. It removes you and your email from the sign-in list, and takes your name off the household's past ticks and notes. If you're the last person in the household, it deletes the household and all its data too, with an offer to download a backup first.
 - About and the privacy policy explain both. Home Assistant is unchanged.
+- Setting a spice to Got it, Low or Out, or tapping Favourite or Never again on a recipe, no longer jumps back to the top of the panel. (Both versions.)

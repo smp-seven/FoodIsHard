@@ -473,9 +473,11 @@ function viewSettings() {
 // Panels and cooking mode add a history entry, so the phone's Back button closes them
 // instead of leaving the page underneath.
 let sheetPushed = false, cookPushed = false;
-function openSheet(html) {
+/** Open the panel. keepScroll: redrawing the panel that's already open, so stay where you were. */
+function openSheet(html, { keepScroll = false } = {}) {
+  const panel = $(".sheet-panel"), top = keepScroll && !$("#sheet").hidden ? panel.scrollTop : 0;
   $("#sheetBody").innerHTML = html; hydrateIcons($("#sheetBody"));
-  $("#sheet").hidden = false; $(".sheet-panel").scrollTop = 0; document.body.style.overflow = "hidden";
+  $("#sheet").hidden = false; panel.scrollTop = top; document.body.style.overflow = "hidden";
   if (!sheetPushed) { history.pushState({ panel: "sheet" }, ""); sheetPushed = true; }
 }
 /** Close the panel. fromBack: Back was pressed. navigating: we're about to change page, so don't step history back. */
@@ -493,7 +495,7 @@ window.addEventListener("popstate", () => {
   else if (app.cook) stopCooking({ fromBack: true });
 });
 
-function openRecipe(id, { pickDay = null } = {}) {
+function openRecipe(id, { pickDay = null, keepScroll = false } = {}) {
   const r = app.byId[id]; if (!r) return;
   const { factor } = household(), p = prefsFor(id);
   const ings = effectiveIngredients(r), main = ings.filter((i) => i.q != null && !ingMeta(i.k).c), rack = ings.filter((i) => i.q != null && ingMeta(i.k).c), cupboard = ings.filter((i) => i.q == null);
@@ -531,7 +533,7 @@ function openRecipe(id, { pickDay = null } = {}) {
     ${rack.length || cupboard.length ? `<p class="section-label">From the spice rack &amp; cupboard</p><div class="card"><ul class="ing-list">${rack.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted" style="white-space:nowrap">${esc(fmtQty(i.q * factor, i.u))}</span></li>`).join("")}${cupboard.map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted">to taste</span></li>`).join("")}</ul></div>` : ""}
     ${kids().length ? `<p class="section-label">Little ones</p><div class="stack" style="gap:8px">${kidNotes(r, { withRules: true })}</div>` : ""}
     <p class="section-label">Method</p>
-    <ol class="steps">${steps.map((s) => `<li class="${s.baby ? "baby" : ""}">${s.baby ? `<span class="kid-chips">${kidChips()}</span>` : ""}${esc(personaliseStep(scaleStep(s.t, factor)))}</li>`).join("")}</ol>`);
+    <ol class="steps">${steps.map((s) => `<li class="${s.baby ? "baby" : ""}">${s.baby ? `<span class="kid-chips">${kidChips()}</span>` : ""}${esc(personaliseStep(scaleStep(s.t, factor)))}</li>`).join("")}</ol>`, { keepScroll });
 }
 
 function openMacros(id, who) {
@@ -681,7 +683,7 @@ function openDone() {
     <div class="stack"><button class="btn lg primary" data-act="confirmMove" disabled id="moveGo">Pick a shop</button><button class="btn lg" data-close>Leave them on the list</button></div>`);
 }
 
-function openRack() {
+function openRack({ keepScroll = false } = {}) {
   const used = rackUsedThisWeek(currentWeek());
   const row = (m) => {
     const seg = [["ok", "Got it"], ["low", "Low"], ["out", "Out"]].map(([s, l]) => `<button class="${m.status === s ? "on" : ""}" data-act="rackSet" data-k="${m.k}" data-s="${s}">${l}</button>`).join("");
@@ -695,7 +697,7 @@ function openRack() {
     <p class="muted">Low or Out goes on the shopping list. Ticking it off in the shop marks it Got it again.</p>
     ${missing.length ? `<button class="btn primary block" style="margin:6px 0 4px" data-act="rackStarter">Starter rack: add ${missing.length} spices to the list (≈ ${money(starterCost)})</button>` : ""}
     <p class="section-label">Spices</p><div class="list">${spices.map(row).join("")}</div>
-    <p class="section-label">Cupboard</p><div class="list">${cupboard.map(row).join("")}</div>`);
+    <p class="section-label">Cupboard</p><div class="list">${cupboard.map(row).join("")}</div>`, { keepScroll });
 }
 
 const FEEDBACK_TAGS = ["Too bland", "Too spicy", "Too salty", "Took longer", "Too fiddly", "Too much food", "Not enough", "Little ones loved it", "Little ones weren't keen"];
@@ -886,7 +888,7 @@ const ACTIONS = {
   pickFromMenu: (d) => { closeMenus(); openPicker(+d.i); },
   fam: (d) => { app.openFamilies.has(d.f) ? app.openFamilies.delete(d.f) : app.openFamilies.add(d.f); render(); },
   rfilter: (d) => { app.recipeFilter = d.f; render(); },
-  pref: (d) => { send({ op: "pref", recipe: d.id, patch: { [d.f]: d.v === "1" } }); openRecipe(d.id); },
+  pref: (d) => { send({ op: "pref", recipe: d.id, patch: { [d.f]: d.v === "1" } }); openRecipe(d.id, { keepScroll: true }); },
   swapIng: (d) => openSwap(d.k, d.reopen),
   setSwap: (d) => { send({ op: "swap", key: d.k, alt: d.alt }); if (d.reopen) openRecipe(d.reopen); else { closeSheet(); toast(d.alt ? `Swapped for ${ingMeta(d.alt).n.toLowerCase()}` : "Back to the original"); } },
   // shop
@@ -898,7 +900,7 @@ const ACTIONS = {
     render();
   },
   rack: () => openRack(),
-  rackSet: (d) => { send({ op: "pantry", key: d.k, status: d.s }); openRack(); },
+  rackSet: (d) => { send({ op: "pantry", key: d.k, status: d.s }); openRack({ keepScroll: true }); },
   rackStarter: () => {
     const keys = rackItems().filter((m) => m.rack === "spices" && m.status !== "ok").map((m) => m.k);
     send({ op: "pantry", keys, status: "out" }); closeSheet(); toast(`Added ${keys.length} spices to the list`);
