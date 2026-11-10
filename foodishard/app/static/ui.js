@@ -14,6 +14,7 @@ async function boot() {
 
   try {
     const res = await getJSON("api/state");
+    if (res.adminOnly) return bootAdmin(res);
     if (!res.state) throw new Error("no state");
     app.mode = "live"; app.state = res.state; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
     store(CACHE_KEY, app.state);
@@ -44,11 +45,27 @@ async function boot() {
   if (app.mode === "live" && app.host === "Cloudflare") loadAccount();
 }
 
+/** Admin-only accounts (online version): no household, just the admin dashboard. */
+async function bootAdmin(res) {
+  app.mode = "admin"; app.tab = "admin"; app.user = res.user || ""; app.host = "Cloudflare"; app.region = res.region || null;
+  document.body.classList.add("admin-only");
+  document.addEventListener("click", onClick);
+  document.addEventListener("change", onChange);
+  document.addEventListener("submit", onSubmit);
+  document.addEventListener("input", onInput);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
+  render();
+  await loadAccount();
+  setInterval(() => { if (!document.hidden && $("#sheet").hidden) loadAccount(); }, 60000);
+}
+
 function hydrateIcons(root) { $$("[data-icon]", root).forEach((el) => { if (!el.firstChild) el.innerHTML = icon(el.dataset.icon, 24); }); }
-function go(tab) { if (location.hash !== "#" + tab) location.hash = tab; else { app.tab = tab; render(); } }
+function go(tab) {
+  if (tab === "settings" && app.tab !== "settings" && app.tab !== "admin") app.prevTab = app.tab; if (location.hash !== "#" + tab) location.hash = tab; else { app.tab = tab; render(); } }
 function fromHash() {
   const t = (location.hash || "#tonight").slice(1);
-  app.tab = ["tonight", "week", "shop", "recipes", "settings"].includes(t) ? t : "tonight";
+  app.tab = ["tonight", "week", "shop", "recipes", "settings", "admin"].includes(t) ? t : "tonight";
+  if (app.tab === "admin" && app.host !== "Cloudflare") app.tab = "settings";
   app.selecting.clear();
   render(); window.scrollTo(0, 0);
 }
@@ -57,6 +74,12 @@ function fromHash() {
 // Render
 // ---------------------------------------------------------------------------
 function render() {
+  if (app.mode === "admin" || app.tab === "admin") {
+    $$(".nav button").forEach((b) => b.classList.remove("on"));
+    const view = $("#view"); view.innerHTML = viewAdmin(); hydrateIcons(view);
+    $("#dock").hidden = true;
+    return;
+  }
   if (!app.state) return;
   $$(".nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === app.tab));
   const views = { tonight: viewTonight, week: viewWeek, shop: viewShop, recipes: viewRecipes, settings: viewSettings };
@@ -71,8 +94,8 @@ function render() {
 }
 function currentWeek() { return iso(weekStartFor(new Date(), settings().weekStartDay || 0)); }
 
-function header(eyebrow, title, right = "") {
-  return `<header class="head"><div class="grow"><p class="eyebrow">${eyebrow}</p><h1 class="title">${title}</h1></div>${right}</header>`;
+function header(eyebrow, title, right = "", { logo = false } = {}) {
+  return `<header class="head">${logo ? `<img class="brand" src="icon-192.png" alt="FoodIsHard" width="44" height="44">` : ""}<div class="grow"><p class="eyebrow">${eyebrow}</p><h1 class="title">${title}</h1></div>${right}</header>`;
 }
 function settingsButton() { return `<button class="icon-btn" data-act="go" data-to="settings" aria-label="Settings">${icon("gear")}</button>`; }
 function offlineBadge() { return app.offline ? `<span class="badge-offline">${icon("nosignal", 16)}No signal · ticks saved</span>` : ""; }
@@ -130,7 +153,7 @@ function viewTonight() {
 
   const list = buildList(week).filter((x) => x.active && (!x.cupboard || x.need));
   const left = list.filter((x) => !x.done).length, total = list.reduce((t, x) => t + (x.cost || 0), 0);
-  return `${header(eyebrow, "Tonight", settingsButton())}
+  return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
     ${hero}
     <div class="row between" style="margin:22px 4px 10px"><h2 class="h2">Coming up</h2><button class="btn sm ghost" data-act="go" data-to="week">See the week</button></div>
     <div class="list week-mini">${upcoming.join("")}</div>
@@ -173,7 +196,7 @@ function viewWeek() {
   const thisWeek = week === currentWeek(), any = days.some((d) => d.recipe);
   return `${header(thisWeek ? "This week" : "Week of", `${niceDate(start)} – ${niceDate(end)}`, `<div class="row" style="gap:6px">
       <button class="icon-btn" data-act="week" data-d="-1" aria-label="Previous week">${icon("left", 18)}</button>
-      <button class="icon-btn" data-act="week" data-d="1" aria-label="Next week">${icon("right", 18)}</button></div>`)}
+      <button class="icon-btn" data-act="week" data-d="1" aria-label="Next week">${icon("right", 18)}</button>${settingsButton()}</div>`)}
     <div class="row" style="margin:0 4px 12px">
       <button class="btn primary" data-act="shuffle">${any ? "Shuffle unlocked" : "Plan my week"}</button>
       ${any ? `<span class="small muted">≈ ${money(cost)} of food${settings().budget ? " · budget swaps on" : ""}</span>` : ""}
@@ -193,7 +216,7 @@ function shopData() {
 }
 function viewShop() {
   const { week, all, toGet, tabs, shown } = shopData();
-  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet")}<div class="card empty"><p>Plan some dinners and the list builds itself.</p><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>`;
+  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}<div class="card empty"><p>Plan some dinners and the list builds itself.</p><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>`;
   const done = shown.filter((i) => i.done).length;
   const sel = app.selecting.size;
   const title = sel ? `${sel} selected` : app.shopTab === "all" ? "Shopping list" : `At ${esc(shopName(app.shopTab, false))}`;
@@ -211,7 +234,7 @@ function viewShop() {
   const have = all.filter((i) => !i.cupboard && i.have);
   const usedRack = rackUsedThisWeek(week), unchecked = [...usedRack].filter((k) => !(app.state.pantry || {})[k]).length;
 
-  return `${header(`Week of ${niceDate(parseISO(week))}`, title, right)}
+  return `${header(`Week of ${niceDate(parseISO(week))}`, title, `<div class="row" style="gap:6px">${right}${settingsButton()}</div>`)}
     <div class="stack" style="gap:12px;margin-bottom:6px">
       <div class="row between small"><span class="muted">${done} of ${shown.length} in the trolley</span><span class="muted">≈ <b style="color:var(--ink)">${money(app.shopTab === "all" ? total : shown.reduce((t, i) => t + (i.cost || 0), 0))}</b></span></div>
       <div class="progress"><i style="width:${shown.length ? Math.round(done / shown.length * 100) : 0}%"></i></div>
@@ -299,7 +322,7 @@ function viewRecipes() {
     }
   }
   const chip = (id, label) => `<button class="chip ${f === id ? "on" : ""}" data-act="rfilter" data-f="${id}">${label}</button>`;
-  return `${header(`${app.recipes.length} dinners`, "Recipes")}
+  return `${header(`${app.recipes.length} dinners`, "Recipes", settingsButton())}
     <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search lentils, curry, quick…" aria-label="Search recipes" value="${esc(app.recipeQuery)}" data-input="rsearch"></label>
     <div class="chips" style="margin-bottom:12px">${chip("all", "All")}${chip("quick", "Quick")}${chip("fav", "Favourites")}${chip("hidden", "Hidden")}</div>
     <div class="stack">${sections.join("")}</div>`;
@@ -337,7 +360,7 @@ function viewSettings() {
         <select class="input" style="width:auto;flex:1;min-width:110px" data-set="stapleShop" data-i="${i}" aria-label="Shop">${shopOrder().map((k) => `<option value="${k}" ${(st.shop || "aldi") === k ? "selected" : ""}>${esc(shopName(k))}</option>`).join("")}</select>
         <button class="icon-btn plain" data-act="stapleDel" data-i="${i}" aria-label="Remove">${icon("trash", 18)}</button></div></div>`).join("");
 
-  return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="tonight" aria-label="Back">${icon("left", 18)}</button>`)}
+  return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="${app.prevTab || "tonight"}" aria-label="Back">${icon("left", 18)}</button>`)}
     <p class="small muted" style="margin:-6px 4px 6px">${app.host === "Cloudflare" ? "Saved privately for your household, not in the app's code." : app.mode === "live" ? "Saved on your Home Assistant, not in the app's code." : "Saved on this device only."}</p>
     ${accountSection()}
 
@@ -400,7 +423,7 @@ function viewSettings() {
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.4</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.0</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -842,7 +865,19 @@ const ACTIONS = {
   feedbackTag: (d, el) => { el.classList.toggle("on"); },
   copyFeedback: () => copyText(feedbackText()),
   about: () => openAbout(),
-  acctReload: () => { app.account = null; render(); loadAccount(); },
+  acctReload: () => { loadAccount(); toast("Refreshed"); },
+  adminFilter: (d) => { app.adminFilter = d.f; render(); },
+  adminMember: (d) => openAdminMember(d.email),
+  adminHousehold: (d) => openAdminHousehold(d.id),
+  adminAdd: (d) => openAdminAdd(d.id, d.name),
+  adminResend: (d) => { const hit = adminFind(d.email); if (hit) copyText(inviteMessage(hit.m.name, hit.m.email)); },
+  adminMoveTo: (d) => { const hit = adminFind(d.email), to = app.adminInfo.households.find((h) => h.id === d.id); adminDo("api/admin/move", { email: d.email, household: d.id }, () => toast(`${hit ? hit.m.name : d.email} moved to ${to ? to.name : "the new household"}`)); },
+  adminRemove: (d) => { if (window.confirm(`Remove ${d.name}? They won't be able to sign in any more.`)) adminDo("api/admin/remove", { email: d.email }, () => toast(`${d.name} removed`)); },
+  adminLeave: () => {
+    const own = app.account && app.account.household;
+    const msg = own && own.members.length <= 1 ? `Delete your household "${own.name}" and its plans, and make this an admin-only account?` : "Leave your household and make this an admin-only account?";
+    if (window.confirm(msg)) adminDo("api/admin/leave", {}, () => { location.hash = "admin"; location.reload(); });
+  },
   acctInvite: () => openInviteForm("member"),
   adminNewHousehold: () => openInviteForm("household"),
   inviteCopy: () => copyText(app.inviteMsg || ""),
@@ -851,9 +886,8 @@ const ACTIONS = {
     if (!window.confirm(`Remove ${d.name} from your household? They won't be able to sign in any more.`)) return;
     try { await accountCall("api/account/remove", { email: d.email }); await loadAccount(); toast(`${d.name} removed`); } catch (err) { toast(err.message); }
   },
-  adminDeleteHousehold: async (d) => {
-    if (!window.confirm(`Delete ${d.name}? Everyone in it is signed out and all their plans, lists and settings are deleted for good. Ask them to download a backup first.`)) return;
-    try { await accountCall("api/admin/delete-household", { id: d.id }); await loadAccount(); toast(`${d.name} deleted`); } catch (err) { toast(err.message); }
+  adminDeleteHousehold: (d) => {
+    if (window.confirm(`Delete ${d.name}? Everyone in it is signed out and all their plans, lists and settings are deleted for good. Ask them to download a backup first.`)) adminDo("api/admin/delete-household", { id: d.id }, () => toast(`${d.name} deleted`));
   },
   adminSync: async () => {
     try { const r = await accountCall("api/admin/sync", {}); await loadAccount(); toast(r.signIn.message); } catch (err) { toast(err.message); }
@@ -942,8 +976,9 @@ function onClick(e) {
 }
 
 function onChange(e) {
-  const el = e.target, d = el.dataset, s = settings();
+  const el = e.target, d = el.dataset;
   if (!d.set) return;
+  const s = app.state ? settings() : {};
   const people = () => clone(s.people), staples = () => clone(s.staples || []);
   switch (d.set) {
     case "personName": { const p = people(); p[+d.i].name = el.value.trim() || p[+d.i].name; return send({ op: "settings", patch: { people: p } }); }
@@ -978,6 +1013,12 @@ function onSubmit(e) {
   if (!f) return;
   e.preventDefault();
   const val = (n) => (f.elements.namedItem(n) || {}).value || "";
+  if (f.dataset.form === "adminAdd") {
+    const body = { household: f.dataset.id, name: val("name").trim(), email: val("email").trim() };
+    accountCall("api/admin/member", body).then(async (res) => { await loadAccount(); showInviteResult(body.name, body.email.toLowerCase(), res.signIn); }).catch((err) => toast(err.message));
+    return;
+  }
+  if (f.dataset.form === "adminRename") { adminDo("api/admin/rename-household", { id: f.dataset.id, name: val("name").trim() }, () => toast("Renamed")); return; }
   if (f.dataset.form === "invite" || f.dataset.form === "newHousehold") { submitInvite(f.dataset.form === "newHousehold" ? "household" : "member", f); return; }
   if (f.dataset.form === "skip") { dayUpdate(+f.dataset.i, { status: "skip", note: val("note").trim() || null }); closeSheet(); return; }
   if (f.dataset.form === "price") {
@@ -1021,7 +1062,7 @@ function openAbout() {
   const where = online
     ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data${app.region === "eu" ? " in its EU data centres" : ""} and sends the sign-in codes.</p>
        <ul>
-         <li><b>About you:</b> your name, your email (to sign in), your household's name and who invited you.</li>
+         <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, and when you last used the app (so unused places can be freed up).</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you turn baby mode on, your baby's name and birth date) and recipe feedback.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
@@ -1030,7 +1071,7 @@ function openAbout() {
        <p>You can <b>download a backup</b> of your household's data any time (Settings → Your data). To have it deleted, ask the person who runs this copy.</p>`
     : ha ? `<p>Everything is stored on your own Home Assistant, and only people with a Home Assistant login can open it. Nothing is sent anywhere else. Old shopping lists are deleted after 8 weeks and meal plans after a year.</p>`
     : `<p>This is a preview. Everything is saved in this browser only.</p>`;
-  openSheet(`<p class="eyebrow">About</p><h1 class="title" style="font-size:26px">FoodIsHard</h1>
+  openSheet(`<div class="row" style="gap:14px;margin-bottom:6px"><img src="icon-192.png" alt="" width="56" height="56" style="border-radius:14px"><div><p class="eyebrow">About</p><h1 class="title" style="font-size:26px;margin:0">FoodIsHard</h1></div></div>
     <div class="stack about" style="gap:6px">
       <p>A free, personal, hobby meal planner for vegetarian households. It isn't a business or a professional service, and it comes with no guarantees: you use it at your own risk.</p>
       <h2 class="h2">Food safety: please read</h2>
@@ -1063,7 +1104,8 @@ async function loadAccount() {
     app.account = await accountCall("api/account");
     app.adminInfo = app.account.admin ? await accountCall("api/admin") : null;
   } catch (err) { app.account = { error: err.message }; }
-  if (app.tab === "settings") render();
+  if (app.tab === "admin" && app.mode !== "admin" && !(app.account && app.account.admin)) { app.tab = "settings"; history.replaceState(null, "", "#settings"); }
+  if (app.tab === "settings" || app.tab === "admin") render();
 }
 function accountSection() {
   if (app.host !== "Cloudflare") return "";
@@ -1081,23 +1123,9 @@ function accountSection() {
       <div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="acctInvite">${icon("plus", 16)}Invite someone to your household</button>
         <span class="small muted">Everyone in a household shares one plan and shopping list. They sign in with their email and a code, no password.</span></div>
     </div>`;
-  const ad = app.adminInfo;
-  if (a.admin && ad) {
-    const sync = ad.lastSync;
+  if (a.admin) {
     html += `<p class="section-label">Admin</p>
-    <div class="list">
-      <div class="row" style="padding:13px 16px"><span class="grow"><b>${ad.people} of ${ad.limits.people} people</b><br><span class="small muted">${ad.households.length} household${ad.households.length === 1 ? "" : "s"}</span></span>
-        <button class="btn sm primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
-      ${ad.households.map((h) => { const mine = h.members.some((m) => m.email === meEmail);
-        return `<div class="row" style="padding:12px 16px"><span class="grow"><b>${esc(h.name)}</b>${mine ? ` <span class="small muted">(yours)</span>` : ""}<br><span class="small muted">${h.members.map((m) => esc(m.name)).join(", ") || "Nobody"}</span></span>
-          ${mine ? "" : `<button class="icon-btn plain" data-act="adminDeleteHousehold" data-id="${esc(h.id)}" data-name="${esc(h.name)}" aria-label="Delete ${esc(h.name)}">${icon("trash", 18)}</button>`}</div>`; }).join("")}
-      <div class="stack" style="padding:13px 16px;gap:8px">
-        ${ad.manageSignIn
-          ? `<span class="small muted">Invites update the Cloudflare sign-in list automatically.${sync ? ` Last update: ${sync.ok ? "worked" : "failed"}, ${esc(sync.message || "")}` : ""}</span>
-             <button class="btn sm" style="align-self:flex-start" data-act="adminSync">Update sign-in list now</button>`
-          : `<span class="small muted">Automatic sign-in updates aren't set up, so after inviting someone, add their email to your Access policy in Cloudflare. CLOUDFLARE.md shows how to automate this.</span>`}
-      </div>
-    </div>`;
+    <div class="list"><button class="rrow" data-act="go" data-to="admin"><span class="grow"><b>Admin dashboard</b><br><span class="small muted">Everyone, every household, invites and the sign-in list</span></span><span class="muted">›</span></button></div>`;
   }
   return html;
 }
@@ -1138,6 +1166,121 @@ async function submitInvite(kind, f) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Admin dashboard (online version)
+// ---------------------------------------------------------------------------
+function ago(secs) {
+  if (!secs) return null;
+  const d = Math.max(0, Date.now() / 1000 - secs);
+  if (d < 3600) return "in the last hour";
+  if (d < 86400) return `${Math.floor(d / 3600)}h ago`;
+  if (d < 86400 * 60) return `${Math.floor(d / 86400)} day${Math.floor(d / 86400) === 1 ? "" : "s"} ago`;
+  return `${Math.floor(d / 86400 / 30)} months ago`;
+}
+function shortDate(secs) { const d = new Date(secs * 1000); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; }
+const INACTIVE_DAYS = 30;
+function memberStatus(m) {
+  if (!m.lastSeen) return "never";
+  return Date.now() / 1000 - m.lastSeen > INACTIVE_DAYS * 86400 ? "inactive" : "active";
+}
+function viewAdmin() {
+  const ad = app.adminInfo, acct = app.account;
+  const back = app.mode === "admin" ? "" : `<button class="icon-btn" data-act="go" data-to="settings" aria-label="Back to settings">${icon("left", 18)}</button>`;
+  const right = `<div class="row" style="gap:6px"><button class="icon-btn" data-act="acctReload" aria-label="Refresh">${icon("refresh", 18)}</button>${back}</div>`;
+  if (!ad) return `${header("FoodIsHard", "Admin", right, { logo: true })}<div class="list"><div class="row" style="padding:16px"><span class="muted">${acct && acct.error ? `Couldn't load: ${esc(acct.error)}` : "Loading…"}</span></div></div>`;
+  const people = ad.households.flatMap((h) => h.members.map((m) => ({ ...m, household: h })));
+  const never = people.filter((m) => memberStatus(m) === "never").length, inactive = people.filter((m) => memberStatus(m) === "inactive").length;
+  const f = app.adminFilter || "all";
+  const pct = Math.min(100, Math.round((ad.people / ad.limits.people) * 100));
+  const sync = ad.lastSync;
+  const chip = (id, label) => `<button class="chip ${f === id ? "on" : ""}" data-act="adminFilter" data-f="${id}">${label}</button>`;
+  const memberRow = (m, h) => {
+    const st = memberStatus(m);
+    if (f !== "all" && st !== f) return "";
+    const seen = st === "never" ? `<span style="color:var(--warm)">Never signed in</span>` : `Active ${ago(m.lastSeen)}`;
+    const inviter = m.addedBy && people.find((p) => p.email === m.addedBy);
+    const by = !m.addedBy || m.addedBy === "import" ? "" : ` · invited by ${inviter ? esc(inviter.name) : "an admin"}`;
+    return `<div class="row" style="padding:11px 16px" data-text="${esc(`${m.name} ${m.email} ${h.name}`.toLowerCase())}"><span class="grow"><b>${esc(m.name)}</b> <span class="small muted">${esc(m.email)}</span><br>
+      <span class="small muted">${seen} · joined ${shortDate(m.created)}${by}</span></span>
+      <button class="icon-btn sm plain" data-act="adminMember" data-email="${esc(m.email)}" aria-label="Options for ${esc(m.name)}">${icon("dots", 17)}</button></div>`;
+  };
+  const households = ad.households.map((h) => {
+    const rows = h.members.map((m) => memberRow(m, h)).join("");
+    if (f !== "all" && !rows) return "";
+    return `<section class="list" style="margin-bottom:12px" data-group-list>
+      <div class="row" style="padding:12px 16px;background:var(--sunk)" data-text="${esc(h.name.toLowerCase())}" data-name="${esc(h.name.toLowerCase())}">
+        <span class="grow"><b>${esc(h.name)}</b> <span class="small muted">${h.members.length} ${h.members.length === 1 ? "person" : "people"}</span></span>
+        <button class="icon-btn sm plain" data-act="adminAdd" data-id="${esc(h.id)}" data-name="${esc(h.name)}" aria-label="Add someone to ${esc(h.name)}">${icon("plus", 17)}</button>
+        <button class="icon-btn sm plain" data-act="adminHousehold" data-id="${esc(h.id)}" aria-label="Options for ${esc(h.name)}">${icon("dots", 17)}</button></div>
+      ${rows || `<div class="row" style="padding:11px 16px"><span class="small muted">Nobody yet</span></div>`}</section>`;
+  }).join("");
+  const own = acct && acct.household;
+  return `${header("FoodIsHard", "Admin", right, { logo: true })}
+    <div class="list" style="margin-bottom:12px">
+      <div class="stack" style="padding:14px 16px;gap:8px">
+        <div class="row between"><b>${ad.people} of ${ad.limits.people} people</b><span class="small muted">${ad.households.length} household${ad.households.length === 1 ? "" : "s"}</span></div>
+        <div style="height:8px;border-radius:4px;background:var(--sunk);overflow:hidden"><div style="height:100%;width:${pct}%;background:${pct > 85 ? "var(--warm)" : "var(--accent)"}"></div></div>
+        <span class="small muted">${never} never signed in · ${inactive} inactive for ${INACTIVE_DAYS}+ days. Free sign-in allows 50; the app stops at ${ad.limits.people}.</span>
+      </div>
+      <div class="stack" style="padding:12px 16px;gap:8px;border-top:1px solid var(--line-soft)">
+        ${ad.manageSignIn
+          ? `<span class="small muted">Sign-in list: ${sync ? `${sync.ok ? "✓" : "⚠"} ${esc(sync.message || "")} (${ago(sync.at) || "just now"})` : "not checked yet"}</span>
+             <button class="btn sm" style="align-self:flex-start" data-act="adminSync">Update sign-in list now</button>`
+          : `<span class="small" style="color:var(--warm)">Automatic sign-in updates aren't set up: add new emails to your Access policy by hand (CLOUDFLARE.md, step 6).</span>`}
+      </div>
+    </div>
+    <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
+    <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search people or households" aria-label="Search people or households" data-input="afilter" autocomplete="off"></label>
+    <div class="chips" style="margin-bottom:12px">${chip("all", "Everyone")}${chip("never", `Never signed in (${never})`)}${chip("inactive", `Inactive (${inactive})`)}</div>
+    <div id="adminList">${households || `<div class="empty">${ad.households.length ? "Nobody matches that." : "No households yet. Press <b>New household</b> to invite your first."}</div>`}</div>
+    <div class="empty" data-none hidden>Nobody matches that.</div>
+    ${own ? `<div class="list" style="margin-top:18px"><div class="stack" style="padding:14px 16px;gap:8px"><b>Your own household: ${esc(own.name)}</b>
+      <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
+      <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
+    <p class="small muted" style="text-align:center;margin-top:24px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.0</p>`;
+}
+function adminFind(email) {
+  for (const h of (app.adminInfo || { households: [] }).households) { const m = h.members.find((x) => x.email === email); if (m) return { m, h }; }
+  return null;
+}
+function openAdminMember(email) {
+  const hit = adminFind(email); if (!hit) return;
+  const { m, h } = hit, others = app.adminInfo.households.filter((x) => x.id !== h.id);
+  openSheet(`<p class="eyebrow">${esc(h.name)}</p><h1 class="title" style="font-size:26px">${esc(m.name)}</h1>
+    <p class="muted">${esc(m.email)}<br>Joined ${shortDate(m.created)} · ${m.lastSeen ? `active ${ago(m.lastSeen)}` : "never signed in"}</p>
+    <div class="stack">
+      <button class="btn" data-act="adminResend" data-email="${esc(m.email)}">${icon("copy", 16)}Copy their invite message again</button>
+      ${others.length ? `<p class="section-label" style="margin-bottom:4px">Move to another household</p><div class="list">${others.map((o) => `<button class="rrow" data-act="adminMoveTo" data-email="${esc(m.email)}" data-id="${esc(o.id)}"><span class="grow">${esc(o.name)}</span><span class="small muted">${o.members.length}</span></button>`).join("")}</div>` : ""}
+      <button class="btn" style="color:var(--warm)" data-act="adminRemove" data-email="${esc(m.email)}" data-name="${esc(m.name)}">${icon("trash", 16)}Remove ${esc(m.name)}</button>
+    </div>`);
+}
+function openAdminHousehold(id) {
+  const h = (app.adminInfo.households || []).find((x) => x.id === id); if (!h) return;
+  openSheet(`<p class="eyebrow">Household</p><h1 class="title" style="font-size:26px">${esc(h.name)}</h1>
+    <form data-form="adminRename" data-id="${esc(h.id)}" class="stack"><label><span class="small muted">Household name</span><input class="input" name="name" value="${esc(h.name)}" required></label><button class="btn">Rename</button></form>
+    <div class="stack" style="margin-top:14px">
+      <button class="btn" data-act="adminAdd" data-id="${esc(h.id)}" data-name="${esc(h.name)}">${icon("plus", 16)}Add someone to ${esc(h.name)}</button>
+      <button class="btn" style="color:var(--warm)" data-act="adminDeleteHousehold" data-id="${esc(h.id)}" data-name="${esc(h.name)}">${icon("trash", 16)}Delete household and all its data</button>
+    </div>`);
+}
+function openAdminAdd(id, name) {
+  openSheet(`<p class="eyebrow">${esc(name)}</p><h1 class="title" style="font-size:26px">Add someone</h1>
+    <p class="muted">They'll share ${esc(name)}'s plan and shopping list.</p>
+    <form data-form="adminAdd" data-id="${esc(id)}" class="stack">
+      <label><span class="small muted">Their first name</span><input class="input" name="name" required autocomplete="off"></label>
+      <label><span class="small muted">Their email (the one they'll sign in with)</span><input class="input" name="email" type="email" required autocomplete="off" inputmode="email"></label>
+      <button class="btn lg primary">Add them</button></form>`);
+}
+async function adminDo(path, body, done) {
+  try {
+    const res = await accountCall(path, body);
+    app.adminInfo = { ...app.adminInfo, ...res };
+    closeSheet(); await loadAccount();
+    if (done) done(res);
+    return res;
+  } catch (err) { toast(err.message); return null; }
+}
+
 async function importBackup(file) {
   let doc;
   try { doc = JSON.parse(await file.text()); } catch { return toast("That file isn't a FoodIsHard backup"); }
@@ -1160,6 +1303,18 @@ function confirmReplace(when) {
 }
 
 function onInput(e) {
+  if (e.target.dataset.input === "afilter") {
+    const q = e.target.value.trim().toLowerCase(), list = $("#adminList");
+    $$("[data-group-list]", list).forEach((sec) => {
+      const head = sec.firstElementChild, rows = [...sec.children].slice(1).filter((r) => r.dataset.text);
+      const headHit = !q || q.split(/\s+/).every((w) => (head.dataset.name || "").includes(w));
+      let any = false;
+      rows.forEach((r) => { const hit = !q || q.split(/\s+/).every((w) => r.dataset.text.includes(w)); r.hidden = !hit && !headHit; any = any || !r.hidden; });
+      sec.hidden = !(any || headHit);
+    });
+    const none = $("[data-none]", $("#view")); if (none) none.hidden = $$("[data-group-list]", list).some((s) => !s.hidden);
+    return;
+  }
   if (e.target.dataset.input === "sfilter") {
     const q = e.target.value.trim().toLowerCase(), body = $("#sheetBody");
     $$("[data-text]", body).forEach((el) => { el.hidden = !!q && !q.split(/\s+/).every((w) => el.dataset.text.includes(w)); });

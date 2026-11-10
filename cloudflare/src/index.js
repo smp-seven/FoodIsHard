@@ -75,9 +75,11 @@ async function identify(request, env) {
   } catch (err) {
     return page("Set-up problem", `<p>The old HOUSEHOLDS setting has a mistake: ${esc(err.message)}</p>`, 500);
   }
-  const m = await dir.whoIs(email, { admin });
-  if (!m) return page("Not set up yet", `<p>You're signed in as <b>${esc(email)}</b>, but you haven't been added to a household yet. Ask whoever invited you to add this email in FoodIsHard's Settings.</p>`, 403);
-  const who = { email, household: m.household, householdName: m.householdName, name: m.name };
+  const m = await dir.whoIs(email);
+  if (!m && !admin) return page("Not set up yet", `<p>You're signed in as <b>${esc(email)}</b>, but you haven't been added to a household yet. Ask whoever invited you to add this email in FoodIsHard's Settings.</p>`, 403);
+  // An admin who isn't in a household gets the admin dashboard only.
+  const who = m ? { email, household: m.household, householdName: m.householdName, name: m.name }
+    : { email, household: null, householdName: null, name: email.split("@")[0] };
   whoCache.set(email, { who, at: Date.now() });
   return { ...who, admin };
 }
@@ -100,6 +102,13 @@ async function api(request, env, who, url) {
   const path = url.pathname, post = request.method === "POST";
   const dir = directory(env);
   const signInInfo = () => ({ manageSignIn: !!(env.CF_API_TOKEN && env.CF_ACCOUNT_ID) });
+
+  // ---- admin-only accounts have no household data ----
+  if (!who.household) {
+    if (path === "/api/state" && !post) return json({ adminOnly: true, user: who.name, host: "Cloudflare", region: region(env), poll: POLL_SECONDS });
+    if (path === "/api/account" && !post) return json({ me: { email: who.email, name: who.name }, household: null, admin: true, ...signInInfo() });
+    if (!path.startsWith("/api/admin")) return json({ error: "This is an admin-only account, so it has no household" }, 400);
+  }
 
   // ---- the household's meal-planning data ----
   if (path === "/api/state" && !post) {
@@ -150,6 +159,37 @@ async function api(request, env, who, url) {
       whoCache.clear();
       const signIn = await syncSignIn(env);
       return json({ ...(await dir.overview()), ...signInInfo(), signIn });
+    }
+    const changed = async (extra = {}) => {
+      whoCache.clear();
+      const signIn = await syncSignIn(env);
+      return json({ ...(await dir.overview()), ...signInInfo(), signIn, ...extra });
+    };
+    if (path === "/api/admin/member" && post) {
+      await dir.addMember(who.email, await readBody(request));
+      return changed();
+    }
+    if (path === "/api/admin/move" && post) {
+      const { email, household: to } = await readBody(request);
+      await dir.moveMember(email, to);
+      whoCache.clear();
+      return json({ ...(await dir.overview()), ...signInInfo() });
+    }
+    if (path === "/api/admin/rename-household" && post) {
+      const { id, name } = await readBody(request);
+      await dir.renameHousehold(id, name);
+      whoCache.clear();
+      return json({ ...(await dir.overview()), ...signInInfo() });
+    }
+    if (path === "/api/admin/remove" && post) {
+      const { email } = await readBody(request);
+      await dir.remove(who.email, email, { admin: true });
+      return changed();
+    }
+    if (path === "/api/admin/leave" && post) {
+      const res = await dir.leave(who.email);
+      if (res.deleted) await household(env, res.deleted).wipe();
+      return changed();
     }
     if (path === "/api/admin/sync" && post) {
       const signIn = await syncSignIn(env);

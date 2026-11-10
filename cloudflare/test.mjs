@@ -182,11 +182,31 @@ await test("unchanged rev returns a tiny reply", async () => {
 });
 
 // ---------------------------------------------------------------- admin gets a household
-await test("an admin with no household gets one automatically", async () => {
+await test("an admin with no household gets the dashboard only", async () => {
   const r = await call("/api/account", { email: "admin@example.com" });
-  assert.equal(r.status, 200); assert.equal(r.body.admin, true); assert.equal(r.body.me.name, "Admin");
-  assert.equal(r.body.household.members.length, 1);
+  assert.equal(r.status, 200); assert.equal(r.body.admin, true); assert.equal(r.body.household, null);
   assert.equal(r.body.manageSignIn, false);
+  const st = await call("/api/state", { email: "admin@example.com" });
+  assert.equal(st.body.adminOnly, true); assert.ok(!st.body.state);
+  assert.equal((await call("/api/op", { email: "admin@example.com", body: { op: "settings", patch: {} } })).status, 400);
+  assert.equal((await call("/api/account/invite", { email: "admin@example.com", body: { email: "z@example.com", name: "Z" } })).status, 400);
+  assert.equal((await call("/api/admin", { email: "admin@example.com" })).status, 200);
+});
+await test("last active is recorded, at most hourly", async () => {
+  const before = (await call("/api/admin", { email: "admin@example.com" })).body.households.flatMap((h) => h.members).find((m) => m.email === "alex@example.com");
+  assert.ok(before.lastSeen > 0, "alex has used the app");
+  const dir = env.DIRECTORY.get("directory");
+  dir.sql.exec("UPDATE members SET last_seen = 100 WHERE email = ?", "alex@example.com");
+  worker.forgetWho();
+  await call("/api/state", { email: "alex@example.com" });
+  const after = dir.rows("SELECT last_seen FROM members WHERE email = ?", "alex@example.com")[0].last_seen;
+  assert.ok(after > 100, "old timestamp refreshed");
+  dir.sql.exec("UPDATE members SET last_seen = ? WHERE email = ?", after - 60, "alex@example.com");
+  worker.forgetWho();
+  await call("/api/state", { email: "alex@example.com" });
+  assert.equal(dir.rows("SELECT last_seen FROM members WHERE email = ?", "alex@example.com")[0].last_seen, after - 60, "not rewritten within the hour");
+  const never = (await call("/api/admin", { email: "admin@example.com" })).body.households.flatMap((h) => h.members).find((m) => m.email === "sam@example.com");
+  assert.ok(never.lastSeen > 0);
 });
 await test("non-admins can't use admin endpoints", async () => {
   assert.equal((await call("/api/admin", { email: "alex@example.com" })).status, 403);
@@ -213,26 +233,27 @@ await test("admin invites a new household; sign-in list updated, other rules kep
   assert.deepEqual(policyEmails(), ["admin@example.com", "jo@example.com"]);
   assert.ok(policy.include.some((x) => x.github_organization), "non-email rule kept");
   assert.equal(policy.session_duration, "730h");
-  assert.equal(r.body.households.length, 2);
+  assert.equal(r.body.households.length, 1);
+  await call("/api/admin/household", { email: "admin@example.com", body: { householdName: "The Browns", email: "bob@example.com", name: "Bob" } });
   assert.equal((await call("/api/state", { email: "jo@example.com" })).status, 200);
 });
 await test("a member invites their partner, who can then sign in to the same household", async () => {
   await call("/api/op", { email: "jo@example.com", body: { op: "settings", patch: { dislikes: "mushrooms" } } });
   const r = await call("/api/account/invite", { email: "jo@example.com", body: { email: "chris@example.com", name: "Chris" } });
   assert.equal(r.status, 200); assert.equal(r.body.signIn.ok, true);
-  assert.deepEqual(policyEmails(), ["admin@example.com", "chris@example.com", "jo@example.com"]);
+  assert.deepEqual(policyEmails(), ["admin@example.com", "bob@example.com", "chris@example.com", "jo@example.com"]);
   assert.equal((await state("chris@example.com")).settings.dislikes, "mushrooms");
 });
 await test("nobody can invite themselves into someone else's household", async () => {
   // a body naming another household is ignored: invites always go to your own
-  const adminHouse = (await call("/api/account", { email: "admin@example.com" })).body.household.id;
-  const r = await call("/api/account/invite", { email: "jo@example.com", body: { email: "pat@example.com", name: "Pat", household: adminHouse } });
+  const browns = (await call("/api/account", { email: "bob@example.com" })).body.household.id;
+  const r = await call("/api/account/invite", { email: "jo@example.com", body: { email: "pat@example.com", name: "Pat", household: browns } });
   assert.equal(r.status, 200);
   const pat = await call("/api/account", { email: "pat@example.com" });
   assert.equal(pat.body.household.id, r.body.household.id);
-  assert.notEqual(pat.body.household.id, adminHouse);
+  assert.notEqual(pat.body.household.id, browns);
   // and someone already in a household can't be pulled into another
-  const again = await call("/api/account/invite", { email: "admin@example.com", body: { email: "jo@example.com", name: "Jo" } });
+  const again = await call("/api/account/invite", { email: "bob@example.com", body: { email: "jo@example.com", name: "Jo" } });
   assert.equal(again.status, 400); assert.match(again.body.error, /already in another household/);
 });
 await test("bad invites are refused", async () => {
@@ -241,8 +262,9 @@ await test("bad invites are refused", async () => {
   assert.match((await call("/api/account/invite", { email: "jo@example.com", body: { email: "chris@example.com", name: "C" } })).body.error, /already in your household/);
 });
 await test("you can only remove people from your own household", async () => {
-  const r = await call("/api/account/remove", { email: "jo@example.com", body: { email: "admin@example.com" } });
+  const r = await call("/api/account/remove", { email: "jo@example.com", body: { email: "bob@example.com" } });
   assert.equal(r.status, 400); assert.match(r.body.error, /own household/);
+  assert.equal((await call("/api/admin/remove", { email: "jo@example.com", body: { email: "bob@example.com" } })).status, 403);
 });
 await test("removing a partner takes them off the sign-in list and locks them out", async () => {
   const r = await call("/api/account/remove", { email: "jo@example.com", body: { email: "pat@example.com" } });
@@ -251,7 +273,7 @@ await test("removing a partner takes them off the sign-in list and locks them ou
 });
 await test("the last person in a household can't be removed (admins delete households instead)", async () => {
   await call("/api/account/remove", { email: "jo@example.com", body: { email: "chris@example.com" } });
-  const r = await call("/api/account/remove", { email: "admin@example.com", body: { email: "jo@example.com" } });
+  const r = await call("/api/admin/remove", { email: "admin@example.com", body: { email: "jo@example.com" } });
   assert.equal(r.status, 400); assert.match(r.body.error, /last person/);
 });
 await test("people can rename themselves and their household", async () => {
@@ -268,14 +290,44 @@ await test("household size and site-wide limits hold", async () => {
   assert.match((await call("/api/account/invite", { email: "jo@example.com", body: { email: "lee@example.com", name: "Lee" } })).body.error, /is full/);
   Object.assign(LIMITS, saved);
 });
-await test("admin can't delete their own household; deleting another wipes its data", async () => {
+await test("admin can add, move, rename and remove across households", async () => {
   const ov = (await call("/api/admin", { email: "admin@example.com" })).body;
-  const own = ov.households.find((h) => h.members.some((m) => m.email === "admin@example.com"));
+  const browns = ov.households.find((h) => h.members.some((m) => m.email === "bob@example.com"));
   const jones = ov.households.find((h) => h.members.some((m) => m.email === "jo@example.com"));
-  assert.match((await call("/api/admin/delete-household", { email: "admin@example.com", body: { id: own.id } })).body.error, /your own/);
+  let r = await call("/api/admin/member", { email: "admin@example.com", body: { household: browns.id, email: "amy@example.com", name: "Amy" } });
+  assert.equal(r.status, 200, JSON.stringify(r.body)); assert.ok(policyEmails().includes("amy@example.com"));
+  assert.match((await call("/api/admin/member", { email: "admin@example.com", body: { household: browns.id, email: "jo@example.com", name: "Jo" } })).body.error, /already in/);
+  assert.match((await call("/api/admin/member", { email: "admin@example.com", body: { household: "nope", email: "q@example.com", name: "Q" } })).body.error, /No such household/);
+  r = await call("/api/admin/move", { email: "admin@example.com", body: { email: "amy@example.com", household: jones.id } });
+  assert.equal(r.status, 200);
+  assert.equal((await call("/api/account", { email: "amy@example.com" })).body.household.id, jones.id);
+  assert.match((await call("/api/admin/move", { email: "admin@example.com", body: { email: "bob@example.com", household: jones.id } })).body.error, /last person/);
+  r = await call("/api/admin/rename-household", { email: "admin@example.com", body: { id: browns.id, name: "Brown family" } });
+  assert.ok(r.body.households.some((h) => h.name === "Brown family"));
+  r = await call("/api/admin/remove", { email: "admin@example.com", body: { email: "amy@example.com" } });
+  assert.equal(r.status, 200); assert.ok(!policyEmails().includes("amy@example.com"));
+  assert.equal((await call("/api/state", { email: "amy@example.com" })).status, 403);
+  for (const p of ["/api/admin/member", "/api/admin/move", "/api/admin/rename-household", "/api/admin/leave"])
+    assert.equal((await call(p, { email: "jo@example.com", body: {} })).status, 403, p);
+});
+await test("an admin in a household can leave it to become admin-only", async () => {
+  await call("/api/admin/household", { email: "admin@example.com", body: { householdName: "Home", email: "admin@example.com", name: "Admin" } });
+  const home = (await call("/api/account", { email: "admin@example.com" })).body.household;
+  assert.ok(home && home.name === "Home");
+  assert.match((await call("/api/admin/delete-household", { email: "admin@example.com", body: { id: home.id } })).body.error, /your own/);
+  await call("/api/op", { email: "admin@example.com", body: { op: "settings", patch: { dislikes: "x" } } });
+  const r = await call("/api/admin/leave", { email: "admin@example.com", body: {} });
+  assert.equal(r.status, 200); assert.ok(!r.body.households.some((h) => h.id === home.id));
+  assert.equal(env.HOUSEHOLD.objects.get(home.id).ctx.storage._store.size, 0, "empty household's data wiped");
+  assert.equal((await call("/api/state", { email: "admin@example.com" })).body.adminOnly, true);
+  assert.ok(policyEmails().includes("admin@example.com"), "admins can always sign in");
+});
+await test("deleting a household wipes its data and locks its members out", async () => {
+  const ov = (await call("/api/admin", { email: "admin@example.com" })).body;
+  const jones = ov.households.find((h) => h.members.some((m) => m.email === "jo@example.com"));
   const r = await call("/api/admin/delete-household", { email: "admin@example.com", body: { id: jones.id } });
   assert.equal(r.status, 200); assert.equal(r.body.households.length, 1);
-  assert.deepEqual(policyEmails(), ["admin@example.com"]);
+  assert.deepEqual(policyEmails(), ["admin@example.com", "bob@example.com"]);
   assert.equal((await call("/api/state", { email: "jo@example.com" })).status, 403);
   assert.equal(env.HOUSEHOLD.objects.get(jones.id).ctx.storage._store.size, 0, "household data wiped");
 });
@@ -290,7 +342,7 @@ await test("sync leaves an up-to-date list alone and reports problems clearly", 
 
 // ---------------------------------------------------------------- backups, inflation, housekeeping
 await test("export from one household imports into another; junk is refused", async () => {
-  const mine = await state("admin@example.com");
+  const mine = await state("bob@example.com");
   mine.settings.dislikes = "capers";
   env = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "a@example.com": "A" } }) });
   const r = await call("/api/import", { email: "a@example.com", body: { foodishard: 1, state: mine } });

@@ -28,6 +28,7 @@ MAX_BODY = 512 * 1024
 MAX_IMPORT = 4 * 1024 * 1024
 mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("font/woff", ".woff")
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 # Only Home Assistant's Ingress proxy may talk to us. Set FOODISHARD_ALLOW_ALL=1 when running locally.
 INGRESS_PROXY = "172.30.32.2"
 ALLOW_ALL = bool(os.environ.get("FOODISHARD_ALLOW_ALL"))

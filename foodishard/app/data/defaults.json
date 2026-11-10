@@ -38,36 +38,7 @@
       "ms",
       "waitrose"
     ],
-    "staples": [
-      {
-        "id": "s1",
-        "name": "Porridge oats",
-        "amount": "1 kg bag",
-        "aisle": "dry",
-        "shop": "aldi",
-        "on": true,
-        "price": 0.89
-      },
-      {
-        "id": "s2",
-        "name": "Milk",
-        "amount": "4 pints",
-        "aisle": "dairy",
-        "shop": "aldi",
-        "on": true,
-        "price": 1.65
-      },
-      {
-        "id": "s3",
-        "name": "Yoghurts for lunch",
-        "amount": "7 pots",
-        "aisle": "dairy",
-        "shop": "aldi",
-        "on": true,
-        "price": 2.3,
-        "note": "Check flavoured ones for gelatine"
-      }
-    ],
+    "staples": [],
     "themes": {},
     "inflation": true
   },

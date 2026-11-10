@@ -175,9 +175,16 @@ If you change your team name later, update both Google URIs as well.
 
 ## Day to day
 
+**Your admin account:** an email listed in `ADMINS` that isn't in a household opens straight to the
+**admin dashboard**. It shows everyone, grouped by household, with when they joined and when they
+last used the app, plus a search box and filters for "never signed in" and "inactive". From there
+you can create households, add, move or remove people, rename or delete households, copy
+someone's invite message again, and re-sync the sign-in list. If your admin email is already in a
+household, open **Settings → Admin dashboard → Make this an admin-only account**.
+
 **Inviting a new household (admin):**
-1. In the app, go to **Settings → Admin → New household** and enter the household name, the
-   first person's name and their email.
+1. In the admin dashboard, press **New household** and enter the household name, the first
+   person's name and their email.
 2. Send them the message it gives you.
 3. They can then invite their partner themselves.
 

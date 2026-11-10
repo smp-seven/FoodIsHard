@@ -30,6 +30,9 @@ export class Directory extends DurableObject {
     this.sql.exec("CREATE TABLE IF NOT EXISTS households (id TEXT PRIMARY KEY, name TEXT NOT NULL, created INTEGER NOT NULL)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS members (email TEXT PRIMARY KEY, household TEXT NOT NULL, name TEXT NOT NULL, added_by TEXT, created INTEGER NOT NULL)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)");
+    // added in 0.9: when each person last used the app (Unix seconds, updated at most hourly)
+    const cols = this.sql.exec("PRAGMA table_info(members)").toArray().map((c) => c.name);
+    if (!cols.includes("last_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN last_seen INTEGER");
   }
 
   // ---- small helpers -------------------------------------------------------
@@ -38,7 +41,8 @@ export class Directory extends DurableObject {
   now() { return Math.floor(Date.now() / 1000); }
   member(email) { return this.row("SELECT m.email, m.name, m.household, h.name AS householdName FROM members m JOIN households h ON h.id = m.household WHERE m.email = ?", email); }
   peopleCount() { return this.row("SELECT COUNT(*) AS n FROM members").n; }
-  householdMembers(id) { return this.rows("SELECT email, name, added_by AS addedBy, created FROM members WHERE household = ? ORDER BY created, email", id); }
+  householdMembers(id) { return this.rows("SELECT email, name, added_by AS addedBy, created, last_seen AS lastSeen FROM members WHERE household = ? ORDER BY created, email", id); }
+  household(id) { return this.row("SELECT id, name FROM households WHERE id = ?", id); }
   meta(key) { const r = this.row("SELECT value FROM meta WHERE key = ?", key); return r ? r.value : null; }
   setMeta(key, value) { this.sql.exec("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", key, value); }
 
@@ -64,15 +68,15 @@ export class Directory extends DurableObject {
     return { imported: n };
   }
 
-  /** Who is this? Admins who aren't in a household yet get one, so they can use the app. */
-  whoIs(email, { admin = false } = {}) {
-    let m = this.member(email);
-    if (!m && admin) {
-      const id = newId(), first = email.split("@")[0];
-      const name = first.charAt(0).toUpperCase() + first.slice(1);
-      this.insertHousehold(id, "Home");
-      this.insertMember(email, id, name, "admin");
-      m = this.member(email);
+  /**
+   * Who is this? Returns their membership, or null. Admins don't need a household: an admin
+   * with none uses the admin dashboard only. Also records "last active", at most once an hour.
+   */
+  whoIs(email) {
+    const m = this.member(email);
+    if (m) {
+      const now = this.now();
+      this.sql.exec("UPDATE members SET last_seen = ? WHERE email = ? AND (last_seen IS NULL OR last_seen < ?)", now, email, now - 3600);
     }
     return m;
   }
@@ -116,7 +120,7 @@ export class Directory extends DurableObject {
 
   // ---- admins only (the Worker checks ADMINS before calling these) ----------
   overview() {
-    const households = this.rows("SELECT id, name, created FROM households ORDER BY created");
+    const households = this.rows("SELECT id, name, created FROM households ORDER BY name COLLATE NOCASE");
     return { households: households.map((h) => ({ ...h, members: this.householdMembers(h.id) })), people: this.peopleCount(), limits: LIMITS, lastSync: JSON.parse(this.meta("lastSync") || "null") };
   }
 
@@ -137,6 +141,50 @@ export class Directory extends DurableObject {
     this.sql.exec("DELETE FROM members WHERE household = ?", id);
     this.sql.exec("DELETE FROM households WHERE id = ?", id);
     return { deleted: id };
+  }
+
+  /** Admin: add someone to any household. */
+  addMember(byEmail, { household, email, name }) {
+    const h = this.household(String(household || ""));
+    if (!h) throw new UserError("No such household");
+    email = cleanEmail(email); name = cleanName(name);
+    const existing = this.member(email);
+    if (existing) throw new UserError(`${email} is already in ${existing.householdName}`);
+    if (this.householdMembers(h.id).length >= LIMITS.perHousehold) throw new UserError(`A household can have up to ${LIMITS.perHousehold} people`);
+    this.insertMember(email, h.id, name, byEmail);
+    return { added: email };
+  }
+
+  /** Admin: move someone to another household. */
+  moveMember(email, household) {
+    email = cleanEmail(email);
+    const m = this.member(email), h = this.household(String(household || ""));
+    if (!m) throw new UserError(`${email} isn't in a household`);
+    if (!h) throw new UserError("No such household");
+    if (m.household === h.id) throw new UserError(`${m.name} is already in ${h.name}`);
+    if (this.householdMembers(m.household).length <= 1) throw new UserError(`${m.name} is the last person in ${m.householdName}. Delete that household instead, or add someone to it first.`);
+    if (this.householdMembers(h.id).length >= LIMITS.perHousehold) throw new UserError(`A household can have up to ${LIMITS.perHousehold} people`);
+    this.sql.exec("UPDATE members SET household = ? WHERE email = ?", h.id, email);
+    return { moved: email };
+  }
+
+  /** Admin: rename any household. */
+  renameHousehold(id, name) {
+    if (!this.household(String(id || ""))) throw new UserError("No such household");
+    this.sql.exec("UPDATE households SET name = ? WHERE id = ?", cleanName(name, "household name"), id);
+    return { renamed: id };
+  }
+
+  /** Admin: stop being in a household (making this an admin-only account). Returns the household to wipe if it's now empty. */
+  leave(email) {
+    const m = this.member(email);
+    if (!m) throw new UserError("You're not in a household");
+    this.sql.exec("DELETE FROM members WHERE email = ?", email);
+    if (this.householdMembers(m.household).length === 0) {
+      this.sql.exec("DELETE FROM households WHERE id = ?", m.household);
+      return { left: m.household, deleted: m.household };
+    }
+    return { left: m.household };
   }
 
   allEmails() { return this.rows("SELECT email FROM members ORDER BY email").map((r) => r.email); }

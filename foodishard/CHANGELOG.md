@@ -83,3 +83,9 @@
 
 ## 0.8.4
 - All rights reserved licence. About page links to the privacy policy and terms on foodishard.uk.
+
+## 0.9.0
+- Online version: an admin dashboard. Admin emails that aren't in a household open straight to it. It lists everyone by household with join date, last active and who invited them, with search and filters for "never signed in" and "inactive". From it you can create households, add, move and remove people, rename or delete households, re-copy invite messages and re-sync sign-in. Last active is recorded at most once an hour, and the privacy policy says so.
+- The FoodIsHard logo is in the app, on the home screen icon and in the browser tab. Adding the app to your home screen opens it full-screen.
+- The first tab is now "Today", and Settings (a clearer cog) is at the top of every main screen. Back returns you to where you were.
+- New households start with no staples (the test porridge, milk and yoghurt are gone).
