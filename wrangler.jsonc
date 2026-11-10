@@ -12,12 +12,18 @@
     "run_worker_first": true
   },
   "durable_objects": {
-    "bindings": [{ "name": "HOUSEHOLD", "class_name": "Household" }]
+    "bindings": [
+      { "name": "HOUSEHOLD", "class_name": "Household" },
+      { "name": "DIRECTORY", "class_name": "Directory" }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Household"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Household"] },
+    { "tag": "v2", "new_sqlite_classes": ["Directory"] }
+  ],
   // weekly ONS food-price check (Mondays 06:17 UTC)
   "triggers": { "crons": ["17 6 * * 1"] },
-  // ACCESS_TEAM, ACCESS_AUD and HOUSEHOLDS are set in the dashboard; keep them on each deploy
+  // settings (ACCESS_TEAM, ACCESS_AUD, ADMINS, ...) live in the dashboard; keep them on each deploy
   "keep_vars": true,
   "workers_dev": true,
   "preview_urls": false,

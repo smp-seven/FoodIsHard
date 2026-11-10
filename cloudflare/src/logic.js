@@ -135,3 +135,53 @@ export function parseOns(doc, basePeriod) {
   if (!base) throw new Error(`base period ${basePeriod} not found`);
   return { latest: latest.date, factor: Math.round((parseFloat(latest.value) / parseFloat(base.value)) * 10000) / 10000 };
 }
+
+// ---------------------------------------------------------------------------
+// Admins and the Access sign-in list
+// ---------------------------------------------------------------------------
+
+/** ADMINS setting: comma- or space-separated emails. */
+export function parseAdmins(raw) {
+  return String(raw || "").split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter(Boolean);
+}
+
+export const DEFAULT_POLICY_NAME = "FoodIsHard people";
+
+/**
+ * Make the Access policy's email list match the directory (plus admins), so inviting someone
+ * in the app is all it takes for them to be able to sign in. Other kinds of rule in the policy
+ * are left alone. Needs CF_ACCOUNT_ID and a CF_API_TOKEN secret; without them it reports
+ * "manual" and the admin adds emails in the dashboard instead.
+ */
+export async function syncAccessPolicy(env, memberEmails, fetchImpl = fetch) {
+  if (!env.CF_API_TOKEN || !env.CF_ACCOUNT_ID) return { ok: false, manual: true, message: "Automatic sign-in updates aren't set up, so add new emails to the Access policy by hand." };
+  const emails = [...new Set([...parseAdmins(env.ADMINS), ...memberEmails.map((e) => e.toLowerCase())])].sort();
+  if (!emails.length) return { ok: false, message: "No emails to allow, so the sign-in list was left alone." };
+  const name = env.ACCESS_POLICY_NAME || DEFAULT_POLICY_NAME;
+  const base = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(env.CF_ACCOUNT_ID)}/access/policies`;
+  const headers = { Authorization: `Bearer ${env.CF_API_TOKEN}`, "Content-Type": "application/json" };
+  const call = async (url, init = {}) => {
+    const res = await fetchImpl(url, { ...init, headers });
+    let body = {};
+    try { body = await res.json(); } catch { /* not json */ }
+    if (!res.ok || body.success === false) {
+      const why = (body.errors || []).map((e) => e.message).join("; ") || `HTTP ${res.status}`;
+      throw new Error(`Cloudflare said: ${why}`);
+    }
+    return body.result;
+  };
+  try {
+    const list = await call(`${base}?per_page=100`);
+    const policy = (list || []).find((p) => p.name === name);
+    if (!policy) return { ok: false, message: `Couldn't find an Access policy called "${name}".` };
+    const others = (policy.include || []).filter((r) => !r.email);
+    const current = (policy.include || []).filter((r) => r.email).map((r) => String(r.email.email).toLowerCase()).sort();
+    if (JSON.stringify(current) === JSON.stringify(emails)) return { ok: true, changed: false, count: emails.length, message: "Sign-in list already up to date." };
+    const body = { ...policy, include: [...others, ...emails.map((email) => ({ email: { email } }))] };
+    for (const k of ["id", "created_at", "updated_at", "app_count", "reusable"]) delete body[k];
+    await call(`${base}/${encodeURIComponent(policy.id)}`, { method: "PUT", body: JSON.stringify(body) });
+    return { ok: true, changed: true, count: emails.length, message: `Sign-in list updated (${emails.length} people).` };
+  } catch (err) {
+    return { ok: false, message: String(err.message || err).slice(0, 300) };
+  }
+}

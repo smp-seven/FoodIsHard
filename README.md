@@ -34,7 +34,7 @@ in this repository.
 ## Run it online for friends (Cloudflare)
 
 For people without Home Assistant, FoodIsHard can also run on Cloudflare's free plan, with
-separate households and email sign-in. See **[CLOUDFLARE.md](CLOUDFLARE.md)** for the steps.
+separate households, email sign-in and in-app invites. See **[CLOUDFLARE.md](CLOUDFLARE.md)** for the steps.
 
 <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/smp-seven/FoodIsHard"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"></a>
 

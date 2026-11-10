@@ -41,6 +41,7 @@ async function boot() {
   window.addEventListener("hashchange", fromHash);
   fromHash();
   if (app.mode === "live") { startPolling(); flushQueue(); }
+  if (app.mode === "live" && app.host === "Cloudflare") loadAccount();
 }
 
 function hydrateIcons(root) { $$("[data-icon]", root).forEach((el) => { if (!el.firstChild) el.innerHTML = icon(el.dataset.icon, 24); }); }
@@ -337,9 +338,10 @@ function viewSettings() {
         <button class="icon-btn plain" data-act="stapleDel" data-i="${i}" aria-label="Remove">${icon("trash", 18)}</button></div></div>`).join("");
 
   return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="tonight" aria-label="Back">${icon("left", 18)}</button>`)}
-    <p class="small muted" style="margin:-6px 4px 6px">Saved on your Home Assistant, not in the app's code.</p>
+    <p class="small muted" style="margin:-6px 4px 6px">${app.host === "Cloudflare" ? "Saved privately for your household, not in the app's code." : app.mode === "live" ? "Saved on your Home Assistant, not in the app's code." : "Saved on this device only."}</p>
+    ${accountSection()}
 
-    <p class="section-label">Grown-ups</p>
+    <p class="section-label">${app.host === "Cloudflare" ? "Grown-ups (portions)" : "Grown-ups"}</p>
     <div class="list">${people}<div style="padding:12px 16px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a person</button></div></div>
 
     <p class="section-label">Baby</p>
@@ -396,7 +398,7 @@ function viewSettings() {
       <div class="row" style="padding:13px 16px"><span class="grow"><b>Restore from a backup</b><br><span class="small muted">Replaces everything here, for everyone in your household</span></span><label class="btn sm">Choose file<input type="file" accept="application/json,.json" data-set="importFile" hidden></label></div></div>
     <p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.7.0</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.8.0</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -837,6 +839,22 @@ const ACTIONS = {
   feedbackRate: (d, el) => { $$("#sheetBody [data-act=feedbackRate]").forEach((b) => b.classList.toggle("on", b === el)); app.fbRating = d.r; $("#fbSave").disabled = false; },
   feedbackTag: (d, el) => { el.classList.toggle("on"); },
   copyFeedback: () => copyText(feedbackText()),
+  acctReload: () => { app.account = null; render(); loadAccount(); },
+  acctInvite: () => openInviteForm("member"),
+  adminNewHousehold: () => openInviteForm("household"),
+  inviteCopy: () => copyText(app.inviteMsg || ""),
+  inviteShare: () => { navigator.share({ text: app.inviteMsg }).catch(() => {}); },
+  acctRemove: async (d) => {
+    if (!window.confirm(`Remove ${d.name} from your household? They won't be able to sign in any more.`)) return;
+    try { await accountCall("api/account/remove", { email: d.email }); await loadAccount(); toast(`${d.name} removed`); } catch (err) { toast(err.message); }
+  },
+  adminDeleteHousehold: async (d) => {
+    if (!window.confirm(`Delete ${d.name}? Everyone in it is signed out and all their plans, lists and settings are deleted for good. Ask them to download a backup first.`)) return;
+    try { await accountCall("api/admin/delete-household", { id: d.id }); await loadAccount(); toast(`${d.name} deleted`); } catch (err) { toast(err.message); }
+  },
+  adminSync: async () => {
+    try { const r = await accountCall("api/admin/sync", {}); await loadAccount(); toast(r.signIn.message); } catch (err) { toast(err.message); }
+  },
   exportData: () => {
     const doc = { foodishard: 1, exported: new Date().toISOString(), state: app.state };
     const blob = new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" });
@@ -935,6 +953,11 @@ function onChange(e) {
       return;
     }
     case "bool": return send({ op: "settings", patch: { [d.f]: el.checked } });
+    case "acctName": case "acctHousehold": {
+      const body = d.set === "acctName" ? { name: el.value } : { householdName: el.value };
+      accountCall("api/account/rename", body).then((a) => { app.account = { ...app.account, ...a }; toast("Saved"); if (app.account.admin) loadAccount(); }).catch((err) => toast(err.message));
+      return;
+    }
     case "importFile": { const f = el.files && el.files[0]; el.value = ""; if (f) importBackup(f); return; }
     case "theme": { const t = { ...(s.themes || {}) }; if (el.value) t[d.i] = el.value; else delete t[d.i]; return send({ op: "settings", patch: { themes: t } }); }
     case "stapleName": { const st = staples(); st[+d.i] = { ...st[+d.i], name: el.value.trim() }; delete st[+d.i].k; return send({ op: "settings", patch: { staples: st } }); }
@@ -952,6 +975,7 @@ function onSubmit(e) {
   if (!f) return;
   e.preventDefault();
   const val = (n) => (f.elements.namedItem(n) || {}).value || "";
+  if (f.dataset.form === "invite" || f.dataset.form === "newHousehold") { submitInvite(f.dataset.form === "newHousehold" ? "household" : "member", f); return; }
   if (f.dataset.form === "skip") { dayUpdate(+f.dataset.i, { status: "skip", note: val("note").trim() || null }); closeSheet(); return; }
   if (f.dataset.form === "price") {
     const price = parseFloat(val("price").replace(/[£,\s]/g, ""));
@@ -986,6 +1010,96 @@ function onSubmit(e) {
 }
 
 let searchTimer;
+// ---------------------------------------------------------------------------
+// Households and invites (online version only)
+// ---------------------------------------------------------------------------
+async function accountCall(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : { cache: "no-store" });
+  let res = {};
+  try { res = await r.json(); } catch { /* not json */ }
+  if (!r.ok) throw new Error(res.error || `Something went wrong (${r.status})`);
+  return res;
+}
+async function loadAccount() {
+  try {
+    app.account = await accountCall("api/account");
+    app.adminInfo = app.account.admin ? await accountCall("api/admin") : null;
+  } catch (err) { app.account = { error: err.message }; }
+  if (app.tab === "settings") render();
+}
+function accountSection() {
+  if (app.host !== "Cloudflare") return "";
+  const a = app.account;
+  if (!a) return `<p class="section-label">Your household</p><div class="list"><div class="row" style="padding:13px 16px"><span class="muted">Loading…</span></div></div>`;
+  if (a.error) return `<p class="section-label">Your household</p><div class="list"><div class="row" style="padding:13px 16px"><span class="grow muted">Couldn't load: ${esc(a.error)}</span><button class="btn sm" data-act="acctReload">Retry</button></div></div>`;
+  const meEmail = a.me.email;
+  const members = a.household.members.map((m) => `<div class="row" style="padding:12px 16px"><span class="grow"><b>${esc(m.name)}</b>${m.email === meEmail ? ` <span class="small muted">(you)</span>` : ""}<br><span class="small muted">${esc(m.email)}</span></span>
+      ${m.email !== meEmail ? `<button class="icon-btn plain" data-act="acctRemove" data-email="${esc(m.email)}" data-name="${esc(m.name)}" aria-label="Remove ${esc(m.name)}">${icon("trash", 18)}</button>` : ""}</div>`).join("");
+  let html = `<p class="section-label">Who's in your household</p>
+    <div class="list">
+      <div class="stack" style="padding:14px 16px;gap:8px"><label><span class="small muted">Household name</span><input class="input" value="${esc(a.household.name)}" data-set="acctHousehold"></label>
+        <label><span class="small muted">Your name (shown on ticks and notes)</span><input class="input" value="${esc(a.me.name)}" data-set="acctName"></label></div>
+      ${members}
+      <div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="acctInvite">${icon("plus", 16)}Invite someone to your household</button>
+        <span class="small muted">Everyone in a household shares one plan and shopping list. They sign in with their email and a code, no password.</span></div>
+    </div>`;
+  const ad = app.adminInfo;
+  if (a.admin && ad) {
+    const sync = ad.lastSync;
+    html += `<p class="section-label">Admin</p>
+    <div class="list">
+      <div class="row" style="padding:13px 16px"><span class="grow"><b>${ad.people} of ${ad.limits.people} people</b><br><span class="small muted">${ad.households.length} household${ad.households.length === 1 ? "" : "s"}</span></span>
+        <button class="btn sm primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
+      ${ad.households.map((h) => { const mine = h.members.some((m) => m.email === meEmail);
+        return `<div class="row" style="padding:12px 16px"><span class="grow"><b>${esc(h.name)}</b>${mine ? ` <span class="small muted">(yours)</span>` : ""}<br><span class="small muted">${h.members.map((m) => esc(m.name)).join(", ") || "Nobody"}</span></span>
+          ${mine ? "" : `<button class="icon-btn plain" data-act="adminDeleteHousehold" data-id="${esc(h.id)}" data-name="${esc(h.name)}" aria-label="Delete ${esc(h.name)}">${icon("trash", 18)}</button>`}</div>`; }).join("")}
+      <div class="stack" style="padding:13px 16px;gap:8px">
+        ${ad.manageSignIn
+          ? `<span class="small muted">Invites update the Cloudflare sign-in list automatically.${sync ? ` Last update: ${sync.ok ? "worked" : "failed"}, ${esc(sync.message || "")}` : ""}</span>
+             <button class="btn sm" style="align-self:flex-start" data-act="adminSync">Update sign-in list now</button>`
+          : `<span class="small muted">Automatic sign-in updates aren't set up, so after inviting someone, add their email to your Access policy in Cloudflare. CLOUDFLARE.md shows how to automate this.</span>`}
+      </div>
+    </div>`;
+  }
+  return html;
+}
+function openInviteForm(kind) {
+  const newHousehold = kind === "household";
+  openSheet(`<p class="eyebrow">${newHousehold ? "Admin" : esc(app.account.household.name)}</p><h1 class="title" style="font-size:26px">${newHousehold ? "Invite a new household" : "Invite someone"}</h1>
+    <p class="muted">${newHousehold ? "They'll get their own private plan and list, and can invite their partner themselves." : "They'll share your plan and shopping list."}</p>
+    <form data-form="${newHousehold ? "newHousehold" : "invite"}" class="stack">
+      ${newHousehold ? `<label><span class="small muted">Household name</span><input class="input" name="householdName" placeholder="e.g. The Smiths" required autocomplete="off"></label>` : ""}
+      <label><span class="small muted">Their first name</span><input class="input" name="name" required autocomplete="off"></label>
+      <label><span class="small muted">Their email (the one they'll sign in with)</span><input class="input" name="email" type="email" required autocomplete="off" inputmode="email"></label>
+      <button class="btn lg primary">Add them</button></form>`);
+}
+function inviteMessage(name, email) {
+  return `Hi ${name}! I've added you to FoodIsHard, our meal planner. Open ${location.origin}${location.pathname.replace(/[^/]*$/, "")} on your phone and sign in with ${email}. You'll get a 6-digit code by email. Tip: in Chrome, use ⋮ → Add to Home screen so it opens like an app.`;
+}
+function showInviteResult(name, email, signIn) {
+  const msg = inviteMessage(name, email);
+  app.inviteMsg = msg;
+  const warn = signIn && !signIn.ok
+    ? `<p class="small" style="color:var(--warm)">${signIn.manual ? (app.account && app.account.admin ? "Add their email to your Access policy in Cloudflare before they try to sign in." : "Ask whoever runs FoodIsHard to let their email sign in (it isn't automatic yet).") : `The sign-in list didn't update: ${esc(signIn.message || "")}`}</p>` : "";
+  openSheet(`<p class="eyebrow">Done</p><h1 class="title" style="font-size:26px">${esc(name)} is added</h1>${warn}
+    <p class="muted">Send them this:</p><div class="card" style="padding:14px;white-space:pre-wrap">${esc(msg)}</div>
+    <div class="row" style="gap:8px;margin-top:12px">${navigator.share ? `<button class="btn primary" data-act="inviteShare">Share</button>` : ""}<button class="btn" data-act="inviteCopy">${icon("copy", 16)}Copy</button></div>`);
+}
+async function submitInvite(kind, f) {
+  const val = (n) => ((f.elements.namedItem(n) || {}).value || "").trim();
+  const body = { name: val("name"), email: val("email") };
+  if (kind === "household") body.householdName = val("householdName");
+  const btn = f.querySelector("button"); if (btn) { btn.disabled = true; btn.textContent = "Adding…"; }
+  try {
+    const res = await accountCall(kind === "household" ? "api/admin/household" : "api/account/invite", body);
+    await loadAccount();
+    showInviteResult(body.name, body.email.toLowerCase(), res.signIn);
+  } catch (err) {
+    toast(err.message);
+    if (btn) { btn.disabled = false; btn.textContent = "Add them"; }
+  }
+}
+
 async function importBackup(file) {
   let doc;
   try { doc = JSON.parse(await file.text()); } catch { return toast("That file isn't a FoodIsHard backup"); }

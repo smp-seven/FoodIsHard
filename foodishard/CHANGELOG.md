@@ -65,3 +65,8 @@
 - New: FoodIsHard can also run online on Cloudflare's free plan for friends without Home Assistant. Each household has its own private data and people sign in with their email (see CLOUDFLARE.md).
 - New: Settings → Your data: download a backup of everything, or restore one. Backups move between the Home Assistant and online versions.
 - The app's data changes now live in one shared file (ops.js) used by both versions.
+
+## 0.8.0
+- Online version: households and invites now live in a small database instead of a settings file. Admins invite new households from Settings → Admin; anyone can invite their partner from Settings → Who's in your household. With an optional Cloudflare API token, invites and removals update the sign-in list automatically.
+- Online version: rename yourself and your household; admins can delete a household (and its data).
+- Home Assistant version: no changes beyond the version number.
