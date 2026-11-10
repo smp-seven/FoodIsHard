@@ -132,3 +132,6 @@
 ## 0.10.0
 - **Shopping through the week:** pressing **Done shopping** moves everything ticked into **Bought this week**, stamped with the day, time and who shopped. The list then shows only what's left, and its total is what's still to buy, with anything already in the trolley shown separately. Bought this week, at the bottom of the list, shows each trip with its total, the week's total so far, and **Put back** for anything filed by mistake. Untick all leaves bought items alone. The Today card shows what's left to buy.
 - **After cooking:** once today's dinner has been cooked to the last step, the Today card offers **Leave feedback** and **Again** instead of Start cooking. After rating, it shows "Cooked · you loved it".
+
+## 0.10.1
+- Online version: updates arrive faster. The app checks for a new version whenever you switch back to it, and reloads itself once the new version has downloaded. It waits if you're cooking or have a panel open. Previously the first open after an update showed the old version.
