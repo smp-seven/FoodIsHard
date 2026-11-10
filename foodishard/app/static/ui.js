@@ -116,12 +116,13 @@ function header(eyebrow, title, right = "", { logo = false } = {}) {
 function settingsButton() { return `<button class="icon-btn" data-act="go" data-to="settings" aria-label="Settings">${icon("gear")}</button>`; }
 function offlineBadge() { return app.offline ? `<span class="badge-offline">${icon("nosignal", 16)}No signal · ticks saved</span>` : ""; }
 
-function proteinTiles(r, onHero) {
+function kcalTiles(r, onHero) {
   const { adults } = household();
   return adults.map((p, idx) => `<button class="tile" data-act="macros" data-id="${r.id}" data-who="${idx}" aria-label="Full nutrition for ${esc(p.name)}">
-      <span class="k"><span>${esc(p.name)}</span><span aria-hidden="true">›</span></span><span class="v">${proteinFor(r, p.portion)} g protein</span></button>`).join("");
+      <span class="k"><span>${esc(p.name)}</span><span aria-hidden="true">›</span></span><span class="v">${kcalFor(r, p.portion).toLocaleString("en-GB")} kcal</span></button>`).join("");
 }
-function proteinShort(r) { return household().adults.map((p) => proteinFor(r, p.portion)).join(" / ") + " g"; }
+/** "765 kcal", or "765 / 610 kcal" when grown-ups' portions differ. */
+function kcalShort(r) { return [...new Set(household().adults.map((p) => kcalFor(r, p.portion).toLocaleString("en-GB")))].join(" / ") + "&nbsp;kcal"; }
 function visibleSteps(r) { const inc = kids().length > 0; return r.steps.filter((s) => inc || !s.baby); }
 /** Coloured name chips, one per child. */
 function kidChips(list = kids()) { return list.map((k) => `<span class="kid-chip" style="${kidStyle(k)}">${esc(k.name || "Baby")}</span>`).join(""); }
@@ -156,7 +157,7 @@ function viewTonight() {
       <div class="row wrap" style="gap:8px"><span class="tag">${esc(r.emergency ? "Quick meal" : family(r.family).name)}</span><span class="tag">${r.time} min</span><span class="tag">≈ ${money(cost)}</span></div>
       <h1>${esc(r.name)}</h1>
       ${headlineSwaps(r).length ? `<span class="tag" style="align-self:flex-start">Made with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}
-      <div class="tiles">${proteinTiles(r, true)}</div>
+      <div class="tiles">${kcalTiles(r, true)}</div>
       ${little.length && babyStep >= 0 ? `<div class="baby-note">${icon("baby")}<span>${kidChips(little)} ${little.length > 1 ? "portions come" : "portion comes"} out at <b>step ${babyStep + 1}</b></span></div>` : ""}
       <div class="row"><button class="btn lg white grow" data-act="cook" data-id="${r.id}">${icon("play", 18)}Start cooking</button>
       <button class="btn lg outline" data-act="quicker" data-i="${i}">${icon("bolt", 18)}Quicker</button></div>
@@ -221,7 +222,7 @@ function viewWeek() {
         <button class="icon-btn sm plain" data-act="dayMenu" data-i="${i}" aria-label="More">${icon("dots", 17)}</button></span></div>`;
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
-      <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${proteinShort(r)}</div>
+      <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${kcalShort(r)}</div>
       <div class="actions">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
         <button class="btn sm soft" data-act="swapDay" data-i="${i}">Swap</button>
@@ -337,7 +338,7 @@ function viewRecipes() {
   const row = (r) => {
     const p = prefsFor(r.id), blocked = blockedBy(r);
     return `<button class="rrow ${p.ban || blocked.length ? "off" : ""}" data-act="recipe" data-id="${r.id}"><span class="grow"><b>${esc(r.name)}</b><br>
-      <span class="small muted">${r.time} min (${r.hands || r.time} hands-on) · ${money(recipeCost(r))} a portion · ${Math.round(nutritionPerPortion(r).protein)} g protein</span>
+      <span class="small muted">${r.time} min (${r.hands || r.time} hands-on) · ${money(recipeCost(r))} a portion · ${Math.round(nutritionPerPortion(r).kcal).toLocaleString("en-GB")} kcal</span>
       ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : ""}</span>
       ${cookedIt(r.id) ? `<span class="pill accent" title="Cooked it">✓</span>` : ""}${p.fav ? `<span style="color:var(--warm)" aria-label="Favourite">♥</span>` : ""}${r.time <= 15 ? `<span class="pill warm">Quick</span>` : ""}</button>`;
   };
@@ -464,7 +465,7 @@ function viewSettings() {
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
     ${accountFooter()}
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.7</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard 0.9.8</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -521,7 +522,7 @@ function openRecipe(id, { pickDay = null, keepScroll = false } = {}) {
     ${lastFb ? `<p class="small muted" style="margin:0 0 8px">Cooked ${fb.length}× · last time: ${({ loved: "loved it", fine: "fine", never: "not again" })[lastFb.rating] || ""}${lastFb.tags.length ? ` (${esc(lastFb.tags.join(", ").toLowerCase())})` : ""}${lastFb.note ? `, "${esc(lastFb.note)}"` : ""}</p>` : ""}
     <div class="row wrap" style="gap:6px;margin-bottom:12px">${cookedIt(id) ? `<span class="pill accent">✓ Cooked it</span>` : ""}<span class="pill">${r.time} min · ${r.hands || r.time} hands-on</span><span class="pill">${money(cost)} a portion · ${money(cost * factor)} in all</span>
       ${avoid.length && !blocked.length ? `<span class="pill warm">No ${esc(avoid.join(", ").toLowerCase())}</span>` : ""}</div>
-    <div class="tiles" style="margin-bottom:12px">${household().adults.map((pp, idx) => `<button class="tile card" style="background:var(--surface)" data-act="macros" data-id="${id}" data-who="${idx}"><span class="k muted"><span>${esc(pp.name)}</span><span>›</span></span><span class="v">${proteinFor(r, pp.portion)} g protein</span></button>`).join("")}</div>
+    <div class="tiles" style="margin-bottom:12px">${household().adults.map((pp, idx) => `<button class="tile card" style="background:var(--surface)" data-act="macros" data-id="${id}" data-who="${idx}"><span class="k muted"><span>${esc(pp.name)}</span><span>›</span></span><span class="v">${kcalFor(r, pp.portion).toLocaleString("en-GB")} kcal</span></button>`).join("")}</div>
     <div class="row wrap" style="margin-bottom:6px">
       ${pickDay != null ? `<button class="btn primary" data-act="put" data-id="${id}" data-i="${pickDay}">Use for this day</button>` : `<button class="btn primary" data-act="cook" data-id="${id}">${icon("play", 16)}Cook</button>`}
       <button class="btn ${p.fav ? "primary" : ""}" data-act="pref" data-id="${id}" data-f="fav" data-v="${p.fav ? 0 : 1}">${icon("heart", 16)}${p.fav ? "Favourite" : "Favourite"}</button>
@@ -1362,7 +1363,7 @@ function viewAdmin() {
       <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
     <div style="text-align:center;margin-top:24px"><button class="btn sm" data-act="signOut">Sign out</button></div>
-    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.7</p>`;
+    <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard 0.9.8</p>`;
 }
 // ---- Recipe feedback from every household (its own screen, off the dashboard) ----
 const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };

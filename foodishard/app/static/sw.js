@@ -2,7 +2,7 @@
 // Keeps the app's own files on the phone so it opens without signal. Household data isn't
 // cached here: the app already keeps the latest plan and list on the phone, and queues
 // ticks until it's back online.
-const VERSION = "foodishard-0.9.7";
+const VERSION = "foodishard-0.9.8";
 const SHELL = [
   "./", "index.html", "style.css", "ops.js", "core.js", "ui.js",
   "data/recipes.json", "data/ingredients.json", "data/defaults.json",

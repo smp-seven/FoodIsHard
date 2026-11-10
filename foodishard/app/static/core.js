@@ -387,6 +387,7 @@ function nutritionPerPortion(r, { forBaby = false } = {}) {
   return out;
 }
 function proteinFor(r, portion) { return Math.round(nutritionPerPortion(r).protein * (+portion || 1)); }
+function kcalFor(r, portion) { return Math.round(nutritionPerPortion(r).kcal * (+portion || 1)); }
 
 // ---------------------------------------------------------------------------
 // Planning

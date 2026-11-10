@@ -122,3 +122,6 @@
 ## 0.9.7
 - Every recipe's method has been rewritten for people who don't cook much. Each starts with a **Get ready** step for the chopping, draining and slicing, and each cooking step says which pan, what heat, how long and what "done" looks like. Nothing is used before it has been prepared, for example the halved tomatoes in the halloumi couscous. Long steps are split up.
 - Cooking mode offers a timer for a step's longest wait ("stir for 1 minute, then simmer for 20" offers 20 minutes, not 1).
+
+## 0.9.8
+- Calories replace protein on the Today card, the week list, the recipe list and the recipe panel. Tap a person's figure for the full nutrition, which still includes protein and the protein goal. The week list shows one figure when everyone's portion is the same.
