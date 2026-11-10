@@ -2,6 +2,13 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.2",
+   "notes": [
+    "Weekly staples have their own card on the shopping list.",
+    "'Add item' sits next to 'Done shopping', and the buttons no longer cover the bottom of the list."
+   ]
+  },
+  {
    "version": "0.11.1",
    "notes": [
     "The 'Cooking for little ones' switch is back, in Who you cook for. Switching it off keeps their details for later.",

@@ -303,3 +303,6 @@ body.admin-only .view { padding-bottom: 32px; }
 
 /* a little one's colour as a stripe down the left, so names line up with the grown-ups' */
 .kid-stripe { box-shadow: inset 4px 0 0 var(--kid); }
+
+/* the shopping list's buttons sit over the bottom of the page: leave room for them */
+body.has-dock .view { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-inset-bottom)); }

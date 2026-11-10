@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -120,6 +120,7 @@ function render() {
   hydrateIcons(view);
   const dock = $("#dock");
   dock.hidden = app.tab !== "shop";
+  document.body.classList.toggle("has-dock", app.tab === "shop"); // leaves room so the buttons never cover the list
   if (app.tab === "shop") dock.innerHTML = dockShop();
   const left = buildList(currentWeek()).filter((i) => i.active && (!i.cupboard || i.need) && !i.done).length;
   const c = $("#shopCount"); c.hidden = !left || app.tab === "shop"; c.textContent = left;
@@ -427,7 +428,8 @@ function viewShop() {
     ${leftoverCard(toGet)}
     ${boughtSection(bought, sum(toGet))}
     ${have.length ? `<details class="fold"><summary class="section-label">Not needed this week · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
-    <button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="rack">
+    ${staplesCard()}
+    <button class="card row" style="width:100%;margin-top:12px;padding:14px 16px;text-align:left" data-act="rack">
       <span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">${unchecked ? `${unchecked} thing${unchecked === 1 ? "" : "s"} this week's dinners use ${unchecked === 1 ? "hasn't" : "haven't"} been checked` : "Mark anything running low and it goes on the list"}</span></span>
       ${unchecked ? `<span class="pill warn">Check</span>` : ""}<span aria-hidden="true">›</span></button>
     <p class="small muted" style="margin:20px 4px 0">Same list everywhere: ${compare}. Prices are estimates${inflationFactor() !== 1 ? ", adjusted for food inflation" : ""}. Tap an item to correct its price, swap it or move it to another shop. Press and hold to select several.</p>`;
@@ -494,8 +496,8 @@ function itemRow(i) {
 }
 function dockShop() {
   if (app.selecting.size) return `<div class="dock-inner"><button class="btn lg primary grow" data-act="moveSel">Move ${app.selecting.size} to another shop</button></div>`;
-  return `<div class="dock-inner"><button class="btn lg primary grow" data-act="doneShopping">Done shopping</button>
-    <button class="btn lg" style="width:54px;padding:0" data-act="addItem" aria-label="Add an item">${icon("plus")}</button></div>`;
+  return `<div class="dock-inner"><button class="btn lg grow" style="background:var(--accent-soft);color:var(--accent-dark);border-color:transparent" data-act="addItem">${icon("plus", 18)}Add item</button>
+    <button class="btn lg primary grow" data-act="doneShopping">Done shopping</button></div>`;
 }
 
 // ----- Recipes -----
@@ -603,7 +605,7 @@ function viewSettings() {
     </div>
 
     <p class="section-label">Weekly staples</p>
-    <div class="list"><button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="staples"><span class="grow"><b>Weekly staples</b><br><span class="small muted">${(s.staples || []).filter((x) => x.on && (x.name || "").trim()).length || "No"} item${(s.staples || []).filter((x) => x.on && (x.name || "").trim()).length === 1 ? "" : "s"} on every list · also in the shopping list's ⋯ menu</span></span><span aria-hidden="true">›</span></button></div>
+    <div class="list"><button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="staples"><span class="grow"><b>Weekly staples</b><br><span class="small muted">${esc(staplesSummary())}</span></span><span aria-hidden="true">›</span></button></div>
     ${catalogue}
     <p class="section-label">Your data</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Download a backup</b><br><span class="small muted">Everything: plans, prices, staples, settings and feedback, as one file</span></span><button class="btn sm" data-act="exportData">${icon("download", 16)}Save</button></div>
@@ -890,6 +892,14 @@ function openAisles({ keepScroll = false } = {}) {
       <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="-1" aria-label="Move ${esc(aisleName(id))} up" ${n === 0 ? "disabled" : ""}>${icon("up", 18)}</button>
       <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="1" aria-label="Move ${esc(aisleName(id))} down" ${n === order.length - 1 ? "disabled" : ""}>${icon("down", 18)}</button></div>`).join("")}</div>
     <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-close>Done</button>${(settings().aisleOrder || []).length ? `<button class="btn" data-act="aisleReset">Reset to usual</button>` : ""}</div>`, { keepScroll });
+}
+function staplesSummary() {
+  const on = (settings().staples || []).filter((x) => x.on && (x.name || "").trim()).map((x) => x.name.trim());
+  return on.length ? (on.length > 3 ? `${on.slice(0, 3).join(", ")} + ${on.length - 3} more` : joinNames(on)) : "None yet";
+}
+function staplesCard() {
+  return `<button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="staples">
+      <span class="grow"><b>Weekly staples</b><br><span class="small muted">${esc(staplesSummary())}</span></span><span aria-hidden="true">›</span></button>`;
 }
 /** Weekly staples: things on every list (milk, bread, lunches). A panel, opened from the shopping list's ⋯ menu or Settings. */
 function openStaples({ keepScroll = false, focusLast = false } = {}) {

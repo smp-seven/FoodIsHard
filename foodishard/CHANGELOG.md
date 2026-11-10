@@ -208,3 +208,7 @@ Fixes from a review of the new features:
 ## 0.11.1
 - **"Cooking for little ones" switch is back**, in Who you cook for, between the grown-ups and the little ones. Off leaves their portions and notes out but keeps their details ("Bo is saved but left out for now"). Switching on with nobody added opens a new little one's details.
 - **Tidier rows** in Who you cook for and Who's eating: each name sits on its own line with the details underneath, so names line up whatever their length. A little one's colour is a stripe down the left instead of a dot, and their details are shorter ("9 months · Finger foods · ¼ portion").
+
+## 0.11.2
+- **Weekly staples** have a card on the shopping list, next to the spice rack, showing what's on it ("Milk, Bread, Oats + 1 more"). The Settings row shows the same.
+- **Shopping list buttons:** "+ Add item" and "Done shopping" are side by side and the same size. The page leaves room at the bottom, so the buttons no longer cover the last lines.
