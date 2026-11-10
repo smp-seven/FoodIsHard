@@ -180,3 +180,7 @@
 - **Uses up part-packs:** when planning, each candidate dinner is scored by how it changes the week's leftovers of things that go off. Using up half a cauliflower scores well; opening a new tub for 50 g scores badly. In 300 simulated weeks, the packs-worth left over fell from about 5.1 to 3.6 a week, still within the usual variety, theme and time rules.
 - **Use up the rest:** tapping a shopping item that shows "left over" suggests up to four recipes not already planned that use it. Choosing one asks which day to put it on.
 - **Nudges instead of a tutorial:** the first-use allergy card on Today is gone. When something important isn't set (allergies not confirmed, a child without a birth date), the Settings button glows and so does the field, until it's done. Allergies can be confirmed with "No allergies in our household". The glow is still for anyone who prefers reduced motion.
+
+## 0.10.8
+- **Weekly staples** have their own panel, opened from the shopping list's ⋯ menu ("Weekly staples…") or from Settings. Adding a staple puts the cursor straight in its name.
+- **Undo shuffle** is now a button next to "Shuffle again", replacing the toast's short-lived Undo. It stays until you change something else in that week, since undoing then would lose that change.

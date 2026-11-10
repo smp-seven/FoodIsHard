@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.10.7"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.10.8"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -381,7 +381,8 @@ function viewWeek() {
       <button class="icon-btn" data-act="week" data-d="-1" aria-label="Previous week">${icon("left", 18)}</button>
       <button class="icon-btn" data-act="week" data-d="1" aria-label="Next week">${icon("right", 18)}</button>${settingsButton()}</div>`)}
     <div class="row" style="margin:0 4px 12px">
-      <button class="btn primary" data-act="shuffle">${any ? "Shuffle unlocked" : "Plan my week"}</button>
+      <button class="btn primary" style="white-space:nowrap" data-act="shuffle">${any ? (app.undoShuffle && app.undoShuffle.week === week ? "Shuffle again" : "Shuffle unlocked") : "Plan my week"}</button>
+      ${app.undoShuffle && app.undoShuffle.week === week ? `<button class="btn" style="white-space:nowrap" data-act="undoShuffle" aria-label="Undo shuffle">${icon("refresh", 16)}Undo</button>` : ""}
       ${any ? `<span class="small muted">≈ ${money(cost)} of food${settings().budget ? " · budget swaps on" : ""}</span>` : ""}
     </div>
     <div class="stack" style="gap:8px">${cards}</div>`;
@@ -560,15 +561,7 @@ function viewSettings() {
     s.budget = true; const on = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
     s.budget = keepB; app.state.swaps = keepSw; return off - on; })();
   const catalogue = `<datalist id="catalogue">${Object.values(app.ing.items).map((m) => `<option value="${esc(m.n)}">`).join("")}</datalist>`;
-  const staples = (s.staples || []).map((st, i) => `<div class="stack" style="padding:14px 16px;gap:8px">
-      <div class="row"><input class="input grow" value="${esc(st.name)}" placeholder="e.g. Milk" data-set="stapleName" data-i="${i}" aria-label="Item">
-        <label class="switch" title="On every list"><input type="checkbox" data-set="stapleOn" data-i="${i}" ${st.on ? "checked" : ""}><i></i></label></div>
-      <input class="input" value="${esc(st.amount || "")}" placeholder="Size, e.g. 1 carton (optional)" data-set="stapleAmount" data-i="${i}" aria-label="Size">
-      <div class="row wrap">
-        <span class="row" style="gap:6px"><b>£</b><input class="input" style="width:84px" inputmode="decimal" value="${st.price != null ? esc(st.price) : ""}" placeholder="each" data-set="staplePrice" data-i="${i}" aria-label="Price each"></span>
-        <div class="stepper"><button data-act="stapleCount" data-i="${i}" data-d="-1" aria-label="Fewer">−</button><span>×${+st.qty || 1}</span><button data-act="stapleCount" data-i="${i}" data-d="1" aria-label="More">+</button></div>
-        <select class="input" style="width:auto;flex:1;min-width:110px" data-set="stapleShop" data-i="${i}" aria-label="Shop">${shopOrder().map((k) => `<option value="${k}" ${(st.shop || "aldi") === k ? "selected" : ""}>${esc(shopName(k))}</option>`).join("")}</select>
-        <button class="icon-btn plain" data-act="stapleDel" data-i="${i}" aria-label="Remove">${icon("trash", 18)}</button></div></div>`).join("");
+
 
   return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="${app.prevTab || "tonight"}" aria-label="Back">${icon("left", 18)}</button>`)}
     ${updateCard()}
@@ -631,8 +624,7 @@ function viewSettings() {
     </div>
 
     <p class="section-label">Weekly staples</p>
-    <div class="list">${staples}<div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="stapleAdd">${icon("plus", 16)}Add a staple</button>
-      <span class="small muted">Breakfasts, lunches and anything you buy every week, with the price for one and how many you usually get.</span></div></div>
+    <div class="list"><button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="staples"><span class="grow"><b>Weekly staples</b><br><span class="small muted">${(s.staples || []).filter((x) => x.on && (x.name || "").trim()).length || "No"} item${(s.staples || []).filter((x) => x.on && (x.name || "").trim()).length === 1 ? "" : "s"} on every list · also in the shopping list's ⋯ menu</span></span><span aria-hidden="true">›</span></button></div>
     ${catalogue}
     <p class="section-label">Your data</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Download a backup</b><br><span class="small muted">Everything: plans, prices, staples, settings and feedback, as one file</span></span><button class="btn sm" data-act="exportData">${icon("download", 16)}Save</button></div>
@@ -908,6 +900,25 @@ function openAisles({ keepScroll = false } = {}) {
       <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="1" aria-label="Move ${esc(aisleName(id))} down" ${n === order.length - 1 ? "disabled" : ""}>${icon("down", 18)}</button></div>`).join("")}</div>
     <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-close>Done</button>${(settings().aisleOrder || []).length ? `<button class="btn" data-act="aisleReset">Reset to usual</button>` : ""}</div>`, { keepScroll });
 }
+/** Weekly staples: things on every list (milk, bread, lunches). A panel, opened from the shopping list's ⋯ menu or Settings. */
+function openStaples({ keepScroll = false, focusLast = false } = {}) {
+  const s = settings();
+  const staples = (s.staples || []).map((st, i) => `<div class="stack" style="padding:14px 16px;gap:8px">
+      <div class="row"><input class="input grow" value="${esc(st.name)}" placeholder="e.g. Milk" data-set="stapleName" data-i="${i}" aria-label="Item">
+        <label class="switch" title="On every list"><input type="checkbox" data-set="stapleOn" data-i="${i}" ${st.on ? "checked" : ""}><i></i></label></div>
+      <input class="input" value="${esc(st.amount || "")}" placeholder="Size, e.g. 1 carton (optional)" data-set="stapleAmount" data-i="${i}" aria-label="Size">
+      <div class="row wrap">
+        <span class="row" style="gap:6px"><b>£</b><input class="input" style="width:84px" inputmode="decimal" value="${st.price != null ? esc(st.price) : ""}" placeholder="each" data-set="staplePrice" data-i="${i}" aria-label="Price each"></span>
+        <div class="stepper"><button data-act="stapleCount" data-i="${i}" data-d="-1" aria-label="Fewer">−</button><span>×${+st.qty || 1}</span><button data-act="stapleCount" data-i="${i}" data-d="1" aria-label="More">+</button></div>
+        <select class="input" style="width:auto;flex:1;min-width:110px" data-set="stapleShop" data-i="${i}" aria-label="Shop">${shopOrder().map((k) => `<option value="${k}" ${(st.shop || "aldi") === k ? "selected" : ""}>${esc(shopName(k))}</option>`).join("")}</select>
+        <button class="icon-btn plain" data-act="stapleDel" data-i="${i}" aria-label="Remove">${icon("trash", 18)}</button></div></div>`).join("");
+  openSheet(`<div data-staples><h1 class="title" style="font-size:26px">Weekly staples</h1>
+    <p class="muted">Breakfasts, lunches and anything you buy every week, with the price for one and how many you usually get. Switched-on ones go on every shopping list.</p>
+    <div class="list">${staples || `<div class="row" style="padding:14px 16px"><span class="muted">Nothing yet.</span></div>`}</div>
+    <div class="row" style="gap:8px;margin-top:12px"><button class="btn" data-act="stapleAdd">${icon("plus", 16)}Add a staple</button><button class="btn primary" data-close>Done</button></div></div>`, { keepScroll });
+  if (focusLast) { const f = $$("#sheetBody [data-set=stapleName]").pop(); if (f) f.focus(); }
+}
+const staplesOpen = () => !!$("#sheetBody [data-staples]") && !$("#sheet").hidden;
 function openRack({ keepScroll = false } = {}) {
   const used = rackUsedThisWeek(currentWeek());
   const row = (m) => {
@@ -1074,15 +1085,23 @@ function printList() {
 // ---------------------------------------------------------------------------
 // Events
 // ---------------------------------------------------------------------------
-function dayUpdate(i, patch, week = app.weekStart) { const days = planFor(week); send({ op: "day", week, i, day: { ...days[i], ...patch } }); }
+function dayUpdate(i, patch, week = app.weekStart) {
+  if (app.undoShuffle && app.undoShuffle.week === week) app.undoShuffle = null; // a later change: undoing the shuffle would lose it
+  const days = planFor(week); send({ op: "day", week, i, day: { ...days[i], ...patch } }); }
 
 const ACTIONS = {
   go: (d) => { closeSheet({ navigating: true }); go(d.to); },
   week: (d) => { app.weekStart = iso(addDays(parseISO(app.weekStart), 7 * +d.d)); render(); },
   shuffle: () => {
-    const week = app.weekStart, before = clone({ days: planFor(week) });
+    const week = app.weekStart, before = clone({ days: planFor(week) }), had = before.days.some((d) => d.recipe);
     send({ op: "plan", week, plan: suggestWeek(week) });
-    toast("Here's a plan. Swap anything you don't fancy.", { undo: () => { send({ op: "plan", week, plan: before }); toast("Put back as it was"); } });
+    if (had) app.undoShuffle = { week, plan: before }; // "Undo shuffle" stays by the button until something else changes
+    render();
+    toast("Here's a plan. Swap anything you don't fancy.");
+  },
+  undoShuffle: () => {
+    const u = app.undoShuffle; if (!u) return;
+    app.undoShuffle = null; send({ op: "plan", week: u.week, plan: u.plan }); toast("Put back as it was");
   },
   toastUndo: () => { const u = app.toastUndo; app.toastUndo = null; $("#toast").hidden = true; if (u) u(); },
   recipe: (d) => openRecipe(d.id),
@@ -1235,7 +1254,7 @@ const ACTIONS = {
     toast(d.key.startsWith("s:") ? "Off the list this week" : "Moved to Not needed this week");
   },
   addCount: (d) => { const f = $("#sheetBody input[name=qty]"); const n = Math.max(1, (+f.value || 1) + +d.d); f.value = n; $("#addCountShow").textContent = n; },
-  stapleCount: (d) => { const st = clone(settings().staples || []); st[+d.i].qty = Math.max(1, (+st[+d.i].qty || 1) + +d.d); send({ op: "settings", patch: { staples: st } }); },
+  stapleCount: (d) => { const st = clone(settings().staples || []); st[+d.i].qty = Math.max(1, (+st[+d.i].qty || 1) + +d.d); send({ op: "settings", patch: { staples: st } });  openStaples({ keepScroll: true }); },
   resetPrice: (d) => { send({ op: "price", key: d.k, price: null }); closeSheet(); toast("Using the built-in estimate"); },
   removeExtra: (d) => { send({ op: "extra_remove", week: currentWeek(), id: d.id }); closeSheet(); },
   addItem: () => openAdd(),
@@ -1244,7 +1263,8 @@ const ACTIONS = {
   toggleBought: () => { app.showBought = !app.showBought; render(); },
   rateMeal: (d) => openFeedback(d.id),
   unbuy: (d) => { send({ op: "trip", week: currentWeek(), key: d.key, keys: [d.key], undo: true }); toast("Back on the list"); },
-  shopMenu: (d, el) => openMenu(el, [["copyList", "Copy the list", "copy"], ["downloadList", "Download as text", "download"], ["printList", "Print or save as PDF", "print"], ["untickAll", "Untick everything", "trash"]]),
+  staples: () => { closeMenus(); openStaples(); },
+  shopMenu: (d, el) => openMenu(el, [["staples", "Weekly staples…", "basket"], ["copyList", "Copy the list", "copy"], ["downloadList", "Download as text", "download"], ["printList", "Print or save as PDF", "print"], ["untickAll", "Untick everything", "trash"]]),
   copyList: () => { closeMenus(); copyText(listAsText(currentWeek(), { byShop: true })); },
   downloadList: () => { closeMenus(); downloadText(listAsText(currentWeek(), { byShop: true }), `shopping-${currentWeek()}.txt`); },
   printList: () => { closeMenus(); printList(); },
@@ -1289,8 +1309,8 @@ const ACTIONS = {
     if (!on.size) return toast("Keep at least one shop");
     send({ op: "settings", patch: { shops: SHOP_ORDER.filter((s) => on.has(s)) } });
   },
-  stapleAdd: () => { const staples = clone(settings().staples || []); staples.push({ id: uid(), name: "", price: null, qty: 1, shop: enabledShops()[0] || "aldi", on: true }); send({ op: "settings", patch: { staples } }); },
-  stapleDel: (d) => { const staples = clone(settings().staples || []); staples.splice(+d.i, 1); send({ op: "settings", patch: { staples } }); },
+  stapleAdd: () => { const staples = clone(settings().staples || []); staples.push({ id: uid(), name: "", price: null, qty: 1, shop: enabledShops()[0] || "aldi", on: true }); send({ op: "settings", patch: { staples } }); openStaples({ keepScroll: true, focusLast: true }); },
+  stapleDel: (d) => { const staples = clone(settings().staples || []); staples.splice(+d.i, 1); send({ op: "settings", patch: { staples } }); openStaples({ keepScroll: true }); },
 };
 
 function onClick(e) {
@@ -1330,10 +1350,10 @@ function onChange(e) {
     case "importFile": { const f = el.files && el.files[0]; el.value = ""; if (f) importBackup(f); return; }
     case "theme": { const t = { ...(s.themes || {}) }; if (el.value) t[d.i] = el.value; else delete t[d.i]; return send({ op: "settings", patch: { themes: t } }); }
     case "stapleName": { const st = staples(); st[+d.i] = { ...st[+d.i], name: el.value.trim() }; delete st[+d.i].k; return send({ op: "settings", patch: { staples: st } }); }
-    case "stapleShop": { const st = staples(); st[+d.i].shop = el.value; return send({ op: "settings", patch: { staples: st } }); }
+    case "stapleShop": { const st = staples(); st[+d.i].shop = el.value; send({ op: "settings", patch: { staples: st } }); if (staplesOpen()) openStaples({ keepScroll: true }); return; }
     case "stapleAmount": { const st = staples(); st[+d.i].amount = el.value; return send({ op: "settings", patch: { staples: st } }); }
     case "staplePrice": { const st = staples(); st[+d.i].price = el.value.trim() === "" ? null : Math.max(0, parseFloat(el.value.replace(/[£,]/g, "")) || 0); return send({ op: "settings", patch: { staples: st } }); }
-    case "stapleOn": { const st = staples(); st[+d.i].on = el.checked; return send({ op: "settings", patch: { staples: st } }); }
+    case "stapleOn": { const st = staples(); st[+d.i].on = el.checked; send({ op: "settings", patch: { staples: st } }); if (staplesOpen()) openStaples({ keepScroll: true }); return; }
     case "putDay": if (el.value !== "") { dayUpdate(+el.value, { recipe: d.id, status: "cook", note: null }); closeSheet(); toast(`${app.byId[d.id].name} added`); } return;
     default:
   }

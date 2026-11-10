@@ -2,6 +2,13 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.10.8",
+   "notes": [
+    "Weekly staples are now in the shopping list's ⋯ menu (and still reachable from Settings).",
+    "After a shuffle, an Undo button stays next to Shuffle until you change something else that week."
+   ]
+  },
+  {
    "version": "0.10.7",
    "notes": [
     "The planner now picks dinners that use up each other's part-packs: about 30% less left over each week.",
