@@ -246,3 +246,6 @@ Fixes from a review of the new features:
 
 ## 0.11.13
 - Done shopping sets ticked spice rack and cupboard items back to "Got it".
+
+## 0.11.14
+- Online: Settings → Report a problem. Reports arrive in the admin Feedback screen with the app version, device type and last error.

@@ -29,7 +29,7 @@ import { Directory } from "./directory.js";
 export { Directory };
 
 const { applyOp } = globalThis.FoodIsHardOps;
-const RECIPE_NAMES = Object.fromEntries(recipes.recipes.map((r) => [r.id, r.name]));
+const RECIPE_NAMES = { ...Object.fromEntries(recipes.recipes.map((r) => [r.id, r.name])), _problem: "Problem report" };
 const DATA = { "recipes.json": recipes, "ingredients.json": ingredients, "defaults.json": defaults };
 const POLL_SECONDS = 8; // how often open phones check for changes (keeps well inside the free tier)
 const WHO_CACHE_MS = 60_000; // remember who's who for a minute, to halve requests

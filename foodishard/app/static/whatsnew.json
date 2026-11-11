@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.14",
+   "notes": [
+    "New: Settings → Report a problem. Tell us what went wrong and it's sent with your app version and device type."
+   ]
+  },
+  {
    "version": "0.11.13",
    "notes": [
     "Spices and cupboard items you tick off are set back to \"Got it\" in the spice rack when you press Done shopping."

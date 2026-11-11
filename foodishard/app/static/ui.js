@@ -104,7 +104,10 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.13"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.14"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+// The last error on this device, sent with "Report a problem" (online version).
+window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
+window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
 
 // ---------------------------------------------------------------------------
 // Render
@@ -610,7 +613,8 @@ function viewSettings() {
     <p class="section-label">Your data</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Download a backup</b></span><button class="btn sm" data-act="exportData">${icon("download", 16)}Save</button></div>
       <div class="row" style="padding:13px 16px"><span class="grow"><b>Restore from a backup</b><br><span class="small muted">Replaces everything here, for everyone in your household</span></span><label class="btn sm">Choose file<input type="file" accept="application/json,.json" data-set="importFile" hidden></label></div></div>
-    ${app.host === "Cloudflare" ? "" : `<p class="section-label">Recipe feedback</p>
+    ${app.host === "Cloudflare" ? `<p class="section-label">Help</p>
+    <div class="list"><button class="rrow" data-act="report"><span class="grow"><b>Report a problem</b></span><span class="muted">›</span></button></div>` : `<p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>`}
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">Includes notes on allergies and babies</span></span><span class="muted">›</span></button></div>
@@ -949,6 +953,21 @@ function openFeedback(id) {
       ${app.host === "Cloudflare" ? `<span class="small muted">Your household and whoever runs FoodIsHard can see this.</span>` : ""}
       <button class="btn lg primary" id="fbSave" disabled>Save</button><button type="button" class="btn" data-close>Skip</button></form>`);
 }
+function deviceText() {
+  const ua = navigator.userAgent || "";
+  const os = /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Mac/.test(ua) ? "Mac" : /Linux/.test(ua) ? "Linux" : "Unknown";
+  const br = /Edg\//.test(ua) ? "Edge" : /Firefox|FxiOS/.test(ua) ? "Firefox" : /Chrome|CriOS/.test(ua) ? "Chrome" : /Safari/.test(ua) ? "Safari" : "Other";
+  const installed = matchMedia("(display-mode: standalone)").matches || navigator.standalone ? ", installed" : "";
+  return `${os}, ${br}${installed}`;
+}
+function reportDetails() { return `Version ${APP_VERSION} · ${deviceText()}${app.lastError ? ` · Last error: ${app.lastError}` : ""}`; }
+function openReport() {
+  openSheet(`<h1 class="title" style="font-size:26px">Report a problem</h1>
+    <form data-form="report" class="stack">
+      <textarea name="text" rows="5" maxlength="300" placeholder="What happened, and what were you doing?" required></textarea>
+      <p class="small muted">Sent with: ${esc(reportDetails())}</p>
+      <button class="btn lg primary">Send</button><button type="button" class="btn" data-close>Cancel</button></form>`);
+}
 function feedbackText() {
   const lines = ["FoodIsHard recipe feedback", ""];
   Object.entries(app.state.feedback || {}).forEach(([id, list]) => {
@@ -1188,6 +1207,7 @@ const ACTIONS = {
   feedbackTag: (d, el) => { el.classList.toggle("on"); },
   copyFeedback: () => copyText(feedbackText()),
   about: () => openAbout(),
+  report: () => openReport(),
   signInAgain: () => { location.reload(); },
   acctReload: () => { loadAccount(); toast("Refreshed"); },
   noticeDismiss: () => dismissNotice(),
@@ -1384,6 +1404,11 @@ function onSubmit(e) {
     const body = { household: f.dataset.id, name: val("name").trim(), email: val("email").trim() };
     accountCall("api/admin/member", body).then(async (res) => { await loadAccount(); showInviteResult(body.name, body.email.toLowerCase(), res.signIn); }).catch((err) => toast(err.message));
     return;
+  }
+  if (f.dataset.form === "report") {
+    const text = val("text").trim(); if (!text) return;
+    send({ op: "feedback", recipe: "_problem", rating: "problem", tags: [], note: `${text.slice(0, 300)}\n— ${reportDetails()}`.slice(0, 500) });
+    closeSheet(); toast("Sent. Thanks for letting us know"); return;
   }
   if (f.dataset.form === "addPerson") { const name = val("name").trim(); if (!name) return; const people = clone(settings().people); people.push({ id: uid(), name, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${name} added`); return; }
   if (f.dataset.form === "adminNotice") { adminDo("api/admin/notice", { text: val("text") }, () => toast("Sent")); return; }
@@ -1807,8 +1832,8 @@ function viewAdmin() {
     <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard ${APP_VERSION}</p>`;
 }
 // ---- Recipe feedback from every household (its own screen, off the dashboard) ----
-const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again" };
-const RATING_PILL = { loved: "accent", fine: "", never: "warm" };
+const RATING_LABEL = { loved: "Loved it", fine: "Fine", never: "Not again", problem: "Problem" };
+const RATING_PILL = { loved: "accent", fine: "", never: "warm", problem: "warn" };
 async function loadAdminFeedback() {
   if (app.fbLoading) return;
   app.fbLoading = true;
