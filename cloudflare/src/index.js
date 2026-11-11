@@ -193,19 +193,23 @@ async function api(request, env, who, url) {
       // Collect every household's recipe ratings. Fine at this size (45 people at most).
       const { households } = await dir.overview();
       const lists = await Promise.all(households.map((h) => household(env, h.id).feedbackList()));
-      const items = [];
+      const items = [], rated = new Set();
       households.forEach((h, i) => {
         for (const [recipe, list] of Object.entries(lists[i] || {})) {
           if (!Array.isArray(list)) continue; // one household's odd data shouldn't break the screen
           for (const f of list) {
             if (!f || typeof f !== "object") continue;
-            items.push({ household: h.name, householdId: h.id, recipe, recipeName: RECIPE_NAMES[recipe] || recipe, rating: String(f.rating || ""),
-              tags: Array.isArray(f.tags) ? f.tags.map(String) : [], note: String(f.note || ""), at: Number(f.at) || 0, by: String(f.by || "") });
+            // Recipe ratings are anonymous: no name or household leaves the household. Problem reports keep
+            // them, so the admin can follow up on a bug.
+            const problem = recipe === "_problem";
+            if (!problem) rated.add(h.id);
+            items.push({ household: problem ? h.name : "", recipe, recipeName: RECIPE_NAMES[recipe] || recipe, rating: String(f.rating || ""),
+              tags: Array.isArray(f.tags) ? f.tags.map(String) : [], note: String(f.note || ""), at: Number(f.at) || 0, by: problem ? String(f.by || "") : "" });
           }
         }
       });
       items.sort((a, b) => b.at - a.at);
-      return json({ items: items.slice(0, 3000), ...(await dir.feedbackNew(who.email)) });
+      return json({ items: items.slice(0, 3000), households: rated.size, ...(await dir.feedbackNew(who.email)) });
     }
     if (path === "/api/admin/notice" && post) {
       const { text } = await readBody(request);

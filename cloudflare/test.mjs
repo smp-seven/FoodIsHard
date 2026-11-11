@@ -378,7 +378,9 @@ await test("recipe feedback: admins see every household's, with a new count; oth
   const mine = r.items.filter((i) => i.recipe === rid.id && (i.note === "lovely" || i.rating === "never"));
   assert.equal(mine.length, 2);
   const alex = mine.find((i) => i.note === "lovely");
-  assert.equal(alex.recipeName, rid.name); assert.equal(alex.by, "Alex"); assert.deepEqual(alex.tags, ["Too spicy"]); assert.ok(alex.household);
+  assert.equal(alex.recipeName, rid.name); assert.deepEqual(alex.tags, ["Too spicy"]);
+  assert.equal(alex.by, ""); assert.equal(alex.household, ""); assert.equal(alex.householdId, undefined); // recipe ratings are anonymous
+  assert.equal(r.households, 2);
   assert.equal(r.new, 2);
   assert.equal((await c("/api/admin/feedback/seen", { email: "admin@example.com", body: {} })).body.new, 0);
   assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.feedback.new, 0);
@@ -389,7 +391,7 @@ await test("recipe feedback: admins see every household's, with a new count; oth
   let f = (await c("/api/admin", { email: "admin@example.com" })).body.feedback;
   assert.equal(f.problems, 1); const recipesNew = f.new;
   const rep = (await c("/api/admin/feedback", { email: "admin@example.com" })).body.items.find((i) => i.recipe === "_problem");
-  assert.equal(rep.recipeName, "Problem report"); assert.equal(rep.note, "list froze");
+  assert.equal(rep.recipeName, "Problem report"); assert.equal(rep.note, "list froze"); assert.equal(rep.by, "Alex"); assert.ok(rep.household); // reports keep names
   f = (await c("/api/admin/feedback/seen", { email: "admin@example.com", body: { kind: "problems" } })).body;
   assert.equal(f.problems, 0); assert.equal(f.new, recipesNew);
 });

@@ -104,7 +104,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.21"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.22"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1461,7 +1461,7 @@ function openAbout() {
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), and whether you've read the latest message from the host.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, their names and birth dates) and recipe feedback.</li>
-         <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard, with your household's name and your first name, so they can improve the recipes. Nothing else of your household's is shown to them in the app.</li>
+         <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard anonymously, without your name or household, so they can improve the recipes. <b>Problem reports</b> include your household's name and first name so they can follow up. Nothing else of your household's is shown to them in the app.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
        </ul>
@@ -1880,13 +1880,13 @@ function viewAdminFeedback() {
   if (!fb) { loadAdminFeedback(); return `${head}<div class="list"><div class="row" style="padding:16px"><span class="muted">Loading…</span></div></div>`; }
   if (fb.error) return `${head}<div class="list"><div class="row" style="padding:16px"><span class="grow muted">Couldn't load: ${esc(fb.error)}</span><button class="btn sm" data-act="fbReload">Retry</button></div></div>`;
   const all = fbOfKind(), items = problems ? all : fbFiltered(), f = app.fbFilter || "all", g = problems ? "latest" : app.fbGroup || "latest";
-  const homes = new Set(all.map((i) => i.householdId)).size, recipesRated = new Set(all.map((i) => i.recipe)).size;
+  const homes = fb.households || 0, recipesRated = new Set(all.map((i) => i.recipe)).size;
   const fresh = all.filter((i) => i.at > fb.prevSeen).length;
   const count = (fn) => all.filter(fn).length;
   const chip = (id, label, n) => `<button class="chip ${f === id ? "on" : ""}" data-act="fbFilter" data-f="${id}">${label}${n != null ? ` (${n})` : ""}</button>`;
   const entry = (i, showRecipe) => `<div class="row" style="padding:11px 16px;align-items:flex-start" data-text="${esc(`${i.recipeName} ${i.household} ${i.by} ${i.note} ${i.tags.join(" ")}`.toLowerCase())}">
       <span class="grow">${showRecipe ? `<b>${esc(i.recipeName)}</b> ` : ""}<span class="pill ${RATING_PILL[i.rating] || ""}">${esc(RATING_LABEL[i.rating] || i.rating)}</span>${i.at > fb.prevSeen ? ` <span class="pill warn">New</span>` : ""}<br>
-      <span class="small muted">${esc(i.household)}${i.by ? ` · ${esc(i.by)}` : ""} · ${i.at ? `${shortDate(i.at)} (${ago(i.at)})` : "date unknown"}</span>
+      <span class="small muted">${[i.household, i.by].filter(Boolean).map(esc).join(" · ")}${i.household || i.by ? " · " : ""}${i.at ? `${shortDate(i.at)} (${ago(i.at)})` : "date unknown"}</span>
       ${i.tags.length ? `<br><span class="small">${i.tags.map(esc).join(" · ")}</span>` : ""}
       ${i.note ? `<br><span style="font-style:italic">“${esc(i.note)}”</span>` : ""}</span></div>`;
   let body;
@@ -1910,11 +1910,11 @@ function viewAdminFeedback() {
   return `${head}
     <div class="list" style="margin-bottom:12px"><div class="stack" style="padding:14px 16px;gap:8px">
       <b>${all.length} rating${all.length === 1 ? "" : "s"} of ${recipesRated} recipe${recipesRated === 1 ? "" : "s"}, from ${homes} household${homes === 1 ? "" : "s"}</b>
-      <span class="small muted">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."} Names are left out of the copy.</span>
+      <span class="small muted">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."} Ratings are anonymous.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="fbCopy" ${items.length ? "" : "disabled"}>${icon("copy", 16)}Copy ${f === "all" ? "all" : "these"} for Claude</button>
     </div></div>
     <div class="seg" style="margin-bottom:10px"><button class="${g === "latest" ? "on" : ""}" data-act="fbGroup" data-g="latest">Latest first</button><button class="${g === "recipe" ? "on" : ""}" data-act="fbGroup" data-g="recipe">By recipe</button></div>
-    <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search recipes, households or notes" aria-label="Search feedback" data-input="ffilter" autocomplete="off"></label>
+    <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search recipes or notes" aria-label="Search feedback" data-input="ffilter" autocomplete="off"></label>
     <div class="chips" style="margin-bottom:12px">${chip("all", "All")}${chip("new", "New", fresh)}${chip("notes", "With comments", count((i) => i.note || i.tags.length))}${chip("never", "Not again", count((i) => i.rating === "never"))}${count((i) => i.tags.some((t) => t.startsWith("Little ones"))) ? chip("kids", "Little ones", count((i) => i.tags.some((t) => t.startsWith("Little ones")))) : ""}</div>
     <div id="adminList">${body}</div>
     <div class="empty" data-none hidden>Nothing matches that.</div>`;
@@ -1929,12 +1929,10 @@ function problemsText() {
 function adminFeedbackText() {
   const groups = new Map();
   fbFiltered().forEach((i) => { if (!groups.has(i.recipe)) groups.set(i.recipe, { name: i.recipeName, list: [] }); groups.get(i.recipe).list.push(i); });
-  const homes = new Map(); let n = 0;
-  const label = (id) => { if (!homes.has(id)) homes.set(id, `household ${String.fromCharCode(65 + (n++ % 26))}`); return homes.get(id); };
-  const lines = ["FoodIsHard recipe feedback from all households (names left out)", ""];
+  const lines = ["FoodIsHard recipe feedback from all households (anonymous)", ""];
   for (const [id, { name, list }] of groups) {
     lines.push(`${name} (${id})`);
-    list.slice().sort((a, b) => a.at - b.at).forEach((f) => lines.push(`- ${f.at ? new Date(f.at * 1000).toISOString().slice(0, 10) : "?"} ${label(f.householdId)}: ${f.rating}${f.tags.length ? ` [${f.tags.join(", ")}]` : ""}${f.note ? `: ${f.note}` : ""}`));
+    list.slice().sort((a, b) => a.at - b.at).forEach((f) => lines.push(`- ${f.at ? new Date(f.at * 1000).toISOString().slice(0, 10) : "?"} ${f.rating}${f.tags.length ? ` [${f.tags.join(", ")}]` : ""}${f.note ? `: ${f.note}` : ""}`));
     lines.push("");
   }
   return lines.length > 2 ? lines.join("\n") : "No feedback yet.";

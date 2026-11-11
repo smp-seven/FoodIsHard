@@ -267,3 +267,6 @@ Fixes from a review of the new features:
 
 ## 0.11.21
 - New app icon and logo: the steaming bowl, now with a sweat drop.
+
+## 0.11.22
+- Recipe ratings are anonymous in the admin Feedback screen and its copy. Problem reports keep the name so the admin can follow up. Privacy wording updated.
