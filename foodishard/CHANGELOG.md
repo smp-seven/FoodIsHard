@@ -279,3 +279,6 @@ Fixes from a review of the new features:
 
 ## 0.11.25
 - Admin: problem reports can be deleted (bin button on each report).
+
+## 0.11.26
+- A few small surprises.

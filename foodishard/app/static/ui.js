@@ -54,6 +54,7 @@ async function boot() {
   window.addEventListener("hashchange", fromHash);
   fromHash();
   backGuard();
+  nightOwl();
   if (app.mode === "live") { startPolling(); flushQueue(); }
   if (app.mode === "live" && app.host === "Cloudflare" && !app.offline && !app.signedOut) {
     loadAccount(); loadNotice();
@@ -105,7 +106,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.25"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.26"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -662,6 +663,13 @@ window.addEventListener("popstate", (e) => {
    page used to land there ("Your code session is no longer available"), which looks like being signed out. So the app
    keeps one extra step at its start: the first Back stays in the app with a hint, a second Back leaves.
    Installed (home-screen) apps start fresh with no sign-in page behind them, so they're left alone. */
+/** Opened between 1am and 4am (night feeds): a quiet nod, once a night. */
+function nightOwl() {
+  const now = new Date(), h = now.getHours(), night = now.toDateString();
+  if (h < 1 || h > 3 || load("fihNight", "") === night) return;
+  store("fihNight", night);
+  setTimeout(() => toast("Planning dinner at this hour? Respect."), 1500);
+}
 function backGuard() {
   if (app.host !== "Cloudflare" || matchMedia("(display-mode: standalone)").matches || navigator.standalone) return;
   try { if (sessionStorage.getItem("fihGuard")) return; sessionStorage.setItem("fihGuard", "1"); } catch { return; } // once per tab, not on every reload
@@ -1138,7 +1146,8 @@ const ACTIONS = {
     send({ op: "plan", week, plan: suggestWeek(week) });
     if (had) app.undoShuffle = { week, plan: before, after: JSON.stringify(planFor(week)) }; // "Undo" stays until the week changes again
     render();
-    toast("Here's a plan");
+    const now = Date.now(); app.shuffles = now - (app.lastShuffle || 0) < 60000 ? (app.shuffles || 0) + 1 : 1; app.lastShuffle = now;
+    toast(app.shuffles === 10 ? "Can't decide? Honestly, same." : "Here's a plan"); // a little joke for the truly indecisive
   },
   undoShuffle: () => {
     const u = app.undoShuffle; if (!u) return;
@@ -1457,6 +1466,10 @@ function onSubmit(e) {
     if (app.fbRating === "never") send({ op: "pref", recipe: f.dataset.id, patch: { ban: true } }, { rerender: false });
     closeSheet(); render();
     toast(app.fbRating === "never" ? "Won't suggest that again. It's under Recipes → Hidden." : "Saved");
+    if (app.fbRating === "never") { // a third "Not again" within a few hours gets a sympathetic nod
+      const recent = load("fihNever", []).filter((t) => Date.now() - t < 4 * 3600e3).concat(Date.now()); store("fihNever", recent);
+      if (recent.length === 3) setTimeout(() => toast("Tough crowd tonight."), 2600);
+    }
     return;
   }
   if (f.dataset.form === "manual") {
