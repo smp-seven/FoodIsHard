@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.3"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -251,11 +251,11 @@ function openEating(week, i, { keepScroll = false } = {}) {
         <span class="switch"><input type="checkbox" data-act="eatingWho" data-week="${week}" data-i="${i}" data-k="${esc(w.key)}" ${away.has(w.key) ? "" : "checked"} aria-label="${esc(w.name)} eating"><i></i></span></label>`).join("")}
       <div class="row between" style="padding:12px 16px;border-top:1px solid var(--line-soft)"><span><b>Guests</b><br><span class="small muted">Regular portions</span></span>
         <div class="stepper"><button data-act="eatingGuests" data-week="${week}" data-i="${i}" data-d="-1" aria-label="One fewer guest" ${guests <= 0 ? "disabled" : ""}>−</button><span>${guests}</span><button data-act="eatingGuests" data-week="${week}" data-i="${i}" data-d="1" aria-label="One more guest">+</button></div></div>
-      <div class="row between" style="padding:14px 16px;border-top:1px solid var(--line-soft)"><span><b>Cook double</b><br><span class="small muted">${next && !next.locked && next.status !== "skip" ? `Twice the amounts, and ${DOW_LONG[mondayIndex(addDays(date, 1))]} becomes leftovers${nextR && !d.double ? ` instead of ${esc(nextR.name.toLowerCase())}` : ""}` : "Twice the amounts, for leftovers"}</span></span>
+      <div class="row between" style="padding:14px 16px;border-top:1px solid var(--line-soft)"><span><b>Cook double</b>${next && !next.locked && next.status !== "skip" ? `<br><span class="small muted">${DOW_LONG[mondayIndex(addDays(date, 1))]} becomes leftovers${nextR && !d.double ? ` instead of ${esc(nextR.name.toLowerCase())}` : ""}</span>` : ""}</span>
         <label class="switch"><input type="checkbox" data-act="eatingDouble" data-week="${week}" data-i="${i}" ${d.double ? "checked" : ""} aria-label="Cook double"><i></i></label></div>
-      ${next && (next.locked || next.status === "skip") && !d.double ? `<div class="small muted" style="padding:0 16px 12px">${DOW_LONG[mondayIndex(addDays(date, 1))]} is ${next.status === "skip" ? "a night off" : "locked"}, so it stays as it is: the extra will keep for lunch or another night.</div>` : ""}
+      ${next && (next.locked || next.status === "skip") && !d.double ? `<div class="small muted" style="padding:0 16px 12px">${DOW_LONG[mondayIndex(addDays(date, 1))]} stays ${next.status === "skip" ? "a night off" : "locked"}.</div>` : ""}
     </div>
-    <p class="small muted">Cooking ${niceNumber(dayFactor(d))} portions that night. The shopping list and the recipe's amounts follow this.</p>
+    <p class="small muted">Cooking ${niceNumber(dayFactor(d))} portions that night.</p>
     <button class="btn lg primary" data-close>Done</button>`, { keepScroll });
 }
 /** "Start by 17:25", from the household's usual dinner time and the recipe's total time. */
@@ -307,8 +307,8 @@ function viewTonight() {
       ${d.status === "leftovers" ? `<p style="margin:0;opacity:.9">Reheat until steaming hot all the way through, and only once.${(() => { const src = d.from != null && planFor(week)[d.from], sr = src && src.recipe && app.byId[src.recipe]; return sr && hasGrains(sr) ? " It has rice or couscous, so it should have gone in the fridge within an hour and be eaten within a day." : ""; })()}</p>` : ""}
       <div class="row"><button class="btn white" data-act="status" data-i="${i}" data-s="cook">Cook something after all</button></div></section>`;
   } else {
-    hero = `<section class="card empty"><p class="h2">Nothing planned tonight</p><p>Plan the week, or grab a quick one.</p>
-      <div class="row" style="justify-content:center"><button class="btn primary" data-act="go" data-to="week">Plan the week</button><button class="btn" data-act="emergency" data-i="${i}">${icon("bolt", 18)}Something quick</button></div></section>`;
+    hero = `<section class="card empty"><p class="h2">Nothing planned tonight</p>
+      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" data-act="go" data-to="week">Plan the week</button><button class="btn" data-act="emergency" data-i="${i}">${icon("bolt", 18)}Something quick</button></div></section>`;
   }
 
   // the next four days, which may run into next week
@@ -330,13 +330,13 @@ function viewTonight() {
   const growing = babySuggestions().filter((x) => !x.info);
   const growNames = joinNames([...new Set(growing.map((x) => x.name))]);
   return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
-    ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(growNames)} ${growing.length && new Set(growing.map((x) => x.kid)).size > 1 ? "are" : "is"} growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals. Tap to review.</span></span><span class="muted">›</span></button>` : ""}
+    ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(growNames)} ${growing.length && new Set(growing.map((x) => x.kid)).size > 1 ? "are" : "is"} growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals</span></span><span class="muted">›</span></button>` : ""}
     ${hero}
     <div class="row between" style="margin:22px 4px 10px"><h2 class="h2">Coming up</h2><button class="btn sm ghost" data-act="go" data-to="week">See the week</button></div>
     <div class="list week-mini">${upcoming.join("")}</div>
     <button class="card row" style="width:100%;margin-top:14px;padding:14px 16px;text-align:left" data-act="go" data-to="shop">
       <span class="icon-btn on" style="border-radius:14px">${icon("basket")}</span>
-      <span class="grow"><b>${left ? `${left} thing${left === 1 ? "" : "s"} to buy` : "Shopping's done"}</b><br><span class="small muted">${left ? `≈ ${money(leftCost)} left to buy` : `≈ ${money(total)} this week`}</span></span>
+      <span class="grow"><b>${left ? `${left} thing${left === 1 ? "" : "s"} to buy` : "Shopping's done"}</b><br><span class="small muted">${left ? `≈ ${money(leftCost)} left` : `≈ ${money(total)} this week`}</span></span>
       <span style="color:var(--accent);font-weight:700">Open</span></button>`;
 }
 
@@ -352,7 +352,7 @@ function viewWeek() {
     const date = addDays(start, i), isToday = iso(date) === todayISO;
     const r = d.recipe && app.byId[d.recipe], theme = themeFor(week, i);
     const dateCol = `<div><div class="dow">${DOW[mondayIndex(date)].toUpperCase()}</div><div class="dom">${date.getDate()}</div></div>`;
-    if (d.status === "skip") return `<article class="day off">${dateCol}<div class="row between"><span><b>Skipped${d.note ? ` · ${esc(d.note)}` : ""}</b><br><span class="small muted">Not on the shopping list</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Undo</button></div></article>`;
+    if (d.status === "skip") return `<article class="day off">${dateCol}<div class="row between"><span><b>Skipped${d.note ? ` · ${esc(d.note)}` : ""}</b></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Undo</button></div></article>`;
     if (d.status === "leftovers") return `<article class="day off">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">${leftoversFrom(days, d)}</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
     if (!r) return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${theme ? `<div class="fam">${esc(theme.name)}</div>` : ""}
       <button class="name" style="font-family:var(--sans);font-size:15px;color:var(--muted)" data-act="pick" data-i="${i}">+ Choose a dinner</button>
@@ -398,7 +398,7 @@ function shopData() {
 }
 function viewShop() {
   const { week, all, toGet, tabs, shown, bought } = shopData();
-  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}<div class="card empty"><p>Plan some dinners and the list builds itself.</p><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>`;
+  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}<div class="card empty"><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>`;
   const done = shown.filter((i) => i.done).length;
   const sel = app.selecting.size;
   const title = sel ? `${sel} selected` : app.shopTab === "all" ? "Shopping list" : `At ${esc(shopName(app.shopTab, false))}`;
@@ -424,22 +424,21 @@ function viewShop() {
       <div class="progress"><i style="width:${shown.length ? Math.round(done / shown.length * 100) : 0}%"></i></div>
       ${tabs.length > 1 ? `<div class="shop-tabs"><button class="chip ${app.shopTab === "all" ? "on" : ""}" data-act="shopTab" data-s="all">All · ${toGet.filter((i) => !i.done).length}</button>${tabs.map((t) => `<button class="chip ${app.shopTab === t.s ? "on" : ""}" data-act="shopTab" data-s="${t.s}">${esc(shopName(t.s))} · ${t.n}</button>`).join("")}</div>` : ""}
     </div>
-    ${body || `<div class="card empty"><p><b>Everything's bought.</b> Nice work!</p><p class="small muted">Anything you add, or dinners you plan, shows up here.</p></div>`}
+    ${body || `<div class="card empty"><p><b>Everything's bought.</b> Nice work!</p></div>`}
     ${leftoverCard(toGet)}
     ${boughtSection(bought, sum(toGet))}
     ${have.length ? `<details class="fold"><summary class="section-label">Not needed this week · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
     ${staplesCard()}
     <button class="card row" style="width:100%;margin-top:12px;padding:14px 16px;text-align:left" data-act="rack">
-      <span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">${unchecked ? `${unchecked} thing${unchecked === 1 ? "" : "s"} this week's dinners use ${unchecked === 1 ? "hasn't" : "haven't"} been checked` : "Mark anything running low and it goes on the list"}</span></span>
+      <span class="grow"><b>Spice rack &amp; cupboard</b>${unchecked ? `<br><span class="small muted">${unchecked} to check for this week's dinners</span>` : ""}</span>
       ${unchecked ? `<span class="pill warn">Check</span>` : ""}<span aria-hidden="true">›</span></button>
-    <p class="small muted" style="margin:20px 4px 0">Same list everywhere: ${compare}. Prices are estimates${inflationFactor() !== 1 ? ", adjusted for food inflation" : ""}. Tap an item to correct its price, swap it or move it to another shop. Press and hold to select several.</p>`;
+    <p class="small muted" style="margin:20px 4px 0">Same list everywhere: ${compare}. Prices are estimates. Tap an item to fix its price or swap it; hold to select several.</p>`;
 }
 /** "Left over this week": the part-packs in one calm card, instead of a note on every line. Tap for ideas to use them up. */
 function leftoverCard(items) {
   const left = items.filter((i) => i.leftover && !i.have);
   if (!left.length) return "";
-  return `<p class="section-label">Left over this week</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${useUpIdeas(i).length ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>
-    <p class="small muted" style="margin:6px 4px 0">Things that go off within days. "Ideas" shows recipes that use the rest without opening more.</p>`;
+  return `<p class="section-label">Left over this week</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${useUpIdeas(i).length ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>`;
 }
 /** "Bought this week": each Done shopping trip, with its total and the week's running total. */
 function boughtSection(bought, stillToBuy) {
@@ -461,7 +460,7 @@ function boughtSection(bought, stillToBuy) {
   return `<button class="card row" style="width:100%;margin-top:16px;padding:14px 16px;text-align:left" data-act="toggleBought" aria-expanded="${open ? "true" : "false"}">
       <span class="grow"><b>Bought this week</b><br><span class="small muted">${bought.length} thing${bought.length === 1 ? "" : "s"} · ≈ ${money(spent)} so far · ≈ ${money(spent + stillToBuy)} for the week</span></span>
       <span aria-hidden="true" style="transform:rotate(${open ? 90 : 0}deg);transition:transform .15s">›</span></button>
-    ${open ? `<div>${tripsHtml}<p class="small muted" style="margin:10px 4px 0">≈ ${money(spent)} bought + ≈ ${money(stillToBuy)} still on the list = ≈ ${money(spent + stillToBuy)} this week. Estimates, from the prices in the app.</p></div>` : ""}`;
+    ${open ? `<div>${tripsHtml}<p class="small muted" style="margin:10px 4px 0">≈ ${money(spent)} bought + ≈ ${money(stillToBuy)} still on the list = ≈ ${money(spent + stillToBuy)} this week.</p></div>` : ""}`;
 }
 function itemRow(i) {
   const chips = [];
@@ -554,9 +553,9 @@ function viewSettings() {
   const shopsOn = s.shops || SHOP_ORDER;
   const avoid = s.avoid || [];
   const inf = app.state.inflation || {};
-  const infLine = s.inflation === false ? "Off: prices stay at the built-in estimates."
-    : inf.factor ? `Food prices ${inf.factor >= 1 ? "up" : "down"} ${Math.abs((inf.factor - 1) * 100).toFixed(1)}% since ${esc(inf.base || "")} (ONS, latest ${esc(inf.latest || "")}).${inf.error ? " Last check failed, so this is the previous figure." : ""}`
-    : inf.error ? "Couldn't reach the ONS yet. It'll try again later." : app.mode === "live" ? "Checks the ONS food price index once a week." : "Runs on your Home Assistant, not in the preview.";
+  const infLine = s.inflation === false ? ""
+    : inf.factor ? `Food prices ${inf.factor >= 1 ? "up" : "down"} ${Math.abs((inf.factor - 1) * 100).toFixed(1)}% since ${esc(inf.base || "")} (ONS, latest ${esc(inf.latest || "")}).${inf.error ? " Last check failed." : ""}`
+    : inf.error ? "Couldn't reach the ONS yet." : app.mode === "live" ? "ONS food price index, checked weekly" : "Not in the preview";
   const saving = (() => { const keepB = s.budget, keepSw = app.state.swaps; s.budget = false; app.state.swaps = {};
     const off = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
     s.budget = true; const on = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
@@ -566,7 +565,6 @@ function viewSettings() {
 
   return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="${app.prevTab || "tonight"}" aria-label="Back">${icon("left", 18)}</button>`)}
     ${updateCard()}
-    <p class="small muted" style="margin:-6px 4px 6px">${app.host === "Cloudflare" ? "Saved privately for your household, not in the app's code." : app.mode === "live" ? "Saved on your Home Assistant, not in the app's code." : "Saved on this device only."}</p>
     ${accountSection()}
 
     ${whoYouCookFor()}
@@ -577,14 +575,14 @@ function viewSettings() {
         <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
         <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.</span>
         ${nudges().includes("allergies") ? `<button class="btn sm" style="align-self:flex-start" data-act="allergyDone">No allergies in our household</button>` : ""}</div>
-      <div class="stack" style="padding:14px 16px;gap:8px"><b>Dislikes</b><input class="input" value="${esc(s.dislikes || "")}" placeholder="e.g. mushroom, feta" data-set="text" data-f="dislikes"><span class="small muted">Separate with commas.</span></div>
-      <div class="stack" style="padding:14px 16px 8px;gap:4px"><b>Theme nights</b><span class="small muted">Optional. Days without a theme stay random.</span></div>
+      <div class="stack" style="padding:14px 16px;gap:8px"><b>Dislikes</b><input class="input" value="${esc(s.dislikes || "")}" placeholder="e.g. mushroom, feta" data-set="text" data-f="dislikes"></div>
+      <div class="stack" style="padding:14px 16px 8px;gap:4px"><b>Theme nights</b></div>
       <div style="padding-bottom:8px">${themeRows}</div>
       <div class="stack" style="padding:14px 16px;gap:10px">
-        <label><span class="small muted">Usual dinner time (the Today card says when to start)</span><input class="input" type="time" value="${esc(s.dinnerTime || "")}" data-set="text" data-f="dinnerTime"></label>
+        <label><span class="small muted">Usual dinner time</span><input class="input" type="time" value="${esc(s.dinnerTime || "")}" data-set="text" data-f="dinnerTime"></label>
         <label><span class="small muted">Weeknight time limit</span><select class="input" data-set="num" data-f="weeknightMax">${[20, 30, 40, 50, 60].map((m) => `<option value="${m}" ${+s.weeknightMax === m ? "selected" : ""}>${m} minutes</option>`).join("")}</select></label>
         <label><span class="small muted">Weekend time limit</span><select class="input" data-set="num" data-f="weekendMax">${[40, 60, 90, 120].map((m) => `<option value="${m}" ${+s.weekendMax === m ? "selected" : ""}>${m} minutes</option>`).join("")}</select></label>
-        <label><span class="small muted">Week starts on (the day after your big shop)</span><select class="input" data-set="num" data-f="weekStartDay">${DOW_LONG.map((d, i) => `<option value="${i}" ${(+s.weekStartDay || 0) === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
+        <label><span class="small muted">Week starts on</span><select class="input" data-set="num" data-f="weekStartDay">${DOW_LONG.map((d, i) => `<option value="${i}" ${(+s.weekStartDay || 0) === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
       </div>
       <div class="stack" style="padding:14px 16px;gap:4px"><b>Always</b><span class="small muted">Nothing from a dead animal: no meat, fish, gelatine, anchovy (so no Worcestershire), cochineal (E120) or animal rennet (so no Parmesan or Grana Padano). Free-range eggs, cheese with the V symbol.</span></div>
     </div>
@@ -595,25 +593,25 @@ function viewSettings() {
         <div class="chips wrap">${SHOP_ORDER.map((k) => `<button class="chip ${shopsOn.includes(k) ? "on" : ""}" data-act="shopToggle" data-k="${k}">${esc(shopName(k))}</button>`).join("")}</div></div>
       <label class="stack" style="padding:14px 16px;gap:6px"><b>Estimate prices at</b><select class="input" data-set="text" data-f="priceShop">${enabledShops().map((k) => `<option value="${k}" ${priceShop() === k ? "selected" : ""}>${esc(shopName(k, false))}</option>`).join("")}</select>
         <span class="small muted">${esc(app.ing.prices_note || "")}</span></label>
-      <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Like-for-like savings: frozen veg, garlic paste, bottled lemon. Never changes the ingredient a dish is named after${saving > 0.05 ? ` · about ${money(saving)} ${s.budget ? "saved" : "cheaper"} this week` : ""}</span></span>
+      <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Swaps like frozen veg, garlic paste, bottled lemon${saving > 0.05 ? ` · about ${money(saving)} ${s.budget ? "saved" : "cheaper"} this week` : ""}</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="budget" ${s.budget ? "checked" : ""}><i></i></span></label>
-      <label class="row" style="padding:13px 16px"><span class="grow"><b>Track food inflation</b><br><span class="small muted">${infLine}</span></span>
+      <label class="row" style="padding:13px 16px"><span class="grow"><b>Track food inflation</b>${infLine ? `<br><span class="small muted">${infLine}</span>` : ""}</span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="inflation" ${s.inflation !== false ? "checked" : ""}><i></i></span></label>
-      <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="aisles"><span class="grow"><b>Aisle order</b><br><span class="small muted">Match the list to the way you walk round your shop</span></span><span aria-hidden="true">›</span></button>
-      <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="rack"><span class="grow"><b>Spice rack &amp; cupboard</b><br><span class="small muted">What you've got, what's running low</span></span><span aria-hidden="true">›</span></button>
-      <div class="row" style="padding:13px 16px"><span class="grow"><b>Receipt reader</b><br><span class="small muted">Coming later: scan receipts to update prices, read on your own PC.</span></span></div>
+      <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="aisles"><span class="grow"><b>Aisle order</b></span><span aria-hidden="true">›</span></button>
+      <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="rack"><span class="grow"><b>Spice rack &amp; cupboard</b></span><span aria-hidden="true">›</span></button>
+      <div class="row" style="padding:13px 16px"><span class="grow"><b>Receipt reader</b><br><span class="small muted">Coming later</span></span></div>
     </div>
 
     <p class="section-label">Weekly staples</p>
     <div class="list"><button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="staples"><span class="grow"><b>Weekly staples</b><br><span class="small muted">${esc(staplesSummary())}</span></span><span aria-hidden="true">›</span></button></div>
     ${catalogue}
     <p class="section-label">Your data</p>
-    <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Download a backup</b><br><span class="small muted">Everything: plans, prices, staples, settings and feedback, as one file</span></span><button class="btn sm" data-act="exportData">${icon("download", 16)}Save</button></div>
+    <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Download a backup</b></span><button class="btn sm" data-act="exportData">${icon("download", 16)}Save</button></div>
       <div class="row" style="padding:13px 16px"><span class="grow"><b>Restore from a backup</b><br><span class="small muted">Replaces everything here, for everyone in your household</span></span><label class="btn sm">Choose file<input type="file" accept="application/json,.json" data-set="importFile" hidden></label></div></div>
     ${app.host === "Cloudflare" ? "" : `<p class="section-label">Recipe feedback</p>
-    <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude to get recipes adjusted</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>`}
+    <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>`}
     <p class="section-label">About</p>
-    <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">What's stored, who can see it, and important notes on allergies and babies</span></span><span class="muted">›</span></button></div>
+    <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">Includes notes on allergies and babies</span></span><span class="muted">›</span></button></div>
     ${accountFooter()}
     <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard ${APP_VERSION}</p>`;
 }
@@ -729,7 +727,7 @@ function openMacros(id, who) {
   }
   openSheet(`<p class="eyebrow">${esc(r.name)} · per portion</p><h1 class="title" style="font-size:26px;margin-bottom:12px">What's in it</h1>
     <div class="seg" role="tablist" style="margin-bottom:14px">${tabs}</div><div class="stack">${body}
-    <p class="small muted" style="margin:0">Estimates from UK food composition data, including your swaps. Brands vary a little.</p>
+    <p class="small muted" style="margin:0">Estimates. Brands vary.</p>
     <button class="btn" data-act="recipe" data-id="${id}">Back to the recipe</button></div>`);
 }
 
@@ -752,9 +750,9 @@ function openThemePicker(dow) {
   const groups = [["Food", "By type of dinner"], ["Cuisine", "By cuisine"], ["Other", "Something different"]];
   const row = (t) => { const n = themeRecipes(t).length;
     return `<button class="rrow" data-act="setTheme" data-i="${dow}" data-t="${t.id}" data-text="${esc(`${t.name} ${t.blurb}`.toLowerCase())}"><span class="grow"><b>${esc(t.name)}</b><br><span class="small muted">${esc(t.blurb)} · ${n ? `${n} dinner${n === 1 ? "" : "s"}` : "none yet"}</span></span>${cur === t.id ? `<span class="pill accent">✓</span>` : ""}</button>`; };
-  openSheet(`<p class="eyebrow">Theme night</p><h1 class="title" style="font-size:26px">${DOW_LONG[dow]}</h1>
-    <p class="muted">The planner picks something that fits. Other days steer clear of it, so the theme still feels special.</p>${sheetSearch("Search themes")}
-    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="setTheme" data-i="${dow}" data-t="" data-text="no theme random"><span class="grow"><b>No theme</b><br><span class="small muted">Anything goes</span></span>${cur ? "" : `<span class="pill accent">✓</span>`}</button></div>
+  openSheet(`<p class="eyebrow">Theme night</p><h1 class="title" style="font-size:26px;margin-bottom:12px">${DOW_LONG[dow]}</h1>
+    ${sheetSearch("Search themes")}
+    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="setTheme" data-i="${dow}" data-t="" data-text="no theme random"><span class="grow"><b>No theme</b></span>${cur ? "" : `<span class="pill accent">✓</span>`}</button></div>
     ${groups.map(([g, label]) => { const ts = app.themes.filter((t) => (t.group || "Other") === g); return ts.length ? `<p class="section-label" data-group>${label}</p><div class="list" style="margin-bottom:12px">${ts.map(row).join("")}</div>` : ""; }).join("")}
     <div class="empty" data-none hidden>No themes match that.</div>`);
 }
@@ -762,7 +760,7 @@ function openThemePicker(dow) {
 function openSkip(i) {
   const date = addDays(parseISO(app.weekStart), i);
   const reasons = ["Eating out", "At friends'", "Takeaway", "Away"];
-  openSheet(`<h1 class="title" style="font-size:26px">Skip ${DOW_LONG[mondayIndex(date)]}?</h1><p class="muted">Its ingredients come off the shopping list.</p>
+  openSheet(`<h1 class="title" style="font-size:26px;margin-bottom:14px">Skip ${DOW_LONG[mondayIndex(date)]}?</h1>
     <form data-form="skip" data-i="${i}" class="stack"><div class="chips wrap">${reasons.map((r) => `<button type="button" class="chip" data-act="skipReason" data-r="${esc(r)}">${esc(r)}</button>`).join("")}</div>
     <input class="input" name="note" placeholder="Or type a note (optional)" autocomplete="off"><button class="btn lg primary">Skip this day</button></form>`);
 }
@@ -776,7 +774,7 @@ function openSwap(k, reopen, itemKey = null) {
       <span class="grow"><b>${on ? "✓ " : ""}${esc(am.n)}</b>${isOrig ? ` <span class="small muted">(original)</span>` : ""}<br><span class="small muted">${esc(why)}${bp && am.pk ? ` · ${money(bp.p * shopMult(priceShop()))} per ${esc(fmtQty(am.pk[0], am.pk[1]))}` : ""}</span></span></button>`;
   };
   openSheet(`<h1 class="title" style="font-size:26px">Swap ${esc(m.n.toLowerCase())}</h1>
-    <p class="muted">${r ? `Just for ${esc(r.name)}. Other recipes keep ${esc(m.n.toLowerCase())}.` : "For every recipe that uses it."}</p>
+    <p class="muted">${r ? `Just for ${esc(r.name)}.` : "For every recipe that uses it."}</p>
     <div class="list">${row(k, "As the recipe says", true)}${(m.sw || []).map((o) => row(o.k, o.why, false)).join("")}</div>`);
   if (reopen) app.sheetBack = () => openRecipe(reopen);
   else if (itemKey) app.sheetBack = () => openItem(itemKey);
@@ -830,7 +828,7 @@ function openItem(key) {
       ${it.swappable.length ? `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Swap</b><div class="row wrap">${it.swappable.map((k) => `<button class="btn sm" data-act="swapIng" data-k="${esc(k)}" data-item="${esc(it.key)}">${esc(ingMeta(k).n)}…</button>`).join("")}</div></div>` : ""}
       <div class="card stack" style="padding:14px 16px;gap:8px"><b>Get it at</b>
         <div class="shop-grid">${shopOrder().map((s) => `<button class="${it.shop === s ? "on" : ""}" data-act="moveTo" data-keys="${esc(key)}" data-s="${s}">${esc(shopName(s))}</button>`).join("")}</div>
-        <span class="small muted">Remembered for next time. Change it again whenever you like.</span></div>
+        <span class="small muted">Remembered for next time.</span></div>
       <div class="row wrap">
         ${it.cupboard ? `<button class="btn" data-act="rack">Open the spice rack</button>` : ""}
         ${!it.cupboard ? `<button class="btn" data-act="flag" data-key="${esc(key)}" data-f="have" data-v="${it.have ? 0 : 1}" data-close="1">${icon("home", 16)}${it.have ? "Need it after all" : "Already got it"}</button>` : ""}
@@ -870,14 +868,14 @@ function doneShopping() {
   if (got.length) send({ op: "trip", week, keys: got.map((i) => i.key) });
   const saved = got.length ? `${got.length} thing${got.length === 1 ? "" : "s"} (≈ ${money(cost)}) moved to Bought this week` : "";
   if (!left.length) { toast(got.length ? `${saved}. All done!` : "Nothing on the list. All done!"); return; }
-  if (!got.length) { toast("Tick what's in your trolley first, then press Done shopping"); return; }
+  if (!got.length) { toast("Tick what's in your trolley first"); return; }
   toast(saved);
   openDone(left, got.length);
 }
 function openDone(left, got) {
   app.moveKeys = left.map((i) => i.key); app.moveShop = null;
   openSheet(`<h1 class="title" style="font-size:26px">Got ${got}, ${left.length} still to get</h1>
-    <p class="muted">Still to get: ${esc(left.slice(0, 6).map((i) => i.name).join(", "))}${left.length > 6 ? ` and ${left.length - 6} more` : ""}.</p>
+    <p class="muted">${esc(left.slice(0, 6).map((i) => i.name).join(", "))}${left.length > 6 ? ` and ${left.length - 6} more` : ""}.</p>
     <p style="margin:14px 0 8px"><b>Pick them up elsewhere this week?</b></p>
     <div class="shop-grid" style="margin-bottom:14px">${shopOrder().map((s) => `<button data-act="pickMoveShop" data-s="${s}">${esc(shopName(s))}</button>`).join("")}</div>
     <input type="checkbox" id="moveAlways" hidden>
@@ -887,7 +885,7 @@ function openDone(left, got) {
 function openAisles({ keepScroll = false } = {}) {
   const order = aisleOrder();
   openSheet(`<h1 class="title" style="font-size:26px">Aisle order</h1>
-    <p class="muted">Put the aisles in the order you reach them. The shopping list follows it, for everyone in your household.</p>
+    <p class="muted">Put the aisles in the order you reach them.</p>
     <div class="list">${order.map((id, n) => `<div class="row" style="padding:8px 8px 8px 16px;gap:6px"><span class="grow">${esc(aisleName(id))}</span>
       <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="-1" aria-label="Move ${esc(aisleName(id))} up" ${n === 0 ? "disabled" : ""}>${icon("up", 18)}</button>
       <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="1" aria-label="Move ${esc(aisleName(id))} down" ${n === order.length - 1 ? "disabled" : ""}>${icon("down", 18)}</button></div>`).join("")}</div>
@@ -914,7 +912,7 @@ function openStaples({ keepScroll = false, focusLast = false } = {}) {
         <select class="input" style="width:auto;flex:1;min-width:110px" data-set="stapleShop" data-i="${i}" aria-label="Shop">${shopOrder().map((k) => `<option value="${k}" ${(st.shop || "aldi") === k ? "selected" : ""}>${esc(shopName(k))}</option>`).join("")}</select>
         <button class="icon-btn plain" data-act="stapleDel" data-i="${i}" aria-label="Remove">${icon("trash", 18)}</button></div></div>`).join("");
   openSheet(`<div data-staples><h1 class="title" style="font-size:26px">Weekly staples</h1>
-    <p class="muted">Breakfasts, lunches and anything you buy every week, with the price for one and how many you usually get. Switched-on ones go on every shopping list.</p>
+    <p class="muted">Switched-on ones go on every shopping list.</p>
     <div class="list">${staples || `<div class="row" style="padding:14px 16px"><span class="muted">Nothing yet.</span></div>`}</div>
     <div class="row" style="gap:8px;margin-top:12px"><button class="btn" data-act="stapleAdd">${icon("plus", 16)}Add a staple</button><button class="btn primary" data-close>Done</button></div></div>`, { keepScroll });
   if (focusLast) { const f = $$("#sheetBody [data-set=stapleName]").pop(); if (f) f.focus(); }
@@ -931,7 +929,7 @@ function openRack({ keepScroll = false } = {}) {
   const missing = spices.filter((m) => m.status !== "ok");
   const starterCost = missing.reduce((t, m) => t + (basePrice(m.k) || { p: 0 }).p * shopMult(priceShop()), 0);
   openSheet(`<h1 class="title" style="font-size:26px">Spice rack &amp; cupboard</h1>
-    <p class="muted">Low or Out goes on the shopping list. Ticking it off in the shop marks it Got it again.</p>
+    <p class="muted">Low or Out goes on the shopping list.</p>
     ${missing.length ? `<button class="btn primary block" style="margin:6px 0 4px" data-act="rackStarter">Starter rack: add ${missing.length} spices to the list (≈ ${money(starterCost)})</button>` : ""}
     <p class="section-label">Spices</p><div class="list">${spices.map(row).join("")}</div>
     <p class="section-label">Cupboard</p><div class="list">${cupboard.map(row).join("")}</div>`, { keepScroll });
@@ -945,7 +943,7 @@ function openFeedback(id) {
       <div class="seg"><button type="button" data-act="feedbackRate" data-r="loved">Loved it</button><button type="button" data-act="feedbackRate" data-r="fine">Fine</button><button type="button" data-act="feedbackRate" data-r="never">Not again</button></div>
       <div class="chips wrap">${FEEDBACK_TAGS.filter((t) => kids().length || !t.startsWith("Little ones")).map((t) => `<button type="button" class="chip" data-act="feedbackTag" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
       <input class="input" name="note" placeholder="Anything else? e.g. needed more salt" autocomplete="off">
-      ${app.host === "Cloudflare" ? `<span class="small muted">Your household and whoever runs FoodIsHard can see this, to improve the recipes.</span>` : ""}
+      ${app.host === "Cloudflare" ? `<span class="small muted">Your household and whoever runs FoodIsHard can see this.</span>` : ""}
       <button class="btn lg primary" id="fbSave" disabled>Save</button><button type="button" class="btn" data-close>Skip</button></form>`);
 }
 function feedbackText() {
@@ -1003,7 +1001,7 @@ function renderCook() {
   const ingList = effectiveIngredients(r).filter((i) => i.q != null).map((i) => `<li><span>${esc(ingMeta(i.k).n)}</span><span class="muted">${esc(fmtQty(i.q * factor, i.u))}</span></li>`).join("");
   $("#cook").innerHTML = `
     <div class="row between"><button class="icon-btn" data-act="cookClose" aria-label="Close cooking mode">${icon("x", 18)}</button>
-      <span class="small muted">Screen stays on</span><button class="btn sm" data-act="cookIng">${c.showIng ? "Hide" : "Ingredients"}</button></div>
+      <button class="btn sm" data-act="cookIng">${c.showIng ? "Hide" : "Ingredients"}</button></div>
     <p class="small" style="font-weight:600;color:var(--muted);margin:12px 0 8px">${esc(r.name)}</p>
     <div class="cook-progress">${prog}</div>
     <div class="grow" style="overflow-y:auto;padding:18px 0;display:flex;flex-direction:column;gap:16px">
@@ -1064,9 +1062,9 @@ function toast(msg, { undo = null } = {}) {
   toastTimer = setTimeout(() => { t.hidden = true; app.toastUndo = null; }, undo ? 6000 : 2800);
 }
 async function copyText(text) {
-  try { await navigator.clipboard.writeText(text); toast("List copied. Paste it anywhere."); }
+  try { await navigator.clipboard.writeText(text); toast("Copied"); }
   catch { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); toast("List copied"); } catch { toast("Couldn't copy on this device"); } ta.remove(); }
+    try { document.execCommand("copy"); toast("Copied"); } catch { toast("Couldn't copy on this device"); } ta.remove(); }
 }
 function downloadText(text, name) {
   const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
@@ -1098,7 +1096,7 @@ const ACTIONS = {
     send({ op: "plan", week, plan: suggestWeek(week) });
     if (had) app.undoShuffle = { week, plan: before, after: JSON.stringify(planFor(week)) }; // "Undo" stays until the week changes again
     render();
-    toast("Here's a plan. Swap anything you don't fancy.");
+    toast("Here's a plan");
   },
   undoShuffle: () => {
     const u = app.undoShuffle; if (!u) return;
@@ -1233,7 +1231,7 @@ const ACTIONS = {
     a.href = URL.createObjectURL(blob); a.download = `foodishard-backup-${iso(new Date())}.json`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    toast("Backup saved to your downloads");
+    toast("Backup downloaded");
   },
   flag: (d) => { send({ op: "check", week: currentWeek(), key: d.key, field: d.f, value: d.v === "1" }); if (d.close) closeSheet(); },
   itemOpen: (d) => { if (app.selecting.size) return toggleSelect(d.key); openItem(d.key); },
@@ -1302,7 +1300,7 @@ const ACTIONS = {
     const sg = babySuggestions().find((x) => x.kid === d.kid && x.key === d.k); if (!sg) return;
     const k = kidsAll().find((x) => x.id === d.kid);
     updateKid(d.kid, { ...sg.set, dismissed: [...(k.dismissed || []), d.k] });
-    refreshPanel(); toast("Updated. You can change it any time.");
+    refreshPanel(); toast("Updated");
   },
   babyDismiss: (d) => { const k = kidsAll().find((x) => x.id === d.kid); if (k) updateKid(d.kid, { dismissed: [...new Set([...(k.dismissed || []), d.k])] }); refreshPanel(); },
   kidPortion: (d) => { const k = kidsAll().find((x) => x.id === d.id); if (k) updateKid(d.id, { portion: Math.max(0.05, Math.round(((+k.portion || 0) + +d.d) * 100) / 100) }); refreshPanel(); },
@@ -1385,14 +1383,14 @@ function onSubmit(e) {
     return;
   }
   if (f.dataset.form === "addPerson") { const name = val("name").trim(); if (!name) return; const people = clone(settings().people); people.push({ id: uid(), name, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${name} added`); return; }
-  if (f.dataset.form === "adminNotice") { adminDo("api/admin/notice", { text: val("text") }, () => toast("Sent. Everyone sees it next time they open the app")); return; }
+  if (f.dataset.form === "adminNotice") { adminDo("api/admin/notice", { text: val("text") }, () => toast("Sent")); return; }
   if (f.dataset.form === "adminRename") { adminDo("api/admin/rename-household", { id: f.dataset.id, name: val("name").trim() }, () => toast("Renamed")); return; }
   if (f.dataset.form === "invite" || f.dataset.form === "newHousehold") { submitInvite(f.dataset.form === "newHousehold" ? "household" : "member", f); return; }
   if (f.dataset.form === "skip") { dayUpdate(+f.dataset.i, { status: "skip", note: val("note").trim() || null }); closeSheet(); return; }
   if (f.dataset.form === "price") {
     const price = parseFloat(val("price").replace(/[£,\s]/g, ""));
     if (!(price >= 0)) return toast("Enter a price, like 1.25");
-    send({ op: "price", key: f.dataset.k, price, shop: val("shop") }); closeSheet(); toast("Price saved for everyone"); return;
+    send({ op: "price", key: f.dataset.k, price, shop: val("shop") }); closeSheet(); toast("Price saved"); return;
   }
   if (f.dataset.form === "feedback") {
     if (!app.fbRating) return;
@@ -1401,7 +1399,7 @@ function onSubmit(e) {
     if (app.fbRating === "loved") send({ op: "pref", recipe: f.dataset.id, patch: { fav: true } }, { rerender: false });
     if (app.fbRating === "never") send({ op: "pref", recipe: f.dataset.id, patch: { ban: true } }, { rerender: false });
     closeSheet(); render();
-    toast(app.fbRating === "never" ? "Won't suggest that again. It's under Recipes → Hidden." : "Thanks. Saved.");
+    toast(app.fbRating === "never" ? "Won't suggest that again. It's under Recipes → Hidden." : "Saved");
     return;
   }
   if (f.dataset.form === "manual") {
@@ -1485,7 +1483,7 @@ function whoYouCookFor() {
   const little = kidsHere.map((k) => `<button class="rrow kid-stripe ${k.born ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="grow"><b>${esc(k.name || "Little one")}</b><br><span class="small muted">${k.born ? esc(ageText(k.born).split(",")[0]) : "add a birth date"} · ${esc((STAGES[k.stage]?.name || "").split(" &")[0])} · ${esc(portionShort(k.portion))} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   return `<p class="section-label">Who you cook for</p>
     <div class="list">
-      <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner. They don't need to sign in.</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
+      <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner, signed in or not</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
       ${adults}
       <div style="padding:4px 16px 12px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button></div>
       <label class="row between" style="padding:13px 16px;border-top:1px solid var(--line-soft);gap:12px"><span><b>Cooking for little ones</b><br><span class="small muted">${paused ? `${esc(kidNames(kidsAll()))} ${kidsAll().length > 1 ? "are" : "is"} saved but left out for now` : "Their own portions, stages and safety notes in every recipe"}</span></span>
@@ -1507,7 +1505,7 @@ function openPerson(i, { keepScroll = false } = {}) {
     ${fine ? `<div class="row between" style="margin:6px 0"><span class="small muted">Fine-tune</span><div class="stepper"><button data-act="portion" data-i="${i}" data-d="-0.05" aria-label="Less">−</button><span>×${portion.toFixed(2)}</span><button data-act="portion" data-i="${i}" data-d="0.05" aria-label="More">+</button></div></div>`
       : `<button class="btn sm ghost" style="margin-bottom:6px" data-act="fineTune" data-i="${i}">Fine-tune</button>`}
     <p class="section-label">Protein goal at dinner <span class="muted" style="text-transform:none;letter-spacing:0">(optional)</span></p>
-    <div class="row between"><span class="small muted">Shown in each recipe's nutrition</span><div class="stepper"><button data-act="goal" data-i="${i}" data-d="-5" aria-label="Less">−</button><span>${p.goal || 40} g</span><button data-act="goal" data-i="${i}" data-d="5" aria-label="More">+</button></div></div>
+    <div class="row" style="justify-content:flex-end"><div class="stepper"><button data-act="goal" data-i="${i}" data-d="-5" aria-label="Less">−</button><span>${p.goal || 40} g</span><button data-act="goal" data-i="${i}" data-d="5" aria-label="More">+</button></div></div>
     <div class="row" style="gap:8px;margin-top:18px"><button class="btn primary" data-close>Done</button>${s.people.length > 1 ? `<button class="btn" style="color:var(--warm)" data-act="removePerson" data-i="${i}">${icon("trash", 16)}Remove</button>` : ""}</div>`, { keepScroll });
   app.panel = { type: "person", i };
 }
@@ -1526,7 +1524,7 @@ function kidCardHtml(k, corrected) {
           <button class="icon-btn plain" data-act="kidRemove" data-id="${esc(k.id)}" aria-label="Remove ${esc(k.name || "child")}">${icon("trash", 18)}</button></div>
         <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input ${k.born ? "" : "nudge-field"}" type="date" value="${esc(k.born)}" data-set="kid" data-id="${esc(k.id)}" data-f="born"></label>
           <label class="grow"><span class="small muted">Due date (if early)</span><input class="input" type="date" value="${esc(k.due)}" data-set="kid" data-id="${esc(k.id)}" data-f="due"></label></div>
-        <span class="small muted">${k.born ? `${esc(ageText(k.born))} old${corrected ? ` · ${esc(ageText(k.due))} corrected` : ""}` : "Add their birth date. If they arrived early, add the due date too, for their corrected age."}</span>
+        <span class="small muted">${k.born ? `${esc(ageText(k.born))} old${corrected ? ` · ${esc(ageText(k.due))} corrected` : ""}` : "Add their birth date."}</span>
         <label><span class="small muted">Eating stage</span><select class="input" data-set="kid" data-id="${esc(k.id)}" data-f="stage">${Object.entries(STAGES).map(([s2, v]) => `<option value="${s2}" ${k.stage === s2 ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
         <span class="small muted">${esc(STAGES[k.stage]?.hint || "")}</span>
         ${kidSuggestions(k).map(babySuggestionCard).join("")}
@@ -1544,7 +1542,7 @@ function openAddPerson() {
   openSheet(`<p class="eyebrow">Who you cook for</p><h1 class="title" style="font-size:26px">Add a grown-up</h1>
     ${members.length ? `<p class="small muted" style="margin-bottom:6px">From your household:</p><div class="chips wrap" style="margin-bottom:12px">${members.map((n) => `<button class="chip" data-act="addPersonNamed" data-n="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
     <form data-form="addPerson" class="stack"><label><span class="small muted">Name</span><input class="input" name="name" required autocomplete="off" placeholder="e.g. Grandad"></label>
-      <span class="small muted">They don't need to sign in: this is just for portions.</span><button class="btn lg primary">Add</button></form>`);
+      <button class="btn lg primary">Add</button></form>`);
 }
 
 // ---- "Update ready" (online version) ----
@@ -1567,7 +1565,7 @@ function updateCard() {
     <div class="row between"><b>Update ready${u.version ? ` · FoodIsHard ${esc(u.version)}` : ""}</b><span class="update-dot" style="position:static" aria-hidden="true">!</span></div>
     ${u.notes.length ? `<span class="small">What's new:</span><ul class="small">${u.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
     <button class="btn primary" style="align-self:flex-start" data-act="updateNow">Update now</button>
-    <span class="small muted">Takes a second. Anything you've ticked is kept.</span></div>`;
+    <span class="small muted">Anything you've ticked is kept.</span></div>`;
 }
 function updateNow() {
   const u = app.update; if (!u) return;
@@ -1601,7 +1599,7 @@ async function dismissNotice() {
 function openAdminNotice() {
   const n = (app.adminInfo || {}).notice;
   openSheet(`<p class="eyebrow">Admin</p><h1 class="title" style="font-size:26px">Message everyone</h1>
-    <p class="muted">It appears at the top of the app the next time each person opens it, until they tap <b>Got it</b>. Each person sees it once. Sending a new message replaces the old one.</p>
+    <p class="muted">Each person sees it once. Sending a new message replaces the old one.</p>
     ${n ? `<div class="list" style="margin-bottom:12px"><div class="stack" style="padding:12px 16px;gap:6px"><span class="small muted">Showing now · sent ${shortDate(n.at)} · seen by ${n.seenBy} of ${app.adminInfo.people}</span><span style="white-space:pre-line">${esc(n.text)}</span>
       <button class="btn sm" style="align-self:flex-start;color:var(--warm)" data-act="adminNoticeClear">Take it down</button></div></div>` : ""}
     <form data-form="adminNotice" class="stack">
@@ -1663,8 +1661,8 @@ function accountFooter() {
   if (app.host !== "Cloudflare") return "";
   return `<p class="section-label">Your account</p>
     <div class="list">
-      <div class="row" style="padding:13px 16px"><span class="grow"><b>Sign out</b><br><span class="small muted">You'll need to sign in again on this device</span></span><button class="btn sm" data-act="signOut">Sign out</button></div>
-      ${a && a.household ? `<div class="row" style="padding:13px 16px"><span class="grow"><b>Delete my account</b><br><span class="small muted">Removes you from ${esc(app.account.household.name)} and FoodIsHard</span></span><button class="btn sm" style="color:var(--warm)" data-act="deleteAccount">Delete…</button></div>` : ""}
+      <div class="row" style="padding:13px 16px"><span class="grow"><b>Sign out</b></span><button class="btn sm" data-act="signOut">Sign out</button></div>
+      ${a && a.household ? `<div class="row" style="padding:13px 16px"><span class="grow"><b>Delete my account</b></span><button class="btn sm" style="color:var(--warm)" data-act="deleteAccount">Delete…</button></div>` : ""}
     </div>`;
 }
 function accountSection() {
@@ -1682,21 +1680,20 @@ function accountSection() {
   let html = `<p class="section-label">Who's in your household</p>
     <div class="list">
       <div class="stack" style="padding:14px 16px;gap:8px"><label><span class="small muted">Household name</span><input class="input" value="${esc(a.household.name)}" data-set="acctHousehold"></label>
-        <label><span class="small muted">Your name (shown on ticks and notes)</span><input class="input" value="${esc(a.me.name)}" data-set="acctName"></label></div>
+        <label><span class="small muted">Your name</span><input class="input" value="${esc(a.me.name)}" data-set="acctName"></label></div>
       ${members}
-      <div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="acctInvite">${icon("plus", 16)}Invite someone to your household</button>
-        <span class="small muted">Everyone in a household shares one plan and shopping list. They sign in with their email and a code, no password.</span></div>
+      <div style="padding:12px 16px" class="stack"><button class="btn sm" style="align-self:flex-start" data-act="acctInvite">${icon("plus", 16)}Invite someone to your household</button></div>
     </div>`;
   if (a.admin) {
     html += `<p class="section-label">Admin</p>
-    <div class="list"><button class="rrow" data-act="go" data-to="admin"><span class="grow"><b>Admin dashboard</b><br><span class="small muted">Everyone, every household, invites and the sign-in list</span></span><span class="muted">›</span></button></div>`;
+    <div class="list"><button class="rrow" data-act="go" data-to="admin"><span class="grow"><b>Admin dashboard</b></span><span class="muted">›</span></button></div>`;
   }
   return html;
 }
 function openInviteForm(kind) {
   const newHousehold = kind === "household";
   openSheet(`<p class="eyebrow">${newHousehold ? "Admin" : esc(app.account.household.name)}</p><h1 class="title" style="font-size:26px">${newHousehold ? "Invite a new household" : "Invite someone"}</h1>
-    <p class="muted">${newHousehold ? "They'll get their own private plan and list, and can invite their partner themselves." : "They'll share your plan and shopping list."}</p>
+    <p class="muted">${newHousehold ? "They'll get their own private plan and list." : "They'll share your plan and shopping list."}</p>
     <form data-form="${newHousehold ? "newHousehold" : "invite"}" class="stack">
       ${newHousehold ? `<label><span class="small muted">Household name</span><input class="input" name="householdName" placeholder="e.g. The Smiths" required autocomplete="off"></label>` : ""}
       <label><span class="small muted">Their first name</span><input class="input" name="name" required autocomplete="off"></label>
@@ -1793,15 +1790,15 @@ function viewAdmin() {
           : `<span class="small" style="color:var(--warm)">Automatic sign-in updates aren't set up: add new emails to your Access policy by hand (CLOUDFLARE.md, step 6).</span>`}
       </div>
     </div>
-    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="go" data-to="feedback" style="padding:13px 16px"><span class="grow"><b>Recipe feedback</b><br><span class="small muted">Ratings from every household</span></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button>
-      <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b><br><span class="small muted">${ad.notice ? `Showing now · seen by ${ad.notice.seenBy} of ${ad.people}` : "Shown once, at the top of the app"}</span></span>${icon("right", 18)}</button></div>
+    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="go" data-to="feedback" style="padding:13px 16px"><span class="grow"><b>Recipe feedback</b></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button>
+      <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b>${ad.notice ? `<br><span class="small muted">Showing now · seen by ${ad.notice.seenBy} of ${ad.people}</span>` : ""}</span>${icon("right", 18)}</button></div>
     <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
     <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search people or households" aria-label="Search people or households" data-input="afilter" autocomplete="off"></label>
     <div class="chips" style="margin-bottom:12px">${chip("all", "Everyone")}${chip("never", `Never signed in (${never})`)}${chip("inactive", `Inactive (${inactive})`)}</div>
-    <div id="adminList">${households || `<div class="empty">${ad.households.length ? "Nobody matches that." : "No households yet. Press <b>New household</b> to invite your first."}</div>`}</div>
+    <div id="adminList">${households || `<div class="empty">${ad.households.length ? "Nobody matches that." : "No households yet."}</div>`}</div>
     <div class="empty" data-none hidden>Nobody matches that.</div>
     ${own ? `<div class="list" style="margin-top:18px"><div class="stack" style="padding:14px 16px;gap:8px"><b>Your own household: ${esc(own.name)}</b>
-      <span class="small muted">You don't need one to run FoodIsHard. Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
+      <span class="small muted">Leaving makes this an admin-only account${own.members.length <= 1 ? ", and deletes the household and its plans" : ""}.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="adminLeave">Make this an admin-only account</button></div></div>` : ""}
     <div style="text-align:center;margin-top:24px"><button class="btn sm" data-act="signOut">Sign out</button></div>
     <p class="small muted" style="text-align:center;margin-top:10px">Signed in as ${esc(acct && acct.me ? acct.me.email : app.user)} · admin · FoodIsHard ${APP_VERSION}</p>`;
@@ -1848,7 +1845,7 @@ function viewAdminFeedback() {
       ${i.tags.length ? `<br><span class="small">${i.tags.map(esc).join(" · ")}</span>` : ""}
       ${i.note ? `<br><span style="font-style:italic">“${esc(i.note)}”</span>` : ""}</span></div>`;
   let body;
-  if (!all.length) body = `<div class="empty">No ratings yet. They appear here when someone finishes cooking and taps how it went.</div>`;
+  if (!all.length) body = `<div class="empty">No ratings yet.</div>`;
   else if (!items.length) body = `<div class="empty">Nothing matches that filter.</div>`;
   else if (g === "recipe") {
     const groups = new Map();
@@ -1864,7 +1861,7 @@ function viewAdminFeedback() {
   return `${head}
     <div class="list" style="margin-bottom:12px"><div class="stack" style="padding:14px 16px;gap:8px">
       <b>${all.length} rating${all.length === 1 ? "" : "s"} of ${recipesRated} recipe${recipesRated === 1 ? "" : "s"}, from ${homes} household${homes === 1 ? "" : "s"}</b>
-      <span class="small muted">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."} Copy them to paste to Claude when it's time to adjust recipes; household and people's names are left out.</span>
+      <span class="small muted">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."} Names are left out of the copy.</span>
       <button class="btn sm" style="align-self:flex-start" data-act="fbCopy" ${items.length ? "" : "disabled"}>${icon("copy", 16)}Copy ${f === "all" ? "all" : "these"} for Claude</button>
     </div></div>
     <div class="seg" style="margin-bottom:10px"><button class="${g === "latest" ? "on" : ""}" data-act="fbGroup" data-g="latest">Latest first</button><button class="${g === "recipe" ? "on" : ""}" data-act="fbGroup" data-g="recipe">By recipe</button></div>

@@ -212,3 +212,6 @@ Fixes from a review of the new features:
 ## 0.11.2
 - **Weekly staples** have a card on the shopping list, next to the spice rack, showing what's on it ("Milk, Bread, Oats + 1 more"). The Settings row shows the same.
 - **Shopping list buttons:** "+ Add item" and "Done shopping" are side by side and the same size. The page leaves room at the bottom, so the buttons no longer cover the last lines.
+
+## 0.11.3
+- **Less small print:** a copy pass on the grey helper text, panel intros, empty states and toasts. Explanations of how a feature works, lines that repeated the heading, and anything obvious are cut or shortened (about 70 edits). Safety wording is unchanged: allergies, baby and salt notes, storing and reheating, the vegetarian rule, About, and the delete and restore warnings. A few small layout touches keep spacing where a line was removed. Kept on purpose: "Tap an item to fix its price or swap it; hold to select several", "≈ £x left" on the Today card, "Everyone who eats dinner, signed in or not", and the note that people who join later see an admin message too.
