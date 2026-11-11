@@ -362,9 +362,12 @@ function basePrice(k) {
   }
   return m.p != null ? { p: m.p * inflationFactor() } : null;
 }
-/** Whole packs to buy. A little over a pack (up to 15%, e.g. a baby's share) doesn't buy another one. */
-const PACK_SLACK = 0.15;
-function packsFor(q, pq) { return Math.max(1, Math.ceil(q / pq / (1 + PACK_SLACK) - 1e-9)); } // up to 15% over the packs bought
+/** Whole packs to buy. A little over (up to 15%, and never more than 0.3 of a pack) doesn't buy another one. */
+const PACK_SLACK = 0.15, PACK_SLACK_MAX = 0.3;
+function packsFor(q, pq) {
+  const n = q / pq;
+  return Math.max(1, Math.ceil(n / (1 + PACK_SLACK) - 1e-9), Math.ceil(n - PACK_SLACK_MAX - 1e-9));
+}
 function costOf(k, q, u, { wholePacks = false, shop = priceShop() } = {}) {
   const m = ingMeta(k), bp = basePrice(k);
   if (!bp || !m.pk || q == null) return null;
@@ -523,7 +526,7 @@ function fmtQty(q, u, { forShopping = false } = {}) {
   }
   if (u === "tbsp" || u === "tsp") return `${niceNumber(q)} ${u}`;
   if (u === "slices") { const n = Math.ceil(q); return `${n} slice${n === 1 ? "" : "s"}`; }
-  return forShopping ? String(packsFor(q, 1)) : niceNumber(q);
+  return forShopping ? String(Math.max(1, Math.ceil(q - 1e-9))) : niceNumber(q); // eggs, wraps, buns: buy every one
 }
 // ---- Which ingredients a step mentions (for cooking mode) ----
 const GENERIC_WORDS = new Set(["sauce", "cube", "paste", "leave", "pouch", "piece", "stick", "relish", "flake", "wrap"]);

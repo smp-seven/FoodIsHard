@@ -221,3 +221,6 @@ Fixes from a review of the new features:
 
 ## 0.11.5
 - The weekly staples card also shows on an empty shopping list, so a new household can add staples before planning (needed now they are not in Settings).
+
+## 0.11.6
+- Shopping list: counted items (eggs, wraps, buns) are no longer rounded down, and the "a little over doesn't buy another pack" allowance is capped at under a third of a pack.
