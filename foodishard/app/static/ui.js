@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.5"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -398,7 +398,7 @@ function shopData() {
 }
 function viewShop() {
   const { week, all, toGet, tabs, shown, bought } = shopData();
-  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}<div class="card empty"><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>`;
+  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}<div class="card empty"><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>${staplesCard()}`;
   const done = shown.filter((i) => i.done).length;
   const sel = app.selecting.size;
   const title = sel ? `${sel} selected` : app.shopTab === "all" ? "Shopping list" : `At ${esc(shopName(app.shopTab, false))}`;

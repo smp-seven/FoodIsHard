@@ -218,3 +218,6 @@ Fixes from a review of the new features:
 
 ## 0.11.4
 - Weekly staples are now only on the shopping list (the card, and the ⋯ menu), no longer in Settings.
+
+## 0.11.5
+- The weekly staples card also shows on an empty shopping list, so a new household can add staples before planning (needed now they are not in Settings).
