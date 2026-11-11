@@ -548,8 +548,8 @@ function stepTerms(k) {
   return terms;
 }
 /** The recipe's ingredients that a step's text names. The longest, most specific name wins ("black pepper" over "pepper"). */
-function stepIngredients(text, ings) {
-  const low = text.toLowerCase(), taken = [], found = [], share = {}; // taken: [start, end, term]
+function stepIngredients(text, ings, before = "") {
+  const low = text.toLowerCase(), earlier = before.toLowerCase(), taken = [], found = [], share = {}; // taken: [start, end, term]
   const termsOf = ings.map((i) => stepTerms(i.orig || i.k));
   const primary = new Map(termsOf.map((ts, idx) => [ts[0], idx])); // each ingredient's own full name
   const cands = termsOf.flatMap((ts, idx) => ts.map((t, n) => ({ t, idx, n }))).sort((a, b) => b.t.length - a.t.length);
@@ -563,10 +563,14 @@ function stepIngredients(text, ings) {
       if (clash && !(clash[0] === a && clash[2] === t)) continue; // "the beans" can mean both kinds of bean
       if (!clash) taken.push([a, b, t]);
       if (!found.includes(idx)) found.push(idx);
-      if (/(?:\bhalf (?:of )?the|\bthe rest of the|\brest of the) $/.test(low.slice(Math.max(0, a - 20), a))) share[idx] = 0.5; // "half the oil", "the rest of the oil"
+      const lead = low.slice(Math.max(0, a - 20), a);
+      if (/\bhalf (?:of )?the $/.test(lead)) share[idx] = "half"; // "half the oil"
+      else if (/\brest of the $/.test(lead) && !share[idx]) // the rest is half only if an earlier step used half; otherwise it's most of it
+        share[idx] = termsOf[idx].some((t2) => new RegExp(`\\bhalf (?:of )?the ${t2}`).test(earlier)) ? "half" : "the rest";
     }
   }
-  return found.sort((a, b) => a - b).map((idx) => (share[idx] ? { ...ings[idx], q: ings[idx].q == null ? null : ings[idx].q * share[idx], part: "half" } : ings[idx]));
+  return found.sort((a, b) => a - b).map((idx) => (share[idx] === "half" ? { ...ings[idx], q: ings[idx].q == null ? null : ings[idx].q * 0.5, part: "half" }
+    : share[idx] ? { ...ings[idx], part: share[idx] } : ings[idx]));
 }
 function scaleStep(text, factor) { return text.replace(/\{\{(\d+(?:\.\d+)?)\|(\w+)\}\}/g, (_, n, u) => fmtQty(+n * factor, u)); }
 /** Shopping notes that mention "the baby": named for your children, or dropped if you have none. */

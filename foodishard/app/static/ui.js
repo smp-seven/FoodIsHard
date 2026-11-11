@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.9"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.10"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -1006,7 +1006,7 @@ function renderCook() {
       ${c.showIng ? `<div class="card"><ul class="ing-list">${ingList}</ul></div>` : ""}
       <p class="eyebrow" style="color:${s.baby ? "var(--baby)" : "var(--muted)"}">Step ${c.step + 1} of ${steps.length}${s.baby ? ` · ${esc(kidNames())}'s ${kids().length > 1 ? "portions" : "portion"}` : ""}</p>
       <section class="cook-panel ${s.baby ? "baby" : ""}"><p class="cook-step">${esc(text)}</p>
-        ${(() => { const used = s.baby ? [] : stepIngredients(text, effectiveIngredients(r)).filter((i) => i.q != null); /* salt and pepper still claim their words, but have no amount to show */ return used.length ? `<ul class="step-ings">${used.map((i) => `<li><span>${esc(ingMeta(i.k).n)}${i.part ? ` <span class="small">(${i.part})</span>` : ""}</span><b>${esc(fmtQty(i.q * factor, i.u))}</b></li>`).join("")}</ul>` : ""; })()}
+        ${(() => { const used = s.baby ? [] : stepIngredients(text, effectiveIngredients(r), steps.slice(0, c.step).map((x) => x.t).join(" ")).filter((i) => i.q != null); /* salt and pepper still claim their words, but have no amount to show */ return used.length ? `<ul class="step-ings">${used.map((i) => `<li><span>${esc(ingMeta(i.k).n)}${i.part ? ` <span class="small">(${i.part})</span>` : ""}</span><b>${esc(fmtQty(i.q * factor, i.u))}</b></li>`).join("")}</ul>` : ""; })()}
         ${s.baby && kids().length ? `<div class="stack" style="gap:8px;margin-top:12px">${kidNotes(r)}</div>` : ""}</section>
       ${mins ? `<button class="btn" data-act="timerStart" data-m="${mins}">${icon("clock", 18)}Start a ${mins}-minute timer</button>` : ""}
       ${timers}
