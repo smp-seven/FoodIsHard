@@ -145,7 +145,7 @@ async function api(request, env, who, url) {
   if (path === "/api/import" && post) return json({ ...(await household(env, who.household).importState(await readBody(request))), user: who.name });
 
   // ---- a message from the admin, shown once ----
-  if (path === "/api/notice" && !post) return json({ notice: await dir.noticeFor(who.email) });
+  if (path === "/api/notice" && !post) return json({ notice: await dir.noticeFor(who.email), reportBubble: await dir.reportBubble() });
   if (path === "/api/notice/seen" && post) { const { id } = await readBody(request); return json(await dir.markNotice(who.email, id)); }
 
   // ---- your household's members ----
@@ -210,6 +210,11 @@ async function api(request, env, who, url) {
     if (path === "/api/admin/notice" && post) {
       const { text } = await readBody(request);
       await dir.setNotice(who.email, text);
+      return json({ ...(await dir.overview()), ...signInInfo() });
+    }
+    if (path === "/api/admin/bubble" && post) {
+      const { on } = await readBody(request);
+      await dir.setReportBubble(on === true);
       return json({ ...(await dir.overview()), ...signInInfo() });
     }
     if (path === "/api/admin/notice/clear" && post) {

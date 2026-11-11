@@ -104,8 +104,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.15"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
-const REPORT_BUBBLE = true; // beta only: a 💬 on every page for "Report a problem". Set to false for the full release (Settings keeps it).
+const APP_VERSION = "0.11.16"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -129,7 +128,7 @@ function render() {
   const dock = $("#dock");
   dock.hidden = app.tab !== "shop";
   document.body.classList.toggle("has-dock", app.tab === "shop"); // leaves room so the buttons never cover the list
-  if (REPORT_BUBBLE && app.host === "Cloudflare" && !$("#reportBubble")) document.body.classList.add("has-bubble"), document.body.insertAdjacentHTML("beforeend", `<button id="reportBubble" class="report-bubble" data-act="report" aria-label="Report a problem">💬</button>`);
+  reportBubble();
   if (app.tab === "shop") dock.innerHTML = dockShop();
   const left = buildList(currentWeek()).filter((i) => i.active && !i.done).length;
   const c = $("#shopCount"); c.hidden = !left || app.tab === "shop"; c.textContent = left;
@@ -1215,6 +1214,7 @@ const ACTIONS = {
   noticeDismiss: () => dismissNotice(),
   updateNow: () => updateNow(),
   adminNotice: () => openAdminNotice(),
+  adminBubble: (d, el) => adminDo("api/admin/bubble", { on: el.checked }, () => { app.reportBubble = el.checked; reportBubble(); toast(el.checked ? "💬 button on for everyone" : "💬 button off for everyone"); }),
   adminNoticeClear: () => { if (window.confirm("Take the message down? Anyone who hasn't seen it yet won't.")) adminDo("api/admin/notice/clear", {}, () => toast("Message taken down")); },
   signOut: () => signOut(),
   deleteAccount: () => openDeleteAccount(),
@@ -1606,11 +1606,19 @@ function updateNow() {
 
 // ---- A message from the admin, shown once to each person (online version) ----
 let noticeChecked = 0;
+/** The 💬 "Report a problem" button on every page (online). The admin switches it on or off for everyone. */
+function reportBubble() {
+  const on = app.host === "Cloudflare" && app.reportBubble === true, el = $("#reportBubble");
+  document.body.classList.toggle("has-bubble", on);
+  if (on && !el) document.body.insertAdjacentHTML("beforeend", `<button id="reportBubble" class="report-bubble" data-act="report" aria-label="Report a problem">💬</button>`);
+  if (!on && el) el.remove();
+}
 async function loadNotice() {
   if (Date.now() - noticeChecked < 10 * 60000) return; // at most every 10 minutes
   noticeChecked = Date.now();
   try {
-    const { notice } = await accountCall("api/notice");
+    const { notice, reportBubble: bubble } = await accountCall("api/notice");
+    app.reportBubble = bubble === true; reportBubble();
     if (notice) showNotice(notice);
   } catch { noticeChecked = 0; /* try again next time */ }
 }
@@ -1821,7 +1829,9 @@ function viewAdmin() {
       </div>
     </div>
     <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="go" data-to="feedback" style="padding:13px 16px"><span class="grow"><b>Recipe feedback</b></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button>
-      <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b>${ad.notice ? `<br><span class="small muted">Showing now · seen by ${ad.notice.seenBy} of ${ad.people}</span>` : ""}</span>${icon("right", 18)}</button></div>
+      <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b>${ad.notice ? `<br><span class="small muted">Showing now · seen by ${ad.notice.seenBy} of ${ad.people}</span>` : ""}</span>${icon("right", 18)}</button>
+      <label class="row" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>💬 Report button on every page</b><br><span class="small muted">Report a problem is always in Settings</span></span>
+        <span class="switch"><input type="checkbox" data-act="adminBubble" ${ad.reportBubble !== false ? "checked" : ""}><i></i></span></label></div>
     <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
     <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search people or households" aria-label="Search people or households" data-input="afilter" autocomplete="off"></label>
     <div class="chips" style="margin-bottom:12px">${chip("all", "Everyone")}${chip("never", `Never signed in (${never})`)}${chip("inactive", `Inactive (${inactive})`)}</div>

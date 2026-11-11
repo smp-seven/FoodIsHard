@@ -426,6 +426,13 @@ await test("admin message: everyone sees it once, until they dismiss it; a new o
   await c("/api/admin/notice/clear", { email: "admin@example.com", body: {} });
   assert.equal((await c("/api/notice", { email: "priya@example.com" })).body.notice, null);
   assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.notice, null);
+  // the 💬 report button: on by default, only the admin can switch it, everyone sees the change
+  assert.equal((await c("/api/notice", { email: "alex@example.com" })).body.reportBubble, true);
+  assert.equal((await c("/api/admin/bubble", { email: "alex@example.com", body: { on: false } })).status, 403);
+  assert.equal((await c("/api/admin/bubble", { email: "admin@example.com", body: { on: false } })).body.reportBubble, false);
+  assert.equal((await c("/api/notice", { email: "alex@example.com" })).body.reportBubble, false);
+  await c("/api/admin/bubble", { email: "admin@example.com", body: { on: true } });
+  assert.equal((await c("/api/notice", { email: "alex@example.com" })).body.reportBubble, true);
 });
 await test("security: crafted keys are refused and can't touch shared objects", async () => {
   const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "alex@example.com": "Alex" } }) });

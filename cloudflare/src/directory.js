@@ -126,7 +126,7 @@ export class Directory extends DurableObject {
   // ---- admins only (the Worker checks ADMINS before calling these) ----------
   overview() {
     const households = this.rows("SELECT id, name, created FROM households ORDER BY name COLLATE NOCASE");
-    return { households: households.map((h) => ({ ...h, members: this.householdMembers(h.id) })), people: this.peopleCount(), limits: LIMITS, lastSync: JSON.parse(this.meta("lastSync") || "null"), notice: this.noticeStats() };
+    return { households: households.map((h) => ({ ...h, members: this.householdMembers(h.id) })), people: this.peopleCount(), limits: LIMITS, lastSync: JSON.parse(this.meta("lastSync") || "null"), notice: this.noticeStats(), reportBubble: this.reportBubble() };
   }
 
   createHousehold(byEmail, { householdName, email, name }) {
@@ -191,6 +191,10 @@ export class Directory extends DurableObject {
     }
     return { left: m.household };
   }
+
+  // ---- the "Report a problem" bubble on every page (beta), switched by the admin ----
+  reportBubble() { return this.meta("reportBubble") !== "0"; }
+  setReportBubble(on) { this.setMeta("reportBubble", on ? "1" : "0"); }
 
   // ---- a message from the admin to everyone, shown once each -----------------
   notice() { return JSON.parse(this.meta("notice") || "null"); }

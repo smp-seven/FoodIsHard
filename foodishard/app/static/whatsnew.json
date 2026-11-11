@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.16",
+   "notes": [
+    "Small behind-the-scenes update to the 💬 report button."
+   ]
+  },
+  {
    "version": "0.11.15",
    "notes": [
     "During testing: tap the 💬 in the bottom corner on any page to report a problem."

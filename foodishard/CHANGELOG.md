@@ -252,3 +252,6 @@ Fixes from a review of the new features:
 
 ## 0.11.15
 - Online beta: a small 💬 button on every page opens Report a problem (switch: REPORT_BUBBLE in ui.js).
+
+## 0.11.16
+- Online: the 💬 report button is now switched on or off for everyone from the admin panel, with no release needed.
