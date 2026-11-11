@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.9",
+   "notes": [
+    "Who's eating has moved up next to the lock on each day."
+   ]
+  },
+  {
    "version": "0.11.8",
    "notes": [
     "Quieter week: days where everyone is eating just show the people icon. Tap it to change who's eating."

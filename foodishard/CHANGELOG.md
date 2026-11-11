@@ -230,3 +230,6 @@ Fixes from a review of the new features:
 
 ## 0.11.8
 - Week: the who's-eating button shows only the people icon unless the day is adjusted.
+
+## 0.11.9
+- Week: the who's-eating button sits next to the lock; the adjusted-day pill only shows when something has changed.
