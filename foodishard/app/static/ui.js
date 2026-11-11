@@ -53,6 +53,7 @@ async function boot() {
   setupLongPress();
   window.addEventListener("hashchange", fromHash);
   fromHash();
+  backGuard();
   if (app.mode === "live") { startPolling(); flushQueue(); }
   if (app.mode === "live" && app.host === "Cloudflare" && !app.offline && !app.signedOut) {
     loadAccount(); loadNotice();
@@ -104,7 +105,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.22"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.23"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -652,10 +653,28 @@ function closeSheet({ fromBack = false, navigating = false } = {}) {
     else if (!fromBack) history.back();
   }
 }
-window.addEventListener("popstate", () => {
+window.addEventListener("popstate", (e) => {
+  if (e.state && e.state.fih === "root") return leavingApp();
   if (!$("#sheet").hidden) closeSheet({ fromBack: true });
   else if (app.cook) stopCooking({ fromBack: true });
 });
+/* Online, in a browser tab, the page before the app is the Cloudflare sign-in page. Pressing Back from the app's first
+   page used to land there ("Your code session is no longer available"), which looks like being signed out. So the app
+   keeps one extra step at its start: the first Back stays in the app with a hint, a second Back leaves.
+   Installed (home-screen) apps start fresh with no sign-in page behind them, so they're left alone. */
+function backGuard() {
+  if (app.host !== "Cloudflare" || matchMedia("(display-mode: standalone)").matches || navigator.standalone) return;
+  try { if (sessionStorage.getItem("fihGuard")) return; sessionStorage.setItem("fihGuard", "1"); } catch { return; } // once per tab, not on every reload
+  history.replaceState({ fih: "root" }, "");
+  history.pushState({ fih: "app" }, "");
+}
+function leavingApp() {
+  if (app.leaveArmed) { app.leaveArmed = false; history.back(); return; } // second Back: really leave
+  app.leaveArmed = true; setTimeout(() => { app.leaveArmed = false; }, 3000);
+  history.pushState({ fih: "app" }, "");
+  if (!$("#sheet").hidden) closeSheet({ fromBack: true, navigating: true });
+  toast("Press back again to leave FoodIsHard");
+}
 
 function openRecipe(id, { pickDay = null, keepScroll = false, day = null } = {}) {
   const r = app.byId[id]; if (!r) return;

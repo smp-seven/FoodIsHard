@@ -270,3 +270,6 @@ Fixes from a review of the new features:
 
 ## 0.11.22
 - Recipe ratings are anonymous in the admin Feedback screen and its copy. Problem reports keep the name so the admin can follow up. Privacy wording updated.
+
+## 0.11.23
+- Online, in a browser tab: Back from the first screen stays in the app with a hint; a second Back leaves. Stops people landing on the expired sign-in page and thinking they were signed out.
