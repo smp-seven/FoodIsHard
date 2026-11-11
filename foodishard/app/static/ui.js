@@ -104,7 +104,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.11"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.12"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -126,7 +126,7 @@ function render() {
   dock.hidden = app.tab !== "shop";
   document.body.classList.toggle("has-dock", app.tab === "shop"); // leaves room so the buttons never cover the list
   if (app.tab === "shop") dock.innerHTML = dockShop();
-  const left = buildList(currentWeek()).filter((i) => i.active && (!i.cupboard || i.need) && !i.done).length;
+  const left = buildList(currentWeek()).filter((i) => i.active && !i.done).length;
   const c = $("#shopCount"); c.hidden = !left || app.tab === "shop"; c.textContent = left;
 }
 function currentWeek() { return iso(weekStartFor(new Date(), settings().weekStartDay || 0)); }
@@ -328,7 +328,7 @@ function viewTonight() {
     upcoming.push(`<button ${rr && day.status === "cook" ? `data-act="recipe" data-id="${rr.id}" data-week="${wk}" data-i="${idx}"` : `data-act="go" data-to="week"`}><span class="d">${DOW[mondayIndex(date)].toUpperCase()}</span>${label}</button>`);
   }
 
-  const list = buildList(week).filter((x) => x.active && (!x.cupboard || x.need));
+  const list = buildList(week).filter((x) => x.active);
   const toBuy = list.filter((x) => !x.done && !x.bought), left = toBuy.length;
   const total = list.reduce((t, x) => t + (x.cost || 0), 0), leftCost = toBuy.reduce((t, x) => t + (x.cost || 0), 0);
   const growing = babySuggestions().filter((x) => !x.info);
@@ -395,7 +395,7 @@ function shopData() {
   const week = currentWeek();
   const all = buildList(week);
   const bought = all.filter((i) => i.bought);
-  const toGet = all.filter((i) => i.active && (!i.cupboard || i.need) && !i.bought); // the live list
+  const toGet = all.filter((i) => i.active && !i.bought); // the live list
   const tabs = enabledShops().concat("any").map((s) => ({ s, n: toGet.filter((i) => i.shop === s && !i.done).length, all: toGet.filter((i) => i.shop === s).length })).filter((t) => t.all);
   if (app.shopTab !== "all" && !tabs.some((t) => t.s === app.shopTab)) app.shopTab = "all";
   const shown = app.shopTab === "all" ? toGet : toGet.filter((i) => i.shop === app.shopTab);
@@ -928,11 +928,10 @@ function openRack({ keepScroll = false } = {}) {
   };
   const items = rackItems();
   const spices = items.filter((m) => m.rack === "spices"), cupboard = items.filter((m) => m.rack !== "spices");
-  const missing = spices.filter((m) => m.status !== "ok");
-  const starterCost = missing.reduce((t, m) => t + (basePrice(m.k) || { p: 0 }).p * shopMult(priceShop()), 0);
+  const missing = items.filter((m) => used.has(m.k) && !m.status); // needed for this week's dinners but not ticked yet
   openSheet(`<h1 class="title" style="font-size:26px">Spice rack &amp; cupboard</h1>
     <p class="muted">Low or Out goes on the shopping list.</p>
-    ${missing.length ? `<button class="btn primary block" style="margin:6px 0 4px" data-act="rackStarter">Starter rack: add ${missing.length} spices to the list (≈ ${money(starterCost)})</button>` : ""}
+    ${missing.length ? `<button class="btn primary block" style="margin:6px 0 4px" data-act="rackStarter">Add ${missing.length} unchecked for this week</button>` : ""}
     <p class="section-label">Spices</p><div class="list">${spices.map(row).join("")}</div>
     <p class="section-label">Cupboard</p><div class="list">${cupboard.map(row).join("")}</div>`, { keepScroll });
 }
@@ -1074,7 +1073,7 @@ function downloadText(text, name) {
   setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
 }
 function printList() {
-  const week = currentWeek(), items = buildList(week).filter((i) => i.active && (!i.cupboard || i.need));
+  const week = currentWeek(), items = buildList(week).filter((i) => i.active);
   const total = items.reduce((t, i) => t + (i.cost || 0), 0);
   const html = aisleOrder().map((g) => { const group = items.filter((i) => i.aisle === g); if (!group.length) return "";
     return `<h2>${esc(aisleName(g))}</h2><ul>${group.sort((a, b) => a.name.localeCompare(b.name)).map((i) => `<li>${esc(i.name)} ${i.qtyText ? `<b>${esc(i.qtyText)}</b>` : ""} <span class="where">${esc(shopName(i.shop))}${(i.flags || []).includes("veg") ? " · check V" : ""}</span></li>`).join("")}</ul>`; }).join("");
@@ -1180,8 +1179,8 @@ const ACTIONS = {
   aisleReset: () => { send({ op: "settings", patch: { aisleOrder: [] } }, { rerender: false }); openAisles({ keepScroll: true }); toast("Back to the usual order"); },
   rackSet: (d) => { send({ op: "pantry", key: d.k, status: d.s }); openRack({ keepScroll: true }); },
   rackStarter: () => {
-    const keys = rackItems().filter((m) => m.rack === "spices" && m.status !== "ok").map((m) => m.k);
-    send({ op: "pantry", keys, status: "out" }); closeSheet(); toast(`Added ${keys.length} spices to the list`);
+    const used = rackUsedThisWeek(currentWeek()), keys = rackItems().filter((m) => used.has(m.k) && !m.status).map((m) => m.k);
+    send({ op: "pantry", keys, status: "out" }); openRack({ keepScroll: true }); toast(`Added ${keys.length} to the shopping list`);
   },
   feedbackRate: (d, el) => { $$("#sheetBody [data-act=feedbackRate]").forEach((b) => b.classList.toggle("on", b === el)); app.fbRating = d.r; $("#fbSave").disabled = false; },
   feedbackTag: (d, el) => { el.classList.toggle("on"); },

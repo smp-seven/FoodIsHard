@@ -2,6 +2,13 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.12",
+   "notes": [
+    "Fixed: spices and cupboard items marked Low or Out now appear on the shopping list.",
+    "The spice rack's button now adds anything this week's dinners need that you haven't checked yet."
+   ]
+  },
+  {
    "version": "0.11.11",
    "notes": [
     "Nights marked \"out\" now always stay with the right person, even if someone else is removed from the household."

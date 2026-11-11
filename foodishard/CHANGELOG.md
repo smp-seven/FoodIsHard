@@ -239,3 +239,7 @@ Fixes from a review of the new features:
 
 ## 0.11.11
 - Grown-ups added before 0.11 get a permanent id on first load, so who's-out nights can't move to someone else when a person is removed.
+
+## 0.11.12
+- Fixed spice rack and cupboard items marked Low or Out not appearing on the shopping list.
+- Spice rack: the starter-rack button is replaced by "Add N unchecked for this week".
