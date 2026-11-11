@@ -139,7 +139,7 @@ async function api(request, env, who, url) {
   if (path === "/api/op" && post) {
     const op = await readBody(request);
     const res = await household(env, who.household).op(op, who.name);
-    if (op && op.op === "feedback") await dir.noteFeedback(who.household);
+    if (op && op.op === "feedback") await dir.noteFeedback(who.household, op.recipe === "_problem" ? "problem" : "recipe");
     return json({ ...res, user: who.name });
   }
   if (path === "/api/import" && post) return json({ ...(await household(env, who.household).importState(await readBody(request))), user: who.name });
@@ -221,7 +221,7 @@ async function api(request, env, who, url) {
       await dir.clearNotice();
       return json({ ...(await dir.overview()), ...signInInfo() });
     }
-    if (path === "/api/admin/feedback/seen" && post) return json(await dir.markFeedbackSeen(who.email));
+    if (path === "/api/admin/feedback/seen" && post) { const { kind } = await readBody(request); return json(await dir.markFeedbackSeen(who.email, kind)); }
     if (path === "/api/admin/household" && post) {
       const created = await dir.createHousehold(who.email, await readBody(request));
       whoCache.clear();

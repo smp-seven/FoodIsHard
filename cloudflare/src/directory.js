@@ -38,6 +38,8 @@ export class Directory extends DurableObject {
     // added in 0.9.5: when each recipe rating was left (no contents), so the admin dashboard can
     // say "3 new" without opening every household. The ratings themselves stay in each household.
     this.sql.exec("CREATE TABLE IF NOT EXISTS feedback_log (at INTEGER NOT NULL, household TEXT NOT NULL)");
+    // added in 0.11.17: recipe ratings and problem reports are counted separately
+    if (!this.sql.exec("PRAGMA table_info(feedback_log)").toArray().some((c) => c.name === "kind")) this.sql.exec("ALTER TABLE feedback_log ADD COLUMN kind TEXT");
   }
 
   // ---- small helpers -------------------------------------------------------
@@ -226,18 +228,18 @@ export class Directory extends DurableObject {
   }
 
   // ---- recipe feedback ------------------------------------------------------
-  noteFeedback(household) {
+  noteFeedback(household, kind = "recipe") {
     const now = this.now();
-    this.sql.exec("INSERT INTO feedback_log (at, household) VALUES (?, ?)", now, household);
+    this.sql.exec("INSERT INTO feedback_log (at, household, kind) VALUES (?, ?, ?)", now, household, kind === "problem" ? "problem" : "recipe");
     this.sql.exec("DELETE FROM feedback_log WHERE at < ?", now - 400 * 86400);
   }
   /** How many ratings have arrived since this admin last opened the Feedback screen. */
   feedbackNew(email) {
-    const seen = Number(this.meta(`feedbackSeen:${email}`) || 0);
-    const n = this.row("SELECT COUNT(*) AS n FROM feedback_log f JOIN households h ON h.id = f.household WHERE f.at > ?", seen).n;
-    return { new: n, seen };
+    const seen = Number(this.meta(`feedbackSeen:${email}`) || 0), problemsSeen = Number(this.meta(`problemsSeen:${email}`) || 0);
+    const count = (since, problem) => this.row(`SELECT COUNT(*) AS n FROM feedback_log f JOIN households h ON h.id = f.household WHERE f.at > ? AND ${problem ? "f.kind = 'problem'" : "(f.kind IS NULL OR f.kind <> 'problem')"}`, since).n;
+    return { new: count(seen, false), seen, problems: count(problemsSeen, true), problemsSeen };
   }
-  markFeedbackSeen(email) { this.setMeta(`feedbackSeen:${email}`, String(this.now())); return this.feedbackNew(email); }
+  markFeedbackSeen(email, kind) { this.setMeta(`${kind === "problems" ? "problemsSeen" : "feedbackSeen"}:${email}`, String(this.now())); return this.feedbackNew(email); }
 
   allEmails() { return this.rows("SELECT email FROM members ORDER BY email").map((r) => r.email); }
   recordSync(result) { this.setMeta("lastSync", JSON.stringify({ ...result, at: this.now() })); }

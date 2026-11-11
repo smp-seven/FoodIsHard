@@ -104,7 +104,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.16"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.17"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1223,6 +1223,7 @@ const ACTIONS = {
   fbFilter: (d) => { app.fbFilter = d.f; render(); },
   fbGroup: (d) => { app.fbGroup = d.g; render(); },
   fbCopy: () => copyText(adminFeedbackText()),
+  fbOpen: (d) => { app.fbKind = d.k; app.fbAdmin = null; go("feedback"); },
   adminFilter: (d) => { app.adminFilter = d.f; render(); },
   adminMember: (d) => openAdminMember(d.email),
   adminHousehold: (d) => openAdminHousehold(d.id),
@@ -1828,7 +1829,8 @@ function viewAdmin() {
           : `<span class="small" style="color:var(--warm)">Automatic sign-in updates aren't set up: add new emails to your Access policy by hand (CLOUDFLARE.md, step 6).</span>`}
       </div>
     </div>
-    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="go" data-to="feedback" style="padding:13px 16px"><span class="grow"><b>Recipe feedback</b></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button>
+    <div class="list" style="margin-bottom:12px"><button class="rrow" data-act="fbOpen" data-k="problems" style="padding:13px 16px"><span class="grow"><b>Problem reports</b></span>${ad.feedback && ad.feedback.problems ? `<span class="pill warn">${ad.feedback.problems} new</span>` : ""}${icon("right", 18)}</button>
+      <button class="rrow" data-act="fbOpen" data-k="recipes" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Recipe feedback</b></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button>
       <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b>${ad.notice ? `<br><span class="small muted">Showing now · seen by ${ad.notice.seenBy} of ${ad.people}</span>` : ""}</span>${icon("right", 18)}</button>
       <label class="row" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>💬 Report button on every page</b><br><span class="small muted">Report a problem is always in Settings</span></span>
         <span class="switch"><input type="checkbox" data-act="adminBubble" ${ad.reportBubble !== false ? "checked" : ""}><i></i></span></label></div>
@@ -1851,18 +1853,21 @@ async function loadAdminFeedback() {
   app.fbLoading = true;
   try {
     const res = await accountCall("api/admin/feedback");
-    app.fbAdmin = { ...res, prevSeen: res.seen };
-    if (res.new) { // opening the screen counts as reading them; they stay marked "New" until you leave
-      const seen = await accountCall("api/admin/feedback/seen", {});
+    const problems = app.fbKind === "problems";
+    app.fbAdmin = { ...res, prevSeen: problems ? res.problemsSeen : res.seen };
+    if (problems ? res.problems : res.new) { // opening the screen counts as reading them; they stay marked "New" until you leave
+      const seen = await accountCall("api/admin/feedback/seen", { kind: problems ? "problems" : "recipes" });
       if (app.adminInfo) app.adminInfo.feedback = seen;
     }
   } catch (err) { app.fbAdmin = { error: err.message }; }
   app.fbLoading = false;
   if (app.tab === "feedback") render();
 }
+/** The admin's two feedback screens: recipe ratings, or problem reports from "Report a problem". */
+function fbOfKind() { const p = app.fbKind === "problems"; return ((app.fbAdmin && app.fbAdmin.items) || []).filter((i) => (i.recipe === "_problem") === p); }
 function fbFiltered() {
   const fb = app.fbAdmin, f = app.fbFilter || "all";
-  return (fb.items || []).filter((i) => f === "all"
+  return fbOfKind().filter((i) => f === "all"
     || (f === "new" && i.at > fb.prevSeen)
     || (f === "notes" && (i.note || i.tags.length))
     || (f === "never" && i.rating === "never")
@@ -1870,11 +1875,11 @@ function fbFiltered() {
 }
 function viewAdminFeedback() {
   const right = `<div class="row" style="gap:6px"><button class="icon-btn" data-act="fbReload" aria-label="Refresh">${icon("refresh", 18)}</button><button class="icon-btn" data-act="go" data-to="admin" aria-label="Back to the admin dashboard">${icon("left", 18)}</button></div>`;
-  const head = header("Admin", "Recipe feedback", right, { logo: true });
+  const problems = app.fbKind === "problems", head = header("Admin", problems ? "Problem reports" : "Recipe feedback", right, { logo: true });
   const fb = app.fbAdmin;
   if (!fb) { loadAdminFeedback(); return `${head}<div class="list"><div class="row" style="padding:16px"><span class="muted">Loading…</span></div></div>`; }
   if (fb.error) return `${head}<div class="list"><div class="row" style="padding:16px"><span class="grow muted">Couldn't load: ${esc(fb.error)}</span><button class="btn sm" data-act="fbReload">Retry</button></div></div>`;
-  const all = fb.items || [], items = fbFiltered(), f = app.fbFilter || "all", g = app.fbGroup || "latest";
+  const all = fbOfKind(), items = problems ? all : fbFiltered(), f = app.fbFilter || "all", g = problems ? "latest" : app.fbGroup || "latest";
   const homes = new Set(all.map((i) => i.householdId)).size, recipesRated = new Set(all.map((i) => i.recipe)).size;
   const fresh = all.filter((i) => i.at > fb.prevSeen).length;
   const count = (fn) => all.filter(fn).length;
@@ -1885,7 +1890,7 @@ function viewAdminFeedback() {
       ${i.tags.length ? `<br><span class="small">${i.tags.map(esc).join(" · ")}</span>` : ""}
       ${i.note ? `<br><span style="font-style:italic">“${esc(i.note)}”</span>` : ""}</span></div>`;
   let body;
-  if (!all.length) body = `<div class="empty">No ratings yet.</div>`;
+  if (!all.length) body = `<div class="empty">${problems ? "No problem reports." : "No ratings yet."}</div>`;
   else if (!items.length) body = `<div class="empty">Nothing matches that filter.</div>`;
   else if (g === "recipe") {
     const groups = new Map();
@@ -1898,6 +1903,9 @@ function viewAdminFeedback() {
         ${list.map((i) => entry(i, false)).join("")}</section>`;
     }).join("");
   } else body = `<section class="list" data-group-list><div hidden data-name=""></div>${items.map((i) => entry(i, true)).join("")}</section>`;
+  if (problems) return `${head}
+    <p class="small muted" style="margin:0 0 10px">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."}</p>
+    <div id="adminList"><section class="list" data-group-list><div hidden data-name=""></div>${all.length ? all.map((i) => entry(i, false)).join("") : body}</section></div>`;
   return `${head}
     <div class="list" style="margin-bottom:12px"><div class="stack" style="padding:14px 16px;gap:8px">
       <b>${all.length} rating${all.length === 1 ? "" : "s"} of ${recipesRated} recipe${recipesRated === 1 ? "" : "s"}, from ${homes} household${homes === 1 ? "" : "s"}</b>

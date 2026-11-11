@@ -383,6 +383,15 @@ await test("recipe feedback: admins see every household's, with a new count; oth
   assert.equal((await c("/api/admin/feedback/seen", { email: "admin@example.com", body: {} })).body.new, 0);
   assert.equal((await c("/api/admin", { email: "admin@example.com" })).body.feedback.new, 0);
   assert.equal((await c("/api/admin/feedback/seen", { email: "alex@example.com", body: {} })).status, 403);
+  // problem reports are counted on their own, and reading one list doesn't mark the other as read
+  await c("/api/op", { email: "alex@example.com", body: { op: "feedback", recipe: "_problem", rating: "problem", tags: [], note: "list froze" } });
+  await c("/api/op", { email: "priya@example.com", body: { op: "feedback", recipe: rid.id, rating: "fine" } });
+  let f = (await c("/api/admin", { email: "admin@example.com" })).body.feedback;
+  assert.equal(f.problems, 1); const recipesNew = f.new;
+  const rep = (await c("/api/admin/feedback", { email: "admin@example.com" })).body.items.find((i) => i.recipe === "_problem");
+  assert.equal(rep.recipeName, "Problem report"); assert.equal(rep.note, "list froze");
+  f = (await c("/api/admin/feedback/seen", { email: "admin@example.com", body: { kind: "problems" } })).body;
+  assert.equal(f.problems, 0); assert.equal(f.new, recipesNew);
 });
 const space = (ns) => ns.jurisdiction("eu");
 await test("delete my account: leaves the household, scrubs the name; the last one out deletes it", async () => {

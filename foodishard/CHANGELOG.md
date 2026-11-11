@@ -255,3 +255,6 @@ Fixes from a review of the new features:
 
 ## 0.11.16
 - Online: the 💬 report button is now switched on or off for everyone from the admin panel, with no release needed.
+
+## 0.11.17
+- Admin: problem reports have their own screen and "new" count, separate from recipe feedback.
