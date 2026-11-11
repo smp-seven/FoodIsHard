@@ -224,3 +224,6 @@ Fixes from a review of the new features:
 
 ## 0.11.6
 - Shopping list: counted items (eggs, wraps, buns) are no longer rounded down, and the "a little over doesn't buy another pack" allowance is capped at under a third of a pack.
+
+## 0.11.7
+- Settings: removed the "Receipt reader: coming later" placeholder row.
