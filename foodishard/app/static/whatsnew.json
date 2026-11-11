@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.13",
+   "notes": [
+    "Spices and cupboard items you tick off are set back to \"Got it\" in the spice rack when you press Done shopping."
+   ]
+  },
+  {
    "version": "0.11.12",
    "notes": [
     "Fixed: spices and cupboard items marked Low or Out now appear on the shopping list.",

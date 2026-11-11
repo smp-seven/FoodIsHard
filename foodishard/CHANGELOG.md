@@ -243,3 +243,6 @@ Fixes from a review of the new features:
 ## 0.11.12
 - Fixed spice rack and cupboard items marked Low or Out not appearing on the shopping list.
 - Spice rack: the starter-rack button is replaced by "Add N unchecked for this week".
+
+## 0.11.13
+- Done shopping sets ticked spice rack and cupboard items back to "Got it".

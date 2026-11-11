@@ -104,7 +104,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.12"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.13"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -868,6 +868,8 @@ function doneShopping() {
   const got = toGet.filter((i) => i.done), left = toGet.filter((i) => !i.done);
   const cost = got.reduce((t, i) => t + (i.cost || 0), 0);
   if (got.length) send({ op: "trip", week, keys: got.map((i) => i.key) });
+  const restocked = got.filter((i) => i.cupboard && i.k).map((i) => i.k); // bought spices and cupboard bits go back to "Got it"
+  if (restocked.length) send({ op: "pantry", keys: restocked, status: "ok" });
   const saved = got.length ? `${got.length} thing${got.length === 1 ? "" : "s"} (≈ ${money(cost)}) moved to Bought this week` : "";
   if (!left.length) { toast(got.length ? `${saved}. All done!` : "Nothing on the list. All done!"); return; }
   if (!got.length) { toast("Tick what's in your trolley first"); return; }
