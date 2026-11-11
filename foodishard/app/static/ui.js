@@ -40,6 +40,10 @@ async function boot() {
 
   app.weekStart = iso(weekStartFor(new Date(), settings().weekStartDay || 0));
   if (app.mode === "demo" && !app.state.plans[app.weekStart]) applyLocal({ op: "plan", week: app.weekStart, plan: suggestWeek(app.weekStart) });
+  // Grown-ups added before 0.11 have no id, so nights marked "out" point at a list position. Pin each one to the key it
+  // already uses (p0, p1…), so existing nights stay with the same person and removing someone can't shift them.
+  const ppl = settings().people || [];
+  if (ppl.some((p) => !p.id)) send({ op: "settings", patch: { people: ppl.map((p, i) => (p.id ? p : { ...p, id: `p${i}` })) } }, { rerender: false });
 
   document.addEventListener("click", onClick);
   document.addEventListener("change", onChange);
@@ -100,7 +104,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.10"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.11"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render

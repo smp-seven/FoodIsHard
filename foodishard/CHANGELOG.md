@@ -236,3 +236,6 @@ Fixes from a review of the new features:
 
 ## 0.11.10
 - Cooking mode: "the rest of" only shows half when an earlier step used half; otherwise it shows the amount marked "(the rest)".
+
+## 0.11.11
+- Grown-ups added before 0.11 get a permanent id on first load, so who's-out nights can't move to someone else when a person is removed.
