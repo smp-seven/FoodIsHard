@@ -593,7 +593,7 @@ function viewSettings() {
         <label><span class="small muted">Weekend time limit</span><select class="input" data-set="num" data-f="weekendMax">${[40, 60, 90, 120].map((m) => `<option value="${m}" ${+s.weekendMax === m ? "selected" : ""}>${m} minutes</option>`).join("")}</select></label>
         <label><span class="small muted">Week starts on</span><select class="input" data-set="num" data-f="weekStartDay">${DOW_LONG.map((d, i) => `<option value="${i}" ${(+s.weekStartDay || 0) === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
       </div>
-      <div class="stack" style="padding:14px 16px;gap:4px"><b>Always</b><span class="small muted">Always vegetarian: no meat, fish, gelatine, anchovy (so no Worcestershire), cochineal (E120) or animal rennet (so no Parmesan or Grana Padano). Free-range eggs, cheese with the V symbol.</span></div>
+      <div class="stack" style="padding:14px 16px;gap:4px"><b>Always</b><span class="small muted">Fully vegetarian: no meat, fish, gelatine, anchovy (so no Worcestershire), cochineal (E120) or animal rennet (so no Parmesan or Grana Padano). Free-range eggs, cheese with the V symbol.</span></div>
     </div>
 
     <p class="section-label">Shopping &amp; prices</p>
