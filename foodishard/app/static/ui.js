@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.7"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.8"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -366,7 +366,7 @@ function viewWeek() {
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}" data-week="${week}" data-i="${i}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
       <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${kcalShort(r)}</div>
-      <button class="pill ${dayAdjustText(d) ? "accent" : ""}" style="border:0;margin-top:6px" data-act="eating" data-i="${i}" data-week="${week}" aria-label="Who's eating: ${esc(dayAdjustText(d) || "everyone")}">${icon("people", 13)} ${esc(dayAdjustText(d) || "Everyone eating")}</button>
+      <button class="pill ${dayAdjustText(d) ? "accent" : ""}" style="border:0;margin-top:6px" data-act="eating" data-i="${i}" data-week="${week}" aria-label="Who's eating: ${esc(dayAdjustText(d) || "everyone")}">${icon("people", 13)}${dayAdjustText(d) ? " " + esc(dayAdjustText(d)) : ""}</button>
       <div class="actions">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
         <button class="btn sm soft" data-act="swapDay" data-i="${i}">Swap</button>

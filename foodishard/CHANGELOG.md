@@ -227,3 +227,6 @@ Fixes from a review of the new features:
 
 ## 0.11.7
 - Settings: removed the "Receipt reader: coming later" placeholder row.
+
+## 0.11.8
+- Week: the who's-eating button shows only the people icon unless the day is adjusted.
