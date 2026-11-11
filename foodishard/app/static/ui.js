@@ -105,7 +105,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.23"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.24"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1339,7 +1339,7 @@ const ACTIONS = {
   person: (d) => { app.fineTune = false; openPerson(+d.i); },
   kidPanel: (d) => openKid(d.id),
   kidsOnNow: () => saveKids(kidsAll(), true),
-  addPersonNamed: (d) => { const people = clone(settings().people); people.push({ id: uid(), name: d.n, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${d.n} added`); },
+  addPersonNamed: (d) => { if (settings().people.length >= MAX_PEOPLE) return; const people = clone(settings().people); people.push({ id: uid(), name: d.n, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${d.n} added`); },
   babyReview: () => { const sg = babySuggestions().find((x) => !x.info) || babySuggestions()[0]; if (sg) openKid(sg.kid); else go("settings"); },
   babyAccept: (d) => {
     const sg = babySuggestions().find((x) => x.kid === d.kid && x.key === d.k); if (!sg) return;
@@ -1349,7 +1349,7 @@ const ACTIONS = {
   },
   babyDismiss: (d) => { const k = kidsAll().find((x) => x.id === d.kid); if (k) updateKid(d.kid, { dismissed: [...new Set([...(k.dismissed || []), d.k])] }); refreshPanel(); },
   kidPortion: (d) => { const k = kidsAll().find((x) => x.id === d.id); if (k) updateKid(d.id, { portion: Math.max(0.05, Math.round(((+k.portion || 0) + +d.d) * 100) / 100) }); refreshPanel(); },
-  kidAdd: () => { const id = uid(); saveKids([...kidsAll(), { id, name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); openKid(id); },
+  kidAdd: () => { if (kidsAll().length >= MAX_PEOPLE) return; const id = uid(); saveKids([...kidsAll(), { id, name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); openKid(id); },
   kidRemove: (d) => {
     const k = kidsAll().find((x) => x.id === d.id);
     if (window.confirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) { saveKids(kidsAll().filter((x) => x.id !== d.id)); closeSheet(); }
@@ -1432,7 +1432,7 @@ function onSubmit(e) {
     send({ op: "feedback", recipe: "_problem", rating: "problem", tags: [], note: `${text.slice(0, 300)}\n— ${reportDetails()}`.slice(0, 500) });
     closeSheet(); toast("Sent. Thanks for letting us know"); return;
   }
-  if (f.dataset.form === "addPerson") { const name = val("name").trim(); if (!name) return; const people = clone(settings().people); people.push({ id: uid(), name, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${name} added`); return; }
+  if (f.dataset.form === "addPerson") { const name = val("name").trim(); if (!name || settings().people.length >= MAX_PEOPLE) return; const people = clone(settings().people); people.push({ id: uid(), name, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${name} added`); return; }
   if (f.dataset.form === "adminNotice") { adminDo("api/admin/notice", { text: val("text") }, () => toast("Sent")); return; }
   if (f.dataset.form === "adminRename") { adminDo("api/admin/rename-household", { id: f.dataset.id, name: val("name").trim() }, () => toast("Renamed")); return; }
   if (f.dataset.form === "invite" || f.dataset.form === "newHousehold") { submitInvite(f.dataset.form === "newHousehold" ? "household" : "member", f); return; }
@@ -1535,11 +1535,11 @@ function whoYouCookFor() {
     <div class="list">
       <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner, signed in or not</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
       ${adults}
-      <div style="padding:4px 16px 12px"><button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button></div>
+      <div style="padding:4px 16px 12px">${settings().people.length < MAX_PEOPLE ? `<button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button>` : `<span class="small muted">Up to ${MAX_PEOPLE} grown-ups. Use guests on a day for bigger gatherings.</span>`}</div>
       <label class="row between" style="padding:13px 16px;border-top:1px solid var(--line-soft);gap:12px"><span><b>Cooking for little ones</b><br><span class="small muted">${paused ? `${esc(kidNames(kidsAll()))} ${kidsAll().length > 1 ? "are" : "is"} saved but left out for now` : "Their own portions, stages and safety notes in every recipe"}</span></span>
         <span class="switch"><input type="checkbox" data-set="kidsOn" ${kidsOn() ? "checked" : ""} aria-label="Cooking for little ones"><i></i></span></label>
       ${little}
-      ${kidsOn() ? `<div style="padding:4px 16px 12px"><button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button></div>` : ""}
+      ${kidsOn() ? `<div style="padding:4px 16px 12px">${kidsAll().length < MAX_PEOPLE ? `<button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button>` : `<span class="small muted">Up to ${MAX_PEOPLE} little ones.</span>`}</div>` : ""}
     </div>`;
 }
 /** A grown-up's panel: name, named size (with what it means), optional protein goal. */

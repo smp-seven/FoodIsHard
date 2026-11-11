@@ -147,6 +147,12 @@ def check_op(op):
 
     def long(v, n):
         return v is not None and len(str(v)) > n
+    # a household cooks for up to 10 grown-ups and 10 little ones (guests on a day cover bigger gatherings)
+    if op["op"] == "settings" and isinstance(op.get("patch"), dict):
+        for k in ("people", "children"):
+            v = op["patch"].get(k)
+            if v is not None and (not isinstance(v, list) or len(v) > 10):
+                bad()
     if op["op"] == "extra_add":
         item = op.get("item")
         if not isinstance(item, dict) or long(item.get("name"), 120) or long(item.get("amount"), 120) or long(item.get("id"), 60):

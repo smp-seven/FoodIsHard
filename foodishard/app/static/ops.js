@@ -1,6 +1,7 @@
 // FoodIsHard state operations, shared by the app (browser), the Cloudflare Worker and,
 // in Python form, server.py. Every change to a household is one of these small ops.
 // Keep server.py apply_op() in step with this file.
+const MAX_PEOPLE = 10; // grown-ups and little ones each, per household
 /* eslint-disable no-unused-vars */
 // Names that would reach JavaScript's shared object machinery if used as keys. Changes come
 // from phones, so every key in one is checked before it touches the data.
@@ -19,6 +20,8 @@ function checkOp(op) {
   const long = (v, n) => v != null && String(v).length > n;
   if (op.op === "extra_add" && (!op.item || typeof op.item !== "object" || long(op.item.name, 120) || long(op.item.amount, 120) || long(op.item.id, 60))) bad();
   if (op.op === "extra_update" && op.patch && long(op.patch.name, 120)) bad();
+  // a household cooks for up to 10 grown-ups and 10 little ones (guests on a day cover bigger gatherings)
+  if (op.op === "settings" && op.patch && ["people", "children"].some((k) => op.patch[k] != null && (!Array.isArray(op.patch[k]) || op.patch[k].length > MAX_PEOPLE))) bad();
   if (op.op === "feedback" && (op.tags != null && (!Array.isArray(op.tags) || op.tags.length > 12 || op.tags.some((t) => long(t, 40))))) bad();
 }
 function applyOp(state, op, user) {

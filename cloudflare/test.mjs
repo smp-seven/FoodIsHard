@@ -168,6 +168,14 @@ await test("ops are shared within a household (email case ignored)", async () =>
   const s = await state("SAM@example.com");
   assert.equal(s.settings.dislikes, "olives"); assert.equal(s.checks["2026-11-09"].rice.by, "Sam");
 });
+await test("a household cooks for at most 10 grown-ups and 10 little ones", async () => {
+  const many = (n) => Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `P${i}`, portion: 1 }));
+  assert.equal((await call("/api/op", { email: "alex@example.com", body: { op: "settings", patch: { people: many(10) } } })).status, 200);
+  assert.equal((await call("/api/op", { email: "alex@example.com", body: { op: "settings", patch: { people: many(11) } } })).status, 400);
+  assert.equal((await call("/api/op", { email: "alex@example.com", body: { op: "settings", patch: { children: many(11) } } })).status, 400);
+  assert.equal((await state("alex@example.com")).settings.people.length, 10);
+  await call("/api/op", { email: "alex@example.com", body: { op: "settings", patch: { people: many(2) } } });
+});
 await test("households can't see each other's data", async () => {
   const p = await state("priya@example.com");
   assert.equal(p.settings.dislikes, ""); assert.deepEqual(p.checks, {});
