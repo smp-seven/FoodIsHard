@@ -104,7 +104,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.17"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.18"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1222,7 +1222,7 @@ const ACTIONS = {
   fbReload: () => { app.fbAdmin = null; render(); },
   fbFilter: (d) => { app.fbFilter = d.f; render(); },
   fbGroup: (d) => { app.fbGroup = d.g; render(); },
-  fbCopy: () => copyText(adminFeedbackText()),
+  fbCopy: () => copyText(app.fbKind === "problems" ? problemsText() : adminFeedbackText()),
   fbOpen: (d) => { app.fbKind = d.k; app.fbAdmin = null; go("feedback"); },
   adminFilter: (d) => { app.adminFilter = d.f; render(); },
   adminMember: (d) => openAdminMember(d.email),
@@ -1904,7 +1904,8 @@ function viewAdminFeedback() {
     }).join("");
   } else body = `<section class="list" data-group-list><div hidden data-name=""></div>${items.map((i) => entry(i, true)).join("")}</section>`;
   if (problems) return `${head}
-    <p class="small muted" style="margin:0 0 10px">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."}</p>
+    <div class="row between" style="margin:0 0 10px;gap:10px"><span class="small muted">${fresh ? `${fresh} new since you last looked.` : "Nothing new since you last looked."} Names are left out of the copy.</span>
+      <button class="btn sm" data-act="fbCopy" ${all.length ? "" : "disabled"}>${icon("copy", 16)}Copy for Claude</button></div>
     <div id="adminList"><section class="list" data-group-list><div hidden data-name=""></div>${all.length ? all.map((i) => entry(i, false)).join("") : body}</section></div>`;
   return `${head}
     <div class="list" style="margin-bottom:12px"><div class="stack" style="padding:14px 16px;gap:8px">
@@ -1919,6 +1920,12 @@ function viewAdminFeedback() {
     <div class="empty" data-none hidden>Nothing matches that.</div>`;
 }
 /** Everyone's feedback as plain text for Claude, grouped by recipe, without names. */
+/** Problem reports as plain text to paste to Claude: newest first, no names. */
+function problemsText() {
+  const list = fbOfKind();
+  if (!list.length) return "No problem reports.";
+  return ["FoodIsHard problem reports (newest first)", "", ...list.map((i, n) => `${n + 1}. ${i.at ? new Date(i.at * 1000).toISOString().slice(0, 16).replace("T", " ") : "date unknown"}\n${i.note}\n`)].join("\n");
+}
 function adminFeedbackText() {
   const groups = new Map();
   fbFiltered().forEach((i) => { if (!groups.has(i.recipe)) groups.set(i.recipe, { name: i.recipeName, list: [] }); groups.get(i.recipe).list.push(i); });

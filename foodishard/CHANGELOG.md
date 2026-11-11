@@ -258,3 +258,6 @@ Fixes from a review of the new features:
 
 ## 0.11.17
 - Admin: problem reports have their own screen and "new" count, separate from recipe feedback.
+
+## 0.11.18
+- Admin: Problem reports has a "Copy for Claude" button (newest first, no names).
