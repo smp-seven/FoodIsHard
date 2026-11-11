@@ -104,7 +104,8 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.14"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.15"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const REPORT_BUBBLE = true; // beta only: a 💬 on every page for "Report a problem". Set to false for the full release (Settings keeps it).
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -128,6 +129,7 @@ function render() {
   const dock = $("#dock");
   dock.hidden = app.tab !== "shop";
   document.body.classList.toggle("has-dock", app.tab === "shop"); // leaves room so the buttons never cover the list
+  if (REPORT_BUBBLE && app.host === "Cloudflare" && !$("#reportBubble")) document.body.classList.add("has-bubble"), document.body.insertAdjacentHTML("beforeend", `<button id="reportBubble" class="report-bubble" data-act="report" aria-label="Report a problem">💬</button>`);
   if (app.tab === "shop") dock.innerHTML = dockShop();
   const left = buildList(currentWeek()).filter((i) => i.active && !i.done).length;
   const c = $("#shopCount"); c.hidden = !left || app.tab === "shop"; c.textContent = left;

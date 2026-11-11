@@ -306,3 +306,10 @@ body.admin-only .view { padding-bottom: 32px; }
 
 /* the shopping list's buttons sit over the bottom of the page: leave room for them */
 body.has-dock .view { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-inset-bottom)); }
+
+/* Beta "Report a problem" bubble: small, out of the way, above the shopping buttons when they're showing */
+.report-bubble { position: fixed; right: 14px; bottom: calc(var(--nav-h) + 14px + env(safe-area-inset-bottom)); z-index: 16; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: 19px; line-height: 1; box-shadow: 0 3px 12px rgba(0,0,0,.12); opacity: .85; cursor: pointer; }
+body.has-dock .report-bubble { bottom: calc(var(--nav-h) + 84px + env(safe-area-inset-bottom)); }
+body.has-bubble .view { padding-bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom)); }
+body.has-bubble.has-dock .view { padding-bottom: calc(var(--nav-h) + 140px + env(safe-area-inset-bottom)); }
+@media print { .report-bubble { display: none !important; } }

@@ -249,3 +249,6 @@ Fixes from a review of the new features:
 
 ## 0.11.14
 - Online: Settings → Report a problem. Reports arrive in the admin Feedback screen with the app version, device type and last error.
+
+## 0.11.15
+- Online beta: a small 💬 button on every page opens Report a problem (switch: REPORT_BUBBLE in ui.js).

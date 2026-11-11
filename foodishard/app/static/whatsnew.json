@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.15",
+   "notes": [
+    "During testing: tap the 💬 in the bottom corner on any page to report a problem."
+   ]
+  },
+  {
    "version": "0.11.14",
    "notes": [
     "New: Settings → Report a problem. Tell us what went wrong and it's sent with your app version and device type."
