@@ -100,7 +100,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.3"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 
 // ---------------------------------------------------------------------------
 // Render
@@ -602,8 +602,6 @@ function viewSettings() {
       <div class="row" style="padding:13px 16px"><span class="grow"><b>Receipt reader</b><br><span class="small muted">Coming later</span></span></div>
     </div>
 
-    <p class="section-label">Weekly staples</p>
-    <div class="list"><button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="staples"><span class="grow"><b>Weekly staples</b><br><span class="small muted">${esc(staplesSummary())}</span></span><span aria-hidden="true">›</span></button></div>
     ${catalogue}
     <p class="section-label">Your data</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Download a backup</b></span><button class="btn sm" data-act="exportData">${icon("download", 16)}Save</button></div>

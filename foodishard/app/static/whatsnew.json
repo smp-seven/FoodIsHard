@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.4",
+   "notes": [
+    "Weekly staples now live on the shopping list only."
+   ]
+  },
+  {
    "version": "0.11.3",
    "notes": [
     "Less small print: helper text throughout is shorter or gone where it wasn't needed."

@@ -215,3 +215,6 @@ Fixes from a review of the new features:
 
 ## 0.11.3
 - **Less small print:** a copy pass on the grey helper text, panel intros, empty states and toasts. Explanations of how a feature works, lines that repeated the heading, and anything obvious are cut or shortened (about 70 edits). Safety wording is unchanged: allergies, baby and salt notes, storing and reheating, the vegetarian rule, About, and the delete and restore warnings. A few small layout touches keep spacing where a line was removed. Kept on purpose: "Tap an item to fix its price or swap it; hold to select several", "≈ £x left" on the Today card, "Everyone who eats dinner, signed in or not", and the note that people who join later see an admin message too.
+
+## 0.11.4
+- Weekly staples are now only on the shopping list (the card, and the ⋯ menu), no longer in Settings.
