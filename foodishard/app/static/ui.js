@@ -105,7 +105,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.24"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.25"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1242,6 +1242,13 @@ const ACTIONS = {
   fbFilter: (d) => { app.fbFilter = d.f; render(); },
   fbGroup: (d) => { app.fbGroup = d.g; render(); },
   fbCopy: () => copyText(app.fbKind === "problems" ? problemsText() : adminFeedbackText()),
+  problemDelete: (d) => {
+    if (!window.confirm("Delete this problem report? This can't be undone.")) return;
+    adminDo("api/admin/problem/delete", { ref: d.ref }, () => {
+      if (app.fbAdmin) app.fbAdmin.items = app.fbAdmin.items.filter((i) => i.ref !== d.ref);
+      render(); toast("Report deleted");
+    });
+  },
   fbOpen: (d) => { app.fbKind = d.k; app.fbAdmin = null; go("feedback"); },
   adminFilter: (d) => { app.adminFilter = d.f; render(); },
   adminMember: (d) => openAdminMember(d.email),
@@ -1907,7 +1914,8 @@ function viewAdminFeedback() {
       <span class="grow">${showRecipe ? `<b>${esc(i.recipeName)}</b> ` : ""}<span class="pill ${RATING_PILL[i.rating] || ""}">${esc(RATING_LABEL[i.rating] || i.rating)}</span>${i.at > fb.prevSeen ? ` <span class="pill warn">New</span>` : ""}<br>
       <span class="small muted">${[i.household, i.by].filter(Boolean).map(esc).join(" · ")}${i.household || i.by ? " · " : ""}${i.at ? `${shortDate(i.at)} (${ago(i.at)})` : "date unknown"}</span>
       ${i.tags.length ? `<br><span class="small">${i.tags.map(esc).join(" · ")}</span>` : ""}
-      ${i.note ? `<br><span style="font-style:italic">“${esc(i.note)}”</span>` : ""}</span></div>`;
+      ${i.note ? `<br><span style="font-style:italic">“${esc(i.note)}”</span>` : ""}</span>
+      ${i.ref ? `<button class="icon-btn sm" data-act="problemDelete" data-ref="${esc(i.ref)}" aria-label="Delete this report">${icon("trash", 16)}</button>` : ""}</div>`;
   let body;
   if (!all.length) body = `<div class="empty">${problems ? "No problem reports." : "No ratings yet."}</div>`;
   else if (!items.length) body = `<div class="empty">Nothing matches that filter.</div>`;

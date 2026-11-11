@@ -276,3 +276,6 @@ Fixes from a review of the new features:
 
 ## 0.11.24
 - Who you cook for: up to 10 grown-ups and 10 little ones per household, checked in the app, the online server and Home Assistant.
+
+## 0.11.25
+- Admin: problem reports can be deleted (bin button on each report).

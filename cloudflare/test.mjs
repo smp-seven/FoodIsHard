@@ -400,6 +400,12 @@ await test("recipe feedback: admins see every household's, with a new count; oth
   assert.equal(f.problems, 1); const recipesNew = f.new;
   const rep = (await c("/api/admin/feedback", { email: "admin@example.com" })).body.items.find((i) => i.recipe === "_problem");
   assert.equal(rep.recipeName, "Problem report"); assert.equal(rep.note, "list froze"); assert.equal(rep.by, "Alex"); assert.ok(rep.household); // reports keep names
+  assert.ok(rep.ref); assert.equal(alex.ref, undefined); // only problem reports can be deleted
+  assert.equal((await c("/api/admin/problem/delete", { email: "alex@example.com", body: { ref: rep.ref } })).status, 403);
+  assert.equal((await c("/api/admin/problem/delete", { email: "admin@example.com", body: { ref: "nope:1" } })).status, 404);
+  assert.equal((await c("/api/admin/problem/delete", { email: "admin@example.com", body: { ref: rep.ref } })).body.ok, true);
+  assert.equal((await c("/api/admin/feedback", { email: "admin@example.com" })).body.items.some((i) => i.recipe === "_problem"), false);
+  assert.ok((await c("/api/admin/feedback", { email: "admin@example.com" })).body.items.some((i) => i.recipe !== "_problem"), "ratings untouched");
   f = (await c("/api/admin/feedback/seen", { email: "admin@example.com", body: { kind: "problems" } })).body;
   assert.equal(f.problems, 0); assert.equal(f.new, recipesNew);
 });

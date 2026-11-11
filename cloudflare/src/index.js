@@ -204,12 +204,21 @@ async function api(request, env, who, url) {
             const problem = recipe === "_problem";
             if (!problem) rated.add(h.id);
             items.push({ household: problem ? h.name : "", recipe, recipeName: RECIPE_NAMES[recipe] || recipe, rating: String(f.rating || ""),
-              tags: Array.isArray(f.tags) ? f.tags.map(String) : [], note: String(f.note || ""), at: Number(f.at) || 0, by: problem ? String(f.by || "") : "" });
+              tags: Array.isArray(f.tags) ? f.tags.map(String) : [], note: String(f.note || ""), at: Number(f.at) || 0, by: problem ? String(f.by || "") : "",
+              ...(problem ? { ref: `${h.id}:${Number(f.at) || 0}` } : {}) });
           }
         }
       });
       items.sort((a, b) => b.at - a.at);
       return json({ items: items.slice(0, 3000), households: rated.size, ...(await dir.feedbackNew(who.email)) });
+    }
+    if (path === "/api/admin/problem/delete" && post) {
+      // Remove one problem report (e.g. a test). ref = "<household id>:<time it was sent>".
+      const { ref } = await readBody(request);
+      const m = /^([\w-]{1,80}):(\d{1,12})$/.exec(String(ref || ""));
+      const { households } = await dir.overview();
+      if (!m || !households.some((h) => h.id === m[1])) return json({ error: "not found" }, 404);
+      return json(await household(env, m[1]).deleteProblem(Number(m[2])));
     }
     if (path === "/api/admin/notice" && post) {
       const { text } = await readBody(request);
@@ -375,6 +384,17 @@ export class Household extends DurableObject {
   async feedbackList() {
     const state = await this.load();
     return state.feedback || {};
+  }
+  /** The admin deleted a problem report. Removes the first one sent at that time. */
+  async deleteProblem(at) {
+    const state = await this.load(), list = state.feedback && state.feedback._problem;
+    const i = Array.isArray(list) ? list.findIndex((f) => f && Number(f.at) === at) : -1;
+    if (i < 0) return { ok: false };
+    list.splice(i, 1);
+    if (!list.length) delete state.feedback._problem;
+    state.rev = (state.rev || 0) + 1;
+    await this.save();
+    return { ok: true };
   }
   /** Someone deleted their account: replace their name on ticks, items and notes. */
   async forgetPerson(name) {
