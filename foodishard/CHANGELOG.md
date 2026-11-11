@@ -264,3 +264,6 @@ Fixes from a review of the new features:
 
 ## 0.11.19 – 0.11.20
 - Settings: gentler wording for the always-vegetarian rule.
+
+## 0.11.21
+- New app icon and logo: the steaming bowl, now with a sweat drop.
