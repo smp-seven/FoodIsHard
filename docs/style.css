@@ -13,3 +13,4 @@ a { color: var(--accent); }
 nav { display: flex; gap: 18px; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: 40px; padding-top: 16px; font-size: 15px; }
 ul { padding-left: 22px; }
 .card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 6px 20px; margin: 18px 0; }
+.button { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 999px; margin-right: 8px; }
