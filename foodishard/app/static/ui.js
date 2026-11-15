@@ -106,7 +106,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.28"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.29"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1806,7 +1806,7 @@ function inviteMessage(name, email) {
   return `Hi ${name}! I've added you to FoodIsHard, the meal planner we use.
 
 1. Open ${url} on your phone
-2. Sign in with ${email}. If it's a Gmail address, tap Google. Otherwise, ask for a code by email.
+2. Sign in with ${email}, using Google or a code sent by email
 3. Add it to your home screen from your browser's menu, so it opens like an app.`;
 }
 function showInviteResult(name, email, signIn) {

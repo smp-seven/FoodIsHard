@@ -288,3 +288,6 @@ Fixes from a review of the new features:
 
 ## 0.11.28
 - Admin: a simpler, step-by-step invite message.
+
+## 0.11.29
+- Admin: invite message sign-in step shortened.
