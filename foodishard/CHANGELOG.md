@@ -291,3 +291,6 @@ Fixes from a review of the new features:
 
 ## 0.11.29
 - Admin: invite message sign-in step shortened.
+
+## 0.11.30
+- Shopping opens on next week's list on the last day of the week (if next week has dinners) or once this week's is all bought. The Tonight card and the tab badge follow the same week.

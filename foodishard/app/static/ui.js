@@ -97,16 +97,17 @@ function hydrateIcons(root) { $$("[data-icon]", root).forEach((el) => { if (!el.
 function go(tab) {
   if (tab === "settings" && !["settings", "admin", "feedback"].includes(app.tab)) app.prevTab = app.tab; if (location.hash !== "#" + tab) location.hash = tab; else { app.tab = tab; render(); } }
 function fromHash() {
-  const t = (location.hash || "#tonight").slice(1);
+  const t = (location.hash || "#tonight").slice(1), was = app.tab;
   app.tab = ["tonight", "week", "shop", "recipes", "settings", "admin", "feedback"].includes(t) ? t : "tonight";
   if ((app.tab === "admin" || app.tab === "feedback") && app.host !== "Cloudflare") app.tab = "settings";
   if (app.mode === "admin" && app.tab !== "feedback") app.tab = "admin";
   if (app.tab !== "feedback") app.fbAdmin = null; // reopening shows what's new since this visit
+  if (app.tab === "shop" && was !== "shop") app.shopAhead = shopDefaultAhead(); // open on the list you'll actually shop from
   app.selecting.clear();
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.29"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.30"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -132,7 +133,7 @@ function render() {
   document.body.classList.toggle("has-dock", app.tab === "shop"); // leaves room so the buttons never cover the list
   reportBubble();
   if (app.tab === "shop") dock.innerHTML = dockShop();
-  const left = buildList(currentWeek()).filter((i) => i.active && !i.done).length;
+  const left = buildList(iso(addDays(parseISO(currentWeek()), 7 * shopDefaultAhead()))).filter((i) => i.active && !i.done && !i.bought).length;
   const c = $("#shopCount"); c.hidden = !left || app.tab === "shop"; c.textContent = left;
 }
 function currentWeek() { return iso(weekStartFor(new Date(), settings().weekStartDay || 0)); }
@@ -146,6 +147,15 @@ function shopWeekBar() {
     <button class="icon-btn sm" data-act="shopAhead" data-d="-1" ${n ? "" : "disabled"} aria-label="Earlier week">${icon("left", 18)}</button>
     <b>${esc(shopWeekName(n))}</b>
     <button class="icon-btn sm" data-act="shopAhead" data-d="1" ${n < SHOP_AHEAD ? "" : "disabled"} aria-label="Later week">${icon("right", 18)}</button></div>`;
+}
+/** Which list to open on: next week's on the last day of the week (you're shopping for the week ahead), or once
+    this week's list is all bought and next week's has things on it. Otherwise this week's. */
+function shopDefaultAhead() {
+  const next = iso(addDays(parseISO(currentWeek()), 7));
+  const nextLeft = () => buildList(next).some((i) => i.active && !i.bought && !i.done);
+  const thisLeft = buildList(currentWeek()).some((i) => i.active && !i.bought && !i.done);
+  const lastDay = iso(addDays(parseISO(currentWeek()), 6)) === iso(new Date());
+  return (lastDay && planFor(next).some((d) => d.recipe)) || (!thisLeft && nextLeft()) ? 1 : 0;
 }
 /** On this week's list: a gentle pointer when next week already has dinners planned. */
 function nextWeekHint() {
@@ -353,7 +363,8 @@ function viewTonight() {
     upcoming.push(`<button ${rr && day.status === "cook" ? `data-act="recipe" data-id="${rr.id}" data-week="${wk}" data-i="${idx}"` : `data-act="go" data-to="week"`}><span class="d">${DOW[mondayIndex(date)].toUpperCase()}</span>${label}</button>`);
   }
 
-  const list = buildList(week).filter((x) => x.active);
+  const ahead = shopDefaultAhead(), shopWk = iso(addDays(parseISO(currentWeek()), 7 * ahead));
+  const list = buildList(shopWk).filter((x) => x.active);
   const toBuy = list.filter((x) => !x.done && !x.bought), left = toBuy.length;
   const total = list.reduce((t, x) => t + (x.cost || 0), 0), leftCost = toBuy.reduce((t, x) => t + (x.cost || 0), 0);
   const growing = babySuggestions().filter((x) => !x.info);
@@ -365,7 +376,7 @@ function viewTonight() {
     <div class="list week-mini">${upcoming.join("")}</div>
     <button class="card row" style="width:100%;margin-top:14px;padding:14px 16px;text-align:left" data-act="go" data-to="shop">
       <span class="icon-btn on" style="border-radius:14px">${icon("basket")}</span>
-      <span class="grow"><b>${left ? `${left} thing${left === 1 ? "" : "s"} to buy` : "Shopping's done"}</b><br><span class="small muted">${left ? `≈ ${money(leftCost)} left` : `≈ ${money(total)} this week`}</span></span>
+      <span class="grow"><b>${left ? `${left} thing${left === 1 ? "" : "s"} to buy${ahead ? " for next week" : ""}` : "Shopping's done"}</b><br><span class="small muted">${left ? `≈ ${money(leftCost)} left` : `≈ ${money(total)} ${ahead ? "next" : "this"} week`}</span></span>
       <span style="color:var(--accent);font-weight:700">Open</span></button>`;
 }
 
