@@ -2,6 +2,13 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.27",
+   "notes": [
+    "See future shopping lists: use the arrows at the top of Shopping to look up to 12 weeks ahead. Handy for Christmas.",
+    "If next week already has dinners planned, this week's list shows a shortcut to next week's."
+   ]
+  },
+  {
    "version": "0.11.26",
    "notes": [
     "A few small tweaks."

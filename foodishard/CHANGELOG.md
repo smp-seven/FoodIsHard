@@ -282,3 +282,6 @@ Fixes from a review of the new features:
 
 ## 0.11.26
 - A few small surprises.
+
+## 0.11.27
+- Shopping: switch between this week and up to 12 weeks ahead. Ticking, Done shopping, extras and moving items all apply to the week being shown. Shortcut to next week's list when it has dinners planned.

@@ -106,7 +106,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.26"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.27"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -136,6 +136,25 @@ function render() {
   const c = $("#shopCount"); c.hidden = !left || app.tab === "shop"; c.textContent = left;
 }
 function currentWeek() { return iso(weekStartFor(new Date(), settings().weekStartDay || 0)); }
+/** The week the shopping list is showing: this week, or up to 12 weeks ahead (handy for Christmas). */
+const SHOP_AHEAD = 12;
+function shopWeek() { return iso(addDays(parseISO(currentWeek()), 7 * (app.shopAhead || 0))); }
+function shopWeekName(n) { const date = niceDate(parseISO(shopWeek())); return n === 0 ? `This week · ${date}` : n === 1 ? `Next week · ${date}` : `Week of ${date}`; }
+function shopWeekBar() {
+  const n = app.shopAhead || 0;
+  return `<div class="row between" style="margin:-4px 0 10px;gap:8px">
+    <button class="icon-btn sm" data-act="shopAhead" data-d="-1" ${n ? "" : "disabled"} aria-label="Earlier week">${icon("left", 18)}</button>
+    <b>${esc(shopWeekName(n))}</b>
+    <button class="icon-btn sm" data-act="shopAhead" data-d="1" ${n < SHOP_AHEAD ? "" : "disabled"} aria-label="Later week">${icon("right", 18)}</button></div>`;
+}
+/** On this week's list: a gentle pointer when next week already has dinners planned. */
+function nextWeekHint() {
+  if (app.shopAhead) return "";
+  const next = iso(addDays(parseISO(currentWeek()), 7));
+  if (!planFor(next).some((d) => d.recipe)) return "";
+  const n = buildList(next).filter((i) => i.active && !i.bought && !i.done).length;
+  return n ? `<button class="card row" style="width:100%;margin-top:12px;padding:14px 16px;text-align:left" data-act="shopAhead" data-d="1"><span class="grow"><b>Next week's list</b><br><span class="small muted">${n} item${n === 1 ? "" : "s"} for dinners already planned</span></span><span aria-hidden="true">›</span></button>` : "";
+}
 
 function header(eyebrow, title, right = "", { logo = false } = {}) {
   return `<header class="head">${logo ? `<img class="brand" src="icon-192.png" alt="FoodIsHard" width="44" height="44">` : ""}<div class="grow"><p class="eyebrow">${eyebrow}</p><h1 class="title">${title}</h1></div>${right}</header>`;
@@ -398,7 +417,7 @@ function viewWeek() {
 
 // ----- Shop -----
 function shopData() {
-  const week = currentWeek();
+  const week = shopWeek();
   const all = buildList(week);
   const bought = all.filter((i) => i.bought);
   const toGet = all.filter((i) => i.active && !i.bought); // the live list
@@ -409,7 +428,7 @@ function shopData() {
 }
 function viewShop() {
   const { week, all, toGet, tabs, shown, bought } = shopData();
-  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}<div class="card empty"><button class="btn primary" data-act="go" data-to="week">Plan the week</button></div>${staplesCard()}`;
+  if (!toGet.length && !all.length) return `${header("Shopping", "Nothing to buy yet", settingsButton())}${shopWeekBar()}<div class="card empty"><button class="btn primary" data-act="shopPlan">Plan ${app.shopAhead ? "that" : "the"} week</button></div>${nextWeekHint()}${staplesCard()}`;
   const done = shown.filter((i) => i.done).length;
   const sel = app.selecting.size;
   const title = sel ? `${sel} selected` : app.shopTab === "all" ? "Shopping list" : `At ${esc(shopName(app.shopTab, false))}`;
@@ -428,7 +447,8 @@ function viewShop() {
   const have = all.filter((i) => !i.cupboard && i.have);
   const usedRack = rackUsedThisWeek(week), unchecked = [...usedRack].filter((k) => !(app.state.pantry || {})[k]).length;
 
-  return `${header(`Week of ${niceDate(parseISO(week))}`, title, `<div class="row" style="gap:6px">${right}${settingsButton()}</div>`)}
+  return `${header("Shopping", title, `<div class="row" style="gap:6px">${right}${settingsButton()}</div>`)}
+    ${shopWeekBar()}
     ${app.offline ? `<div style="margin:-4px 0 10px">${offlineBadge()}</div>` : ""}
     <div class="stack" style="gap:12px;margin-bottom:6px">
       <div class="row between small"><span class="muted">${done} of ${shown.length} in the trolley${trolley ? ` (≈ ${money(trolley)})` : ""}</span><span class="muted">≈ <b style="color:var(--ink)">${money(sum(toBuy))}</b> to buy</span></div>
@@ -439,6 +459,7 @@ function viewShop() {
     ${leftoverCard(toGet)}
     ${boughtSection(bought, sum(toGet))}
     ${have.length ? `<details class="fold"><summary class="section-label">Not needed this week · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
+    ${nextWeekHint()}
     ${staplesCard()}
     <button class="card row" style="width:100%;margin-top:12px;padding:14px 16px;text-align:left" data-act="rack">
       <span class="grow"><b>Spice rack &amp; cupboard</b>${unchecked ? `<br><span class="small muted">${unchecked} to check for this week's dinners</span>` : ""}</span>
@@ -823,7 +844,7 @@ function useUpCard(it) {
 /** Recipes that would use up a part-pack without opening more, best first. */
 function useUpIdeas(it) {
   if (!it.leftover || !it.k) return [];
-  const days = planFor(currentWeek()), planned = new Set(days.map((d) => d.recipe).filter(Boolean)), base = wasteOf(days);
+  const days = planFor(shopWeek()), planned = new Set(days.map((d) => d.recipe).filter(Boolean)), base = wasteOf(days);
   // rank by what each would do to the week's part-packs, as the planner does: drop any that would open more than they use up
   const ideas = app.recipes.filter((r) => usable(r) && !planned.has(r.id) && effectiveIngredients(r).some((i) => i.k === it.k))
     .map((r) => ({ r, change: wasteOf([...days, { status: "cook", recipe: r.id }]) - base }))
@@ -832,7 +853,7 @@ function useUpIdeas(it) {
   return ideas;
 }
 function openUseUp(id, itemKey) {
-  const week = currentWeek(), days = planFor(week), r = app.byId[id], start = parseISO(week), today = iso(new Date());
+  const week = shopWeek(), days = planFor(week), r = app.byId[id], start = parseISO(week), today = iso(new Date());
   const slots = days.map((d, i) => ({ d, i, date: addDays(start, i) })).filter(({ d, date }) => iso(date) >= today && !d.locked && d.status !== "skip");
   openSheet(`<p class="eyebrow">Use up the rest</p><h1 class="title" style="font-size:26px">${esc(r.name)}</h1>
     <p class="muted">Which day should it go on?</p>
@@ -841,7 +862,7 @@ function openUseUp(id, itemKey) {
   app.sheetBack = () => openItem(itemKey);
 }
 function openItem(key) {
-  const it = buildList(currentWeek()).find((i) => i.key === key); if (!it) return;
+  const it = buildList(shopWeek()).find((i) => i.key === key); if (!it) return;
   const bp = it.k ? basePrice(it.k) : null, m = it.k ? ingMeta(it.k) : null;
   const shopNow = it.shop === "any" ? priceShop() : it.shop;
   openSheet(`<p class="eyebrow">${esc(aisleName(it.aisle))}</p><h1 class="title" style="font-size:26px">${esc(it.name)}</h1>
@@ -955,7 +976,7 @@ function openStaples({ keepScroll = false, focusLast = false } = {}) {
 }
 const staplesOpen = () => !!$("#sheetBody [data-staples]") && !$("#sheet").hidden;
 function openRack({ keepScroll = false } = {}) {
-  const used = rackUsedThisWeek(currentWeek());
+  const used = rackUsedThisWeek(shopWeek());
   const row = (m) => {
     const seg = [["ok", "Got it"], ["low", "Low"], ["out", "Out"]].map(([s, l]) => `<button class="${m.status === s ? "on" : ""}" data-act="rackSet" data-k="${m.k}" data-s="${s}">${l}</button>`).join("");
     return `<div class="stack" style="padding:12px 16px;gap:8px"><div class="row between"><b>${esc(m.n)}</b>${used.has(m.k) ? `<span class="pill accent">This week</span>` : ""}</div><div class="seg">${seg}</div></div>`;
@@ -1122,7 +1143,7 @@ function downloadText(text, name) {
   setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
 }
 function printList() {
-  const week = currentWeek(), items = buildList(week).filter((i) => i.active);
+  const week = shopWeek(), items = buildList(week).filter((i) => i.active);
   const total = items.reduce((t, i) => t + (i.cost || 0), 0);
   const html = aisleOrder().map((g) => { const group = items.filter((i) => i.aisle === g); if (!group.length) return "";
     return `<h2>${esc(aisleName(g))}</h2><ul>${group.sort((a, b) => a.name.localeCompare(b.name)).map((i) => `<li>${esc(i.name)} ${i.qtyText ? `<b>${esc(i.qtyText)}</b>` : ""} <span class="where">${esc(shopName(i.shop))}${(i.flags || []).includes("veg") ? " · check V" : ""}</span></li>`).join("")}</ul>`; }).join("");
@@ -1208,7 +1229,7 @@ const ACTIONS = {
   // shop
   shopTab: (d) => { app.shopTab = d.s; render(); },
   tick: (d, el) => {
-    send({ op: "check", week: currentWeek(), key: d.key, field: "done", value: el.checked }, { rerender: false });
+    send({ op: "check", week: shopWeek(), key: d.key, field: "done", value: el.checked }, { rerender: false });
     const k = d.key.startsWith("i:") ? d.key.slice(2) : null;
     if (k && ingMeta(k).c) send({ op: "pantry", key: k, status: el.checked ? "ok" : "out" }, { rerender: false });
     render();
@@ -1229,7 +1250,7 @@ const ACTIONS = {
   aisleReset: () => { send({ op: "settings", patch: { aisleOrder: [] } }, { rerender: false }); openAisles({ keepScroll: true }); toast("Back to the usual order"); },
   rackSet: (d) => { send({ op: "pantry", key: d.k, status: d.s }); openRack({ keepScroll: true }); },
   rackStarter: () => {
-    const used = rackUsedThisWeek(currentWeek()), keys = rackItems().filter((m) => used.has(m.k) && !m.status).map((m) => m.k);
+    const used = rackUsedThisWeek(shopWeek()), keys = rackItems().filter((m) => used.has(m.k) && !m.status).map((m) => m.k);
     send({ op: "pantry", keys, status: "out" }); openRack({ keepScroll: true }); toast(`Added ${keys.length} to the shopping list`);
   },
   feedbackRate: (d, el) => { $$("#sheetBody [data-act=feedbackRate]").forEach((b) => b.classList.toggle("on", b === el)); app.fbRating = d.r; $("#fbSave").disabled = false; },
@@ -1258,6 +1279,8 @@ const ACTIONS = {
       render(); toast("Report deleted");
     });
   },
+  shopPlan: () => { app.weekStart = shopWeek(); go("week"); },
+  shopAhead: (d) => { app.shopAhead = Math.max(0, Math.min(SHOP_AHEAD, (app.shopAhead || 0) + +d.d)); app.selecting.clear(); app.shopTab = "all"; render(); window.scrollTo(0, 0); },
   fbOpen: (d) => { app.fbKind = d.k; app.fbAdmin = null; go("feedback"); },
   adminFilter: (d) => { app.adminFilter = d.f; render(); },
   adminMember: (d) => openAdminMember(d.email),
@@ -1294,7 +1317,7 @@ const ACTIONS = {
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     toast("Backup downloaded");
   },
-  flag: (d) => { send({ op: "check", week: currentWeek(), key: d.key, field: d.f, value: d.v === "1" }); if (d.close) closeSheet(); },
+  flag: (d) => { send({ op: "check", week: shopWeek(), key: d.key, field: d.f, value: d.v === "1" }); if (d.close) closeSheet(); },
   itemOpen: (d) => { if (app.selecting.size) return toggleSelect(d.key); openItem(d.key); },
   moveOne: (d) => { if (app.selecting.size) return toggleSelect(d.key); openMove([d.key]); },
   moveSel: () => openMove([...app.selecting]),
@@ -1303,16 +1326,16 @@ const ACTIONS = {
   confirmMove: () => {
     const keys = app.moveKeys || [], shop = app.moveShop, always = $("#moveAlways") && $("#moveAlways").checked;
     if (!shop || !keys.length) return;
-    const week = currentWeek();
+    const week = shopWeek();
     if (always) { send({ op: "shop_pref", keys, shop }, { rerender: false }); keys.forEach((k) => send({ op: "shop_for", week, key: k, shop: null }, { rerender: false })); }
     else keys.forEach((k) => send({ op: "shop_for", week, key: k, shop }, { rerender: false }));
     app.selecting.clear(); closeSheet(); render();
     toast(`Moved ${keys.length} to ${shopName(shop)}`);
   },
-  moveTo: (d) => { const week = currentWeek(); send({ op: "shop_pref", keys: [d.keys], shop: d.s }, { rerender: false }); send({ op: "shop_for", week, key: d.keys, shop: null }); closeSheet(); toast(`Now from ${shopName(d.s)}`); },
-  count: (d) => { const it = buildList(currentWeek()).find((x) => x.key === d.key); if (it) send({ op: "qty", week: currentWeek(), key: d.key, n: (it.n || 1) + +d.d }); },
+  moveTo: (d) => { const week = shopWeek(); send({ op: "shop_pref", keys: [d.keys], shop: d.s }, { rerender: false }); send({ op: "shop_for", week, key: d.keys, shop: null }); closeSheet(); toast(`Now from ${shopName(d.s)}`); },
+  count: (d) => { const it = buildList(shopWeek()).find((x) => x.key === d.key); if (it) send({ op: "qty", week: shopWeek(), key: d.key, n: (it.n || 1) + +d.d }); },
   removeItem: (d) => {
-    const week = currentWeek();
+    const week = shopWeek();
     if (d.key.startsWith("x:")) { send({ op: "extra_remove", week, id: d.key.slice(2) }); toast("Removed"); return; }
     send({ op: "check", week, key: d.key, field: "have", value: true });
     toast(d.key.startsWith("s:") ? "Off the list this week" : "Moved to Not needed this week");
@@ -1320,19 +1343,19 @@ const ACTIONS = {
   addCount: (d) => { const f = $("#sheetBody input[name=qty]"); const n = Math.max(1, (+f.value || 1) + +d.d); f.value = n; $("#addCountShow").textContent = n; },
   stapleCount: (d) => { const st = clone(settings().staples || []); st[+d.i].qty = Math.max(1, (+st[+d.i].qty || 1) + +d.d); send({ op: "settings", patch: { staples: st } });  openStaples({ keepScroll: true }); },
   resetPrice: (d) => { send({ op: "price", key: d.k, price: null }); closeSheet(); toast("Using the built-in estimate"); },
-  removeExtra: (d) => { send({ op: "extra_remove", week: currentWeek(), id: d.id }); closeSheet(); },
+  removeExtra: (d) => { send({ op: "extra_remove", week: shopWeek(), id: d.id }); closeSheet(); },
   addItem: () => openAdd(),
   addShop: (d, el) => { $$("#sheetBody .shop-grid button").forEach((b) => b.classList.toggle("on", b === el)); $("#sheetBody input[name=shop]").value = d.s; },
   doneShopping: () => doneShopping(),
   toggleBought: () => { app.showBought = !app.showBought; render(); },
   rateMeal: (d) => openFeedback(d.id),
-  unbuy: (d) => { send({ op: "trip", week: currentWeek(), key: d.key, keys: [d.key], undo: true }); toast("Back on the list"); },
+  unbuy: (d) => { send({ op: "trip", week: shopWeek(), key: d.key, keys: [d.key], undo: true }); toast("Back on the list"); },
   staples: () => { closeMenus(); openStaples(); },
   shopMenu: (d, el) => openMenu(el, [["staples", "Weekly staples…", "basket"], ["copyList", "Copy the list", "copy"], ["downloadList", "Download as text", "download"], ["printList", "Print or save as PDF", "print"], ["untickAll", "Untick everything", "trash"]]),
-  copyList: () => { closeMenus(); copyText(listAsText(currentWeek(), { byShop: true })); },
-  downloadList: () => { closeMenus(); downloadText(listAsText(currentWeek(), { byShop: true }), `shopping-${currentWeek()}.txt`); },
+  copyList: () => { closeMenus(); copyText(listAsText(shopWeek(), { byShop: true })); },
+  downloadList: () => { closeMenus(); downloadText(listAsText(shopWeek(), { byShop: true }), `shopping-${shopWeek()}.txt`); },
   printList: () => { closeMenus(); printList(); },
-  untickAll: () => { closeMenus(); send({ op: "clear_checks", week: currentWeek() }); },
+  untickAll: () => { closeMenus(); send({ op: "clear_checks", week: shopWeek() }); },
   // cooking
   cookClose: () => stopCooking(),
   cookIng: () => { app.cook.showIng = !app.cook.showIng; renderCook(); },
@@ -1475,7 +1498,7 @@ function onSubmit(e) {
   if (f.dataset.form === "manual") {
     const key = f.dataset.key, name = val("name").trim(), pt = val("price").replace(/[£,\s]/g, "");
     const price = pt === "" ? null : Math.max(0, parseFloat(pt) || 0);
-    if (key.startsWith("x:")) send({ op: "extra_update", week: currentWeek(), id: key.slice(2), patch: { ...(name ? { name } : {}), price } });
+    if (key.startsWith("x:")) send({ op: "extra_update", week: shopWeek(), id: key.slice(2), patch: { ...(name ? { name } : {}), price } });
     else if (key.startsWith("s:")) { const st = clone(settings().staples || []), s = st.find((x) => "s:" + x.id === key); if (s) { if (name) s.name = name; s.price = price; } send({ op: "settings", patch: { staples: st } }); }
     closeSheet(); toast("Saved"); return;
   }
@@ -1484,7 +1507,7 @@ function onSubmit(e) {
     const shop = val("shop"), priceTxt = val("price").replace(/[£,\s]/g, "");
     const price = priceTxt === "" ? null : Math.max(0, parseFloat(priceTxt) || 0);
     app.lastShop = shop;
-    send({ op: "extra_add", week: currentWeek(), item: { id: uid(), name, price, qty: Math.max(1, +val("qty") || 1), shop } });
+    send({ op: "extra_add", week: shopWeek(), item: { id: uid(), name, price, qty: Math.max(1, +val("qty") || 1), shop } });
     closeSheet(); toast(`Added ${name} (${shopName(shop)})`);
   }
 }
