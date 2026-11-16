@@ -114,7 +114,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.57"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.58"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -981,19 +981,34 @@ function openSwap(k, reopen, itemKey = null) {
 function useUpCard(it) {
   const ideas = useUpIdeas(it);
   if (!ideas.length) return "";
-  return `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Use up the rest</b><span class="small muted">You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left. These use it too:</span>
-    <div class="list">${ideas.map((r) => `<button class="rrow" data-act="useUpPick" data-id="${r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(r.name)}</span><span class="small muted">${r.time} min</span></button>`).join("")}</div></div>`;
+  return `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Use up the rest</b><span class="small muted">You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left. Ideas that use what's left:</span>
+    <div class="list">${ideas.map((x) => `<button class="rrow" data-act="useUpPick" data-id="${x.r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(x.r.name)}<br><span class="small" style="color:${x.whole ? "var(--accent)" : "var(--muted)"}">${useUpCover(x)}</span></span><span class="small muted">${x.r.time} min</span></button>`).join("")}</div></div>`;
 }
-/** Recipes that would use up a part-pack without opening more, best first. */
+/** Recipes that use up a part-pack, with how far the spare amount goes: the whole meal for your household (nothing more
+    to buy) comes first, then ones it covers at least one portion of (a lunch for one, say). Ideas that would need more
+    of it bought are left out, since the point is to use up what you've got. */
 function useUpIdeas(it) {
   if (!it.leftover || !it.k) return [];
-  const days = planFor(shopWeek()), planned = new Set(days.map((d) => d.recipe).filter(Boolean)), base = wasteOf(days);
-  // rank by what each would do to the week's part-packs, as the planner does: drop any that would open more than they use up
-  const ideas = app.recipes.filter((r) => usable(r) && !planned.has(r.id) && effectiveIngredients(r).some((i) => i.k === it.k))
-    .map((r) => ({ r, change: wasteOf([...days, { status: "cook", recipe: r.id }]) - base }))
-    .filter((x) => x.change < 0.1)
-    .sort((a, b) => a.change - b.change || recipeWeight(b.r.id) - recipeWeight(a.r.id) || a.r.time - b.r.time).slice(0, 4).map((x) => x.r);
-  return ideas;
+  const days = planFor(shopWeek()), planned = new Set(days.map((d) => d.recipe).filter(Boolean));
+  const m = ingMeta(it.k), spare = (partPacks(days).get(it.k) || 0) * ((m.pk && m.pk[0]) || 0); // in the recipe's unit
+  if (!spare) return [];
+  const people = dayFactor({});
+  return app.recipes.filter((r) => usable(r) && !planned.has(r.id))
+    .map((r) => {
+      const ing = effectiveIngredients(r).find((i) => i.k === it.k && i.q && (i.u || "") === ((m.pk && m.pk[1]) || ""));
+      if (!ing) return null;
+      const portions = spare / ing.q; // amounts are per portion
+      return portions >= 1 ? { r, portions, whole: portions >= people * 0.95 } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => (b.whole - a.whole) || (a.whole ? recipeWeight(b.r.id) - recipeWeight(a.r.id) : b.portions - a.portions) || a.r.time - b.r.time)
+    .slice(0, 4);
+}
+/** How far the spare goes, in plain words. */
+function useUpCover(x) {
+  if (x.whole) return "What's left is enough for everyone";
+  const n = Math.floor(x.portions);
+  return n === 1 ? "What's left makes 1 portion: a lunch for one" : `What's left makes ${n} portions`;
 }
 function openUseUp(id, itemKey) {
   const week = shopWeek(), days = planFor(week), r = app.byId[id], start = parseISO(week), today = iso(new Date());

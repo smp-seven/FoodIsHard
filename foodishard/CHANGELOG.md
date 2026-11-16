@@ -380,3 +380,6 @@ Fixes from a review of the new features:
 
 ## 0.11.57
 - Shopping: the leftovers card now lists spare amounts from items that have been bought (ticked or Done shopping), not items still to buy. Renamed "Left over after this week's dinners", with a one-line explanation.
+
+## 0.11.58
+- Use-up ideas: ranked by how far the spare amount goes (whole meal for the household first, then portions), labelled in plain words; recipes that would need more of the ingredient are no longer suggested.
