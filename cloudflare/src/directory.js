@@ -154,6 +154,7 @@ export class Directory extends DurableObject {
     if (!target) throw new UserError(`${email} isn't in a household`);
     if (!admin && (!me || me.household !== target.household)) throw new UserError("You can only remove people from your own household");
     if (this.householdMembers(target.household).length <= 1) throw new UserError("That's the last person in the household. An admin can delete the household instead.");
+    this.sql.exec("DELETE FROM terms_log WHERE email = ?", email); // their agreement record goes with them
     this.sql.exec("DELETE FROM members WHERE email = ?", email);
     return { removed: email };
   }
@@ -186,6 +187,7 @@ export class Directory extends DurableObject {
     if (!h) throw new UserError("No such household");
     const me = this.member(byEmail);
     if (me && me.household === id) throw new UserError("You can't delete your own household");
+    this.sql.exec("DELETE FROM terms_log WHERE email IN (SELECT email FROM members WHERE household = ?)", id);
     this.sql.exec("DELETE FROM members WHERE household = ?", id);
     this.sql.exec("DELETE FROM households WHERE id = ?", id);
     return { deleted: id };
@@ -227,6 +229,7 @@ export class Directory extends DurableObject {
   leave(email) {
     const m = this.member(email);
     if (!m) throw new UserError("You're not in a household");
+    this.sql.exec("DELETE FROM terms_log WHERE email = ?", email); // their agreement record goes with them
     this.sql.exec("DELETE FROM members WHERE email = ?", email);
     if (this.householdMembers(m.household).length === 0) {
       this.sql.exec("DELETE FROM households WHERE id = ?", m.household);

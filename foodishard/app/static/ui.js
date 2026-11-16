@@ -113,7 +113,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.46"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.47"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1685,17 +1685,19 @@ function openAbout() {
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), whether you've seen the latest announcement, and when you agreed to the terms of use.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, whatever first name or nickname you give them, the month and year they were born, and how many weeks early, if they were. Never their exact date of birth) and recipe feedback.</li>
-         <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard anonymously, without your name or household, so they can improve the recipes. <b>Problem reports</b> include your household's name and first name so they can follow up. Nothing else of your household's is shown to them in the app.</li>
+         <li><b>Allergies</b> are health information, so they're only stored if you tick them and confirm. Untick them to remove them.</li>
+         <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard without your name or household attached (just the day), so they can improve the recipes. <b>Problem reports</b> include your household's name and first name so they can follow up, plus the app version, your device type and browser, and the last error. Nothing else of your household's is shown to them in the app.</li>
+         <li><b>In your household,</b> everyone shares the plans, lists and settings, and can see each other's name, email and when they last used the app.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
        </ul>
-       <p>Old shopping lists are deleted after 8 weeks and meal plans after a year.</p>
+       <p>Old shopping lists are deleted after 8 weeks and meal plans after a year. The full details, including how long everything is kept, your rights and how to complain, are in the <a href="https://foodishard.uk/privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
        <p>You can <b>download a backup</b> of your household's data any time (Settings → Your data), and <b>delete your account</b> yourself (Settings → Your account). If you're the last person in your household, that deletes the household's data too.</p>`
     : ha ? `<p>Everything is stored on your own Home Assistant, and only people with a Home Assistant login can open it. Nothing is sent anywhere else. Old shopping lists are deleted after 8 weeks and meal plans after a year.</p>`
     : `<p>This is a preview. Everything is saved in this browser only.</p>`;
   openSheet(`<div class="row" style="gap:14px;margin-bottom:6px"><img src="icon-192.png" alt="" width="56" height="56" style="border-radius:14px"><div><p class="eyebrow">About</p><h1 class="title" style="font-size:26px;margin:0">FoodIsHard</h1></div></div>
     <div class="stack about" style="gap:6px">
-      <p>A free, personal, hobby meal planner for vegetarian households. It isn't a business or a professional service, and it comes with no guarantees: you use it at your own risk.</p>
+      <p>A free, not-for-profit meal planner for vegetarian households. It isn't a business or a professional service, and it comes with no guarantees: you use it at your own risk.</p>
       <h2 class="h2">Food safety: please read</h2>
       <ul>
         <li><b>Recipes haven't been checked by a dietitian or doctor.</b> Treat them, the nutrition figures and the prices as rough guides.</li>

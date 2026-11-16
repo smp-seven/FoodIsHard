@@ -346,3 +346,6 @@ Fixes from a review of the new features:
 - Allergies: consent asked before the first is stored, and once for households that already had allergies ticked; recorded with the household.
 - Ratings: admin sees the day only, and the rating log no longer notes the household.
 - Little ones: exact birth dates are trimmed by the server too (ops, loading, restores; Home Assistant mirrored).
+
+## 0.11.47
+- Privacy policy rewritten: legal basis for each use, who can see what, retention for everything, rights, complaints (including the ICO), 18+. Terms: age, how changes are notified, contact route, negligence wording. About updated to match. Agreement records are deleted with the person.
