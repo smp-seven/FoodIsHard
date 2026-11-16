@@ -374,3 +374,6 @@ Fixes from a review of the new features:
 
 ## 0.11.55
 - Life is hard: morning-and-evening routines have separate Morning and Evening buttons, each ticked and unticked on its own at any time of day. Ticks remember which half they were for (older ticks still go by the time they were made). Home Assistant mirrored.
+
+## 0.11.56
+- Life is hard: new "Several times a day" timing (2 to 6). The card shows "N of M today" and one button per time, each ticked and unticked on its own. Limits checked in the app, online and Home Assistant. Ticks kept per routine raised from 6 to 8.

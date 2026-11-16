@@ -139,7 +139,7 @@ UNSAFE_KEYS = {"__proto__", "constructor", "prototype", "hasOwnProperty", "isPro
 
 
 # Life is hard (household routines): same limits as ops.js
-MAX_CHORES, CHORE_LOG, CHORE_TIMINGS = 30, 6, ("any", "daily", "ampm", "days")
+MAX_CHORES, CHORE_LOG, CHORE_TIMINGS = 30, 8, ("any", "daily", "ampm", "days", "times")
 
 
 def chore_fields(src, was=None):
@@ -152,6 +152,7 @@ def chore_fields(src, was=None):
         "emoji": str(src.get("emoji") or "").strip()[:16] if "emoji" in src else was.get("emoji") or "",
         "timing": timing,
         "days": days if timing == "days" else [],
+        **({"times": max(2, min(6, int(round(float(src.get("times") if "times" in src else was.get("times") or 3) or 3))))} if timing == "times" else {}),
     }
 
 
@@ -206,7 +207,9 @@ def check_op(op):
             bad()
         if op["op"] == "chore_add" and (not str(c.get("name") or "").strip() or not isinstance(c.get("id"), str) or long(c["id"], 40)):
             bad()
-        if op["op"] == "chore_update" and any(k not in ("name", "emoji", "timing", "days") for k in c):
+        if op["op"] == "chore_update" and any(k not in ("name", "emoji", "timing", "days", "times") for k in c):
+            bad()
+        if c.get("times") is not None and not (isinstance(c["times"], int) and not isinstance(c["times"], bool) and 2 <= c["times"] <= 6):
             bad()
         if "name" in c and (not str(c["name"] or "").strip() or long(c["name"], 60)):
             bad()
@@ -218,7 +221,7 @@ def check_op(op):
         if days is not None and (not isinstance(days, list) or len(days) > 7
                                  or any(not (isinstance(d, int) and not isinstance(d, bool) and 0 <= d < 7) for d in days)):
             bad()
-    if op["op"] == "chore_done" and (not isinstance(op.get("key"), str) or long(op["key"], 40) or op.get("slot") not in (None, "am", "pm")):
+    if op["op"] == "chore_done" and (not isinstance(op.get("key"), str) or long(op["key"], 40) or str(op.get("slot")) not in ("None", "am", "pm", "1", "2", "3", "4", "5", "6")):
         bad()
     if op["op"] == "chore_move" and op.get("d") not in (1, -1):
         bad()

@@ -114,7 +114,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.55"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.56"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2316,7 +2316,8 @@ const CHORE_STARTERS = [
   { name: "Dishwasher on", emoji: "🍽️", timing: "daily" }, { name: "Plants watered", emoji: "🪴", timing: "any" },
 ];
 const CHORE_EMOJI = ["🐕", "🐈", "🐟", "🧺", "🗑️", "♻️", "🍼", "🍽️", "🪴", "🧹", "🛏️", "💊", "📦", "🚗", "🛁", "🧸"];
-const CHORE_TIMING_NAMES = { any: "Any time", daily: "Every day", ampm: "Morning and evening", days: "Certain days" };
+const CHORE_TIMING_NAMES = { any: "Any time", daily: "Every day", ampm: "Morning and evening", times: "Several times a day", days: "Certain days" };
+const ORDINAL = ["", "1st", "2nd", "3rd", "4th", "5th", "6th"];
 const SUN_FIRST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const EVENING_FROM = 15; // a tick from 3pm counts as the evening one ("Morning and evening")
 function lifeOn() { return !!settings().lifeOn; }
@@ -2351,6 +2352,12 @@ function choreStatus(c) {
     const slot = (label, s, e, later) => `<button class="slot ${e ? "done" : ""}" data-act="choreSlot" data-id="${esc(c.id)}" data-s="${s}" aria-pressed="${!!e}">${e ? icon("check", 13) : ""}${label}${e ? ` · ${clockTime(new Date(e.at * 1000))}${firstName(e.by) ? `, ${esc(firstName(e.by))}` : ""}` : later ? " · later" : " · not yet"}</button>`;
     return { done: !!(am && pm), slots: true, html: `<span class="slots">${slot("Morning", "am", am, false)}${slot("Evening", "pm", pm, now.getHours() < EVENING_FROM)}</span>` };
   }
+  if (c.timing === "times") { // one button per time, each ticked and unticked on its own
+    const n = c.times || 3, got = (k) => today.filter((e) => String(e.s) === String(k)).pop();
+    const btn = (k) => { const e = got(k); return `<button class="slot ${e ? "done" : ""}" data-act="choreSlot" data-id="${esc(c.id)}" data-s="${k}" aria-pressed="${!!e}">${e ? icon("check", 13) : ""}${ORDINAL[k]}${e ? ` · ${clockTime(new Date(e.at * 1000))}${firstName(e.by) ? `, ${esc(firstName(e.by))}` : ""}` : ""}</button>`; };
+    const done = Array.from({ length: n }, (_, i) => got(i + 1)).filter(Boolean).length;
+    return { done: done === n, slots: true, html: `<span class="small muted">${done} of ${n} today</span><span class="slots">${Array.from({ length: n }, (_, i) => btn(i + 1)).join("")}</span>` };
+  }
   const dueToday = c.timing === "daily" || (c.timing === "days" && (c.days || []).includes(now.getDay()));
   if (dueToday) return today.length
     ? { done: true, html: `<span class="ok">${icon("check", 13)}Done ${choreLine(today[today.length - 1])}</span>` }
@@ -2381,13 +2388,14 @@ function viewLife() {
 function tickSlot(e) { return e.s || (new Date(e.at * 1000).getHours() < EVENING_FROM ? "am" : "pm"); }
 function currentTick(c, slot) {
   const now = new Date();
-  return (c.log || []).filter((e) => sameDay(new Date(e.at * 1000), now) && (c.timing !== "ampm" || tickSlot(e) === slot)).pop() || null;
+  return (c.log || []).filter((e) => sameDay(new Date(e.at * 1000), now) && (c.timing === "times" ? String(e.s) === String(slot) : c.timing !== "ampm" || tickSlot(e) === slot)).pop() || null;
 }
 function choreTap(id, slot) {
   const c = chores().find((x) => x.id === id); if (!c) return;
   if (c.timing === "ampm" && !slot) slot = new Date().getHours() < EVENING_FROM ? "am" : "pm";
-  if (c.timing !== "ampm") slot = undefined;
-  const part = slot ? ` (${slot === "am" ? "morning" : "evening"})` : "";
+  if (c.timing === "times" && !slot) return; // its buttons say which one
+  if (c.timing !== "ampm" && c.timing !== "times") slot = undefined;
+  const part = slot ? ` (${slot === "am" ? "morning" : slot === "pm" ? "evening" : ORDINAL[+slot]})` : "";
   const cur = currentTick(c, slot);
   if (cur && cur.t) { // already done: untick it (Undo puts it back)
     send({ op: "chore_done", id, key: cur.t, undo: true });
@@ -2418,7 +2426,7 @@ function openLifeEdit({ keepScroll = false } = {}) {
   const list = chores();
   openSheet(`<p class="eyebrow">Life is hard</p><h2 class="title" style="font-size:24px;margin-bottom:12px">Routines</h2>
     ${list.length ? `<div class="list">${list.map((c, i) => `<div class="row" style="padding:6px 8px 6px 16px">
-      <button class="rrow" style="padding:8px 0" data-act="choreEdit" data-id="${esc(c.id)}"><span aria-hidden="true" style="font-size:22px">${esc(c.emoji || "✨")}</span><span class="grow"><b>${esc(c.name)}</b><br><span class="small muted">${esc(c.timing === "days" ? dayList(c.days) : CHORE_TIMING_NAMES[c.timing] || "Any time")}</span></span></button>
+      <button class="rrow" style="padding:8px 0" data-act="choreEdit" data-id="${esc(c.id)}"><span aria-hidden="true" style="font-size:22px">${esc(c.emoji || "✨")}</span><span class="grow"><b>${esc(c.name)}</b><br><span class="small muted">${esc(c.timing === "days" ? dayList(c.days) : (c.timing === "times" ? `${c.times || 3} times a day` : CHORE_TIMING_NAMES[c.timing] || "Any time"))}</span></span></button>
       <button class="icon-btn sm" data-act="choreMove" data-id="${esc(c.id)}" data-d="-1" ${i ? "" : "disabled"} aria-label="Move up">${icon("up", 16)}</button>
       <button class="icon-btn sm" data-act="choreMove" data-id="${esc(c.id)}" data-d="1" ${i < list.length - 1 ? "" : "disabled"} aria-label="Move down">${icon("down", 16)}</button>
       <button class="icon-btn sm" data-act="choreDelete" data-id="${esc(c.id)}" aria-label="Remove ${esc(c.name)}">${icon("trash", 16)}</button></div>`).join("")}</div>` : ""}
@@ -2437,8 +2445,9 @@ function openChore(draft, { keepScroll = false } = {}) {
       <div class="chips wrap">${CHORE_EMOJI.map((e) => `<button class="chip emoji-chip ${d.emoji === e ? "on" : ""}" data-act="choreEmoji" data-e="${e}" aria-label="Use ${e}">${e}</button>`).join("")}</div>
       <div><p class="small muted" style="margin:0 0 6px">When</p>
         <div class="chips wrap">${Object.entries(CHORE_TIMING_NAMES).map(([k, v]) => `<button class="chip ${d.timing === k ? "on" : ""}" data-act="choreTiming" data-t="${k}">${v}</button>`).join("")}</div></div>
+      ${d.timing === "times" ? `<div><p class="small muted" style="margin:0 0 6px">How many times a day</p><div class="chips wrap">${[2, 3, 4, 5, 6].map((n) => `<button class="chip ${(d.times || 3) === n ? "on" : ""}" data-act="choreTimes" data-n="${n}">${n}</button>`).join("")}</div></div>` : ""}
       ${d.timing === "days" ? `<div class="chips wrap">${[1, 2, 3, 4, 5, 6, 0].map((n) => `<button class="chip ${(d.days || []).includes(n) ? "on" : ""}" data-act="choreDay" data-n="${n}">${SUN_FIRST[n]}</button>`).join("")}</div>` : ""}
-      <p class="small muted" style="margin:0">${{ any: "Shows when it was last done.", daily: "Shows whether it's been done today.", ampm: "Shows the morning one and the evening one (from 3pm).", days: "Shows whether it's been done on the days you pick." }[d.timing]}</p>
+      <p class="small muted" style="margin:0">${{ any: "Shows when it was last done.", daily: "Shows whether it's been done today.", ampm: "Shows the morning one and the evening one. Tick either at any time.", times: "Shows how many have been done today. Tick each one at any time.", days: "Shows whether it's been done on the days you pick." }[d.timing]}</p>
       <button class="btn primary" data-act="choreSave">${d.id ? "Save" : `${icon("plus", 16)}Add`}</button>
       ${d.id ? choreRecent(d.id) : ""}
       ${d.id ? `<button class="btn" data-act="choreRemove">${icon("trash", 16)}Remove this routine</button>` : ""}
@@ -2469,12 +2478,13 @@ Object.assign(ACTIONS, {
     openChore({ ...(choreDraftRead() || {}), name: x.name, emoji: x.emoji, timing: x.timing, days: x.days || [] }, { keepScroll: true });
   },
   choreEmoji: (d) => { const x = choreDraftRead(); if (x) { x.emoji = d.e; openChore(x, { keepScroll: true }); } },
+  choreTimes: (d) => { const x = choreDraftRead(); if (x) { x.times = +d.n; openChore(x, { keepScroll: true }); } },
   choreTiming: (d) => { const x = choreDraftRead(); if (x) { x.timing = d.t; openChore(x, { keepScroll: true }); } },
   choreDay: (d) => { const x = choreDraftRead(); if (!x) return; const n = +d.n, days = new Set(x.days || []); days.has(n) ? days.delete(n) : days.add(n); x.days = [...days]; openChore(x, { keepScroll: true }); },
   choreMove: (d) => { send({ op: "chore_move", id: d.id, d: +d.d }); openLifeEdit({ keepScroll: true }); },
   choreSave: () => {
     const x = choreDraftRead(); if (!x) return;
-    const fields = { name: String(x.name || "").trim(), emoji: String(x.emoji || "").trim(), timing: x.timing, days: x.timing === "days" ? x.days || [] : [] };
+    const fields = { name: String(x.name || "").trim(), emoji: String(x.emoji || "").trim(), timing: x.timing, days: x.timing === "days" ? x.days || [] : [], ...(x.timing === "times" ? { times: x.times || 3 } : {}) };
     if (!fields.name) { toast("Give it a name"); $("#choreName") && $("#choreName").focus(); return; }
     if (x.id) send({ op: "chore_update", id: x.id, patch: fields }); else send({ op: "chore_add", item: { id: uid(), ...fields } });
     app.choreDraft = null; openLifeEdit(); toast("Saved");

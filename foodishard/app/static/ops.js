@@ -3,7 +3,7 @@
 // Keep server.py apply_op() in step with this file.
 const MAX_PEOPLE = 10; // grown-ups and little ones each, per household
 // Life is hard (household routines): how many, and how many recent ticks each keeps ("last done" only needs a few)
-const MAX_CHORES = 30, CHORE_LOG = 6, CHORE_TIMINGS = ["any", "daily", "ampm", "days"];
+const MAX_CHORES = 30, CHORE_LOG = 8, CHORE_TIMINGS = ["any", "daily", "ampm", "days", "times"];
 /* eslint-disable no-unused-vars */
 // Names that would reach JavaScript's shared object machinery if used as keys. Changes come
 // from phones, so every key in one is checked before it touches the data.
@@ -28,13 +28,14 @@ function checkOp(op) {
     const c = op.op === "chore_add" ? op.item : op.patch;
     if (!c || typeof c !== "object" || Array.isArray(c)) bad();
     if (op.op === "chore_add" && (!String(c.name || "").trim() || typeof c.id !== "string" || long(c.id, 40))) bad();
-    if (op.op === "chore_update" && Object.keys(c).some((k) => !["name", "emoji", "timing", "days"].includes(k))) bad();
+    if (op.op === "chore_update" && Object.keys(c).some((k) => !["name", "emoji", "timing", "days", "times"].includes(k))) bad();
+    if (c.times != null && !(Number.isInteger(c.times) && c.times >= 2 && c.times <= 6)) bad(); // "several times a day": 2 to 6
     if ("name" in c && (!String(c.name || "").trim() || long(c.name, 60))) bad();
     if (c.emoji != null && long(c.emoji, 16)) bad();
     if (c.timing != null && !CHORE_TIMINGS.includes(c.timing)) bad();
     if (c.days != null && (!Array.isArray(c.days) || c.days.length > 7 || c.days.some((d) => !(Number.isInteger(d) && d >= 0 && d < 7)))) bad();
   }
-  if (op.op === "chore_done" && (typeof op.key !== "string" || long(op.key, 40) || (op.slot != null && !["am", "pm"].includes(op.slot)))) bad();
+  if (op.op === "chore_done" && (typeof op.key !== "string" || long(op.key, 40) || (op.slot != null && !/^(am|pm|[1-6])$/.test(String(op.slot))))) bad();
   if (op.op === "chore_move" && op.d !== 1 && op.d !== -1) bad();
   if (op.op === "feedback" && (op.tags != null && (!Array.isArray(op.tags) || op.tags.length > 12 || op.tags.some((t) => long(t, 40))))) bad();
 }
@@ -126,6 +127,7 @@ function choreFields(src, was = {}) {
     name: has("name") ? String(src.name).trim().slice(0, 60) : was.name,
     emoji: has("emoji") ? String(src.emoji || "").trim().slice(0, 16) : was.emoji || "",
     timing, days: timing === "days" ? days : [],
+    ...(timing === "times" ? { times: Math.max(2, Math.min(6, Math.round(+(has("times") ? src.times : was.times) || 3))) } : {}),
   };
 }
 
