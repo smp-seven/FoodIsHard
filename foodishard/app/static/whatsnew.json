@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.36",
+   "notes": [
+    "New households see a small \"Start here\" pointer on Settings until they've had a look."
+   ]
+  },
+  {
    "version": "0.11.35",
    "notes": [
     "A few small tweaks."

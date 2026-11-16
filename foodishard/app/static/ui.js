@@ -103,12 +103,13 @@ function fromHash() {
   if ((app.tab === "admin" || app.tab === "feedback") && app.host !== "Cloudflare") app.tab = "settings";
   if (app.mode === "admin" && app.tab !== "feedback") app.tab = "admin";
   if (app.tab !== "feedback") app.fbAdmin = null; // reopening shows what's new since this visit
+  if (app.tab === "settings" && !startHereSeen()) { if (app.mode === "preview") app.previewStartSeen = true; else store("fihStartHere", true); }
   if (app.tab === "shop" && was !== "shop") app.shopAhead = shopDefaultAhead(); // open on the list you'll actually shop from
   app.selecting.clear();
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.35"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.36"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -170,8 +171,15 @@ function nextWeekHint() {
 function header(eyebrow, title, right = "", { logo = false } = {}) {
   return `<header class="head">${logo ? `<img class="brand" src="icon-192.png" alt="FoodIsHard" width="44" height="44">` : ""}<div class="grow"><p class="eyebrow">${eyebrow}</p><h1 class="title">${title}</h1></div>${right}</header>`;
 }
+/** "Start here": a small speech bubble under the glowing Settings button until Settings has been opened once.
+    In "See it as a new household" it's remembered only on screen, so previewing doesn't use it up. */
+function startHereSeen() { return app.mode === "preview" ? !!app.previewStartSeen : !!load("fihStartHere", false); }
 function settingsButton() {
   const glow = nudges().length ? " nudge" : "";
+  const btn = settingsButtonOnly(glow);
+  return glow && !startHereSeen() ? `<span class="start-wrap">${btn}<span class="start-bubble" aria-hidden="true">Start here</span></span>` : btn;
+}
+function settingsButtonOnly(glow) {
   return app.update
     ? `<button class="icon-btn has-dot${glow}" data-act="go" data-to="settings" aria-label="Settings: an update is ready">${icon("gear")}<span class="update-dot" aria-hidden="true">!</span></button>`
     : `<button class="icon-btn${glow}" data-act="go" data-to="settings" aria-label="${glow ? "Settings: something needs setting up" : "Settings"}">${icon("gear")}</button>`;
@@ -702,7 +710,7 @@ window.addEventListener("popstate", (e) => {
 function previewNew(on) {
   const b = $("#banner");
   if (on && app.mode === "live") {
-    app.previewSaved = app.state; app.mode = "preview";
+    app.previewSaved = app.state; app.mode = "preview"; app.previewStartSeen = false;
     app.state = { ...clone(app.defaults), rev: 0 };
     ["plans", "prefs", "checks", "extras", "prices", "swaps", "shopFor", "shopPref"].forEach((k) => { app.state[k] = app.state[k] || {}; });
     b.hidden = false; b.innerHTML = `Previewing as a new household. Nothing here is saved. <button class="btn sm" style="margin-left:8px" data-act="previewEnd">Back to my household</button>`;

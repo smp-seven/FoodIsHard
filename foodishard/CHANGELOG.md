@@ -309,3 +309,6 @@ Fixes from a review of the new features:
 
 ## 0.11.35
 - Tonight: the shopping card says "Shopping list" when nothing is left to buy.
+
+## 0.11.36
+- New households: a "Start here" bubble under the glowing Settings button until Settings is first opened (per device; not used up by the admin preview).
