@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.38",
+   "notes": [
+    "The first time you pick a dinner for a day, a quick tip points out the lock, which keeps that day when you shuffle."
+   ]
+  },
+  {
    "version": "0.11.37",
    "notes": [
     "A few small tweaks."

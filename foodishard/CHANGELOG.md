@@ -315,3 +315,6 @@ Fixes from a review of the new features:
 
 ## 0.11.37
 - "Start here" bubble now sits to the left of the Settings button.
+
+## 0.11.38
+- Week: one-time tip pointing at the lock the first time a dinner is picked, swapped or changed for a day (skipped if the lock has been used). Stays at least 3 seconds; any touch after that dismisses it.

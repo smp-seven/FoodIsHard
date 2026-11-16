@@ -109,7 +109,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.37"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.38"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -411,7 +411,7 @@ function viewWeek() {
       : `<span class="fam">${esc(theme && themeMatch(theme, r) ? theme.name : family(r.family).name)}${isToday ? " · tonight" : ""}</span>`;
     const fam = `<div class="row between" style="margin:-6px -6px 0 0">${famText}<span class="row" style="gap:0">
         <button class="icon-btn sm ${dayAdjustText(d) ? "on" : "plain"}" data-act="eating" data-i="${i}" data-week="${week}" aria-label="Who's eating: ${esc(dayAdjustText(d) || "everyone")}">${icon("people", 17)}</button>
-        <button class="icon-btn sm ${d.locked ? "on" : "plain"}" data-act="lock" data-i="${i}" aria-label="${d.locked ? "Unlock" : "Keep this one"}">${icon(d.locked ? "lock" : "unlock", 17)}</button>
+        ${((lockBtn) => app.lockTip === i ? `<span class="start-wrap">${lockBtn}<span class="start-bubble" aria-hidden="true">Tap the lock to keep this one</span></span>` : lockBtn)(`<button class="icon-btn sm ${d.locked ? "on" : "plain"}${app.lockTip === i ? " nudge" : ""}" data-act="lock" data-i="${i}" aria-label="${d.locked ? "Unlock" : "Keep this one"}">${icon(d.locked ? "lock" : "unlock", 17)}</button>`)}
         <button class="icon-btn sm plain" data-act="dayMenu" data-i="${i}" aria-label="More">${icon("dots", 17)}</button></span></div>`;
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}" data-week="${week}" data-i="${i}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
@@ -710,7 +710,7 @@ window.addEventListener("popstate", (e) => {
 function previewNew(on) {
   const b = $("#banner");
   if (on && app.mode === "live") {
-    app.previewSaved = app.state; app.mode = "preview"; app.previewStartSeen = false;
+    app.previewSaved = app.state; app.mode = "preview"; app.previewStartSeen = false; app.previewLockSeen = false;
     app.state = { ...clone(app.defaults), rev: 0 };
     ["plans", "prefs", "checks", "extras", "prices", "swaps", "shopFor", "shopPref"].forEach((k) => { app.state[k] = app.state[k] || {}; });
     b.hidden = false; b.innerHTML = `Previewing as a new household. Nothing here is saved. <button class="btn sm" style="margin-left:8px" data-act="previewEnd">Back to my household</button>`;
@@ -721,6 +721,20 @@ function previewNew(on) {
   app.weekStart = currentWeek(); app.undoShuffle = null; app.shopAhead = 0; app.selecting.clear();
   closeSheet({ navigating: true }); go("tonight"); render(); window.scrollTo(0, 0);
   toast(on ? "This is what a new household sees" : "Back to your household");
+}
+/** The first time someone picks a dinner for a day on the Week tab, point out the lock (it keeps a day when shuffling).
+    Shown once per phone (or once per preview). Stays at least 3 seconds; after that, any touch dismisses it. */
+function lockTip(i) {
+  if (app.tab !== "week" || app.lockTip != null) return;
+  const seen = app.mode === "preview" ? app.previewLockSeen : load("fihLockTip", false);
+  const usedLock = Object.values(app.state.plans || {}).some((p) => p && Array.isArray(p.days) && p.days.some((d) => d && d.locked));
+  if (seen || usedLock) return; // they've already found the lock
+  if (app.mode === "preview") app.previewLockSeen = true; else store("fihLockTip", true);
+  app.lockTip = i; render();
+  setTimeout(() => {
+    const done = () => { document.removeEventListener("pointerdown", done, true); app.lockTip = null; render(); };
+    document.addEventListener("pointerdown", done, true);
+  }, 3000);
 }
 /** Opened between 1am and 4am (night feeds): a quiet nod, once a night. */
 function nightOwl() {
@@ -1223,17 +1237,17 @@ const ACTIONS = {
     send({ op: "settings", patch: { themes: t } }); closeSheet();
     toast(d.t ? `${DOW_LONG[+d.i]}: ${themeById(d.t).name}` : `${DOW_LONG[+d.i]}: no theme`);
   },
-  put: (d) => { dayUpdate(+d.i, { recipe: d.id, status: "cook", note: null }); closeSheet(); toast(`${app.byId[d.id].name} added`); },
+  put: (d) => { dayUpdate(+d.i, { recipe: d.id, status: "cook", note: null }); closeSheet(); toast(`${app.byId[d.id].name} added`); lockTip(+d.i); },
   another: (d) => {
     const i = +d.i, days = planFor(app.weekStart), cur = app.byId[days[i].recipe];
     const next = pickRecipe(app.weekStart, i, days, { exclude: new Set([cur.id]), fam: cur.family, emergency: !!cur.emergency });
     if (!next || next === cur.id) return toast(`No other ${family(cur.family).name.toLowerCase()} yet`);
-    dayUpdate(i, { recipe: next });
+    dayUpdate(i, { recipe: next }); lockTip(i);
   },
   swapDay: (d) => {
     const i = +d.i, days = planFor(app.weekStart), cur = days[i].recipe;
     const isEm = cur && app.byId[cur] && app.byId[cur].emergency;
-    dayUpdate(i, { recipe: pickRecipe(app.weekStart, i, days, { exclude: new Set(cur ? [cur] : []), emergency: !!isEm }) });
+    dayUpdate(i, { recipe: pickRecipe(app.weekStart, i, days, { exclude: new Set(cur ? [cur] : []), emergency: !!isEm }) }); lockTip(i);
   },
   quicker: (d) => {
     const week = currentWeek(), i = +d.i, days = planFor(week);
