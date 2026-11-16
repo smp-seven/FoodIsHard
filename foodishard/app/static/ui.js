@@ -109,7 +109,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.39"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.40"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -417,7 +417,7 @@ function viewWeek() {
       <button class="name" data-act="recipe" data-id="${r.id}" data-week="${week}" data-i="${i}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
       <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${kcalShort(r)}</div>
       ${dayAdjustText(d) ? `<button class="pill accent" style="border:0;margin-top:6px" data-act="eating" data-i="${i}" data-week="${week}">${icon("people", 13)} ${esc(dayAdjustText(d))}</button>` : ""}
-      <div class="actions">
+      <div class="actions${d.locked ? " locked" : ""}">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
         <button class="btn sm soft" data-act="swapDay" data-i="${i}">Swap</button>
         <button class="btn sm soft" data-act="skip" data-i="${i}">Skip</button>
@@ -735,6 +735,13 @@ function lockTip(i) {
     const done = () => { document.removeEventListener("pointerdown", done, true); app.lockTip = null; render(); };
     document.addEventListener("pointerdown", done, true);
   }, 3000);
+}
+/** A locked day can't be changed from its buttons: the lock gives a little shake and glow instead. */
+function lockedDay(i) {
+  if (!(planFor(app.weekStart)[i] || {}).locked) return false;
+  const el = $(`[data-act="lock"][data-i="${i}"]`);
+  if (el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); setTimeout(() => el.classList.remove("shake"), 1000); }
+  return true;
 }
 /** Opened between 1am and 4am (night feeds): a quiet nod, once a night. */
 function nightOwl() {
@@ -1239,12 +1246,14 @@ const ACTIONS = {
   },
   put: (d) => { dayUpdate(+d.i, { recipe: d.id, status: "cook", note: null }); closeSheet(); toast(`${app.byId[d.id].name} added`); lockTip(+d.i); },
   another: (d) => {
+    if (lockedDay(+d.i)) return;
     const i = +d.i, days = planFor(app.weekStart), cur = app.byId[days[i].recipe];
     const next = pickRecipe(app.weekStart, i, days, { exclude: new Set([cur.id]), fam: cur.family, emergency: !!cur.emergency });
     if (!next || next === cur.id) return toast(`No other ${family(cur.family).name.toLowerCase()} yet`);
     dayUpdate(i, { recipe: next }); lockTip(i);
   },
   swapDay: (d) => {
+    if (lockedDay(+d.i)) return;
     const i = +d.i, days = planFor(app.weekStart), cur = days[i].recipe;
     const isEm = cur && app.byId[cur] && app.byId[cur].emergency;
     dayUpdate(i, { recipe: pickRecipe(app.weekStart, i, days, { exclude: new Set(cur ? [cur] : []), emergency: !!isEm }) }); lockTip(i);
@@ -1255,7 +1264,7 @@ const ACTIONS = {
     toast("Swapped for a quick one");
   },
   emergency: (d) => { const week = d.week || currentWeek(), i = +d.i, days = planFor(week); dayUpdate(i, { recipe: pickRecipe(week, i, days, { emergency: true }), status: "cook" }, week); closeMenus(); },
-  skip: (d) => openSkip(+d.i),
+  skip: (d) => { if (!lockedDay(+d.i)) openSkip(+d.i); },
   skipReason: (d) => { const f = $("#sheetBody form[data-form=skip]"); f.elements.namedItem("note").value = d.r; $$("#sheetBody .chip").forEach((c) => c.classList.toggle("on", c.dataset.r === d.r)); },
   lock: (d) => { const days = planFor(app.weekStart); dayUpdate(+d.i, { locked: !days[+d.i].locked }); },
   status: (d) => {

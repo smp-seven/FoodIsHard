@@ -321,3 +321,6 @@ Fixes from a review of the new features:
 
 ## 0.11.39
 - Week: "Choose a dinner" on empty days is a full-width dashed button. "Start here" bubble only shows on Tonight, so it never covers other header buttons.
+
+## 0.11.40
+- Week: Another, Swap and Skip do nothing on a locked day; they look faded and tapping one shakes and glows the lock.

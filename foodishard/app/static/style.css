@@ -328,3 +328,9 @@ body.has-bubble.has-dock .view { padding-bottom: calc(var(--nav-h) + 140px + env
 
 /* an empty day on the Week tab: a clear, tappable "Choose a dinner" button */
 .btn.add-slot { width: 100%; justify-content: center; margin-top: 4px; background: transparent; color: var(--accent); border: 1.5px dashed var(--accent); }
+
+/* locked day: its Another/Swap/Skip look quieter, and tapping one shakes the lock */
+.actions.locked .btn { opacity: .45; }
+.icon-btn.shake { animation: lock-shake .5s ease-in-out, nudge-glow 1s ease-in-out; border-color: var(--accent); }
+@keyframes lock-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px) rotate(-8deg); } 40%, 80% { transform: translateX(4px) rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) { .icon-btn.shake { animation: nudge-glow 1s ease-in-out; } }
