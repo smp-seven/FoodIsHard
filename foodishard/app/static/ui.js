@@ -109,7 +109,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.40"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.41"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1058,7 +1058,7 @@ function openFeedback(id) {
       <div class="seg"><button type="button" data-act="feedbackRate" data-r="loved">Loved it</button><button type="button" data-act="feedbackRate" data-r="fine">Fine</button><button type="button" data-act="feedbackRate" data-r="never">Not again</button></div>
       <div class="chips wrap">${FEEDBACK_TAGS.filter((t) => kids().length || !t.startsWith("Little ones")).map((t) => `<button type="button" class="chip" data-act="feedbackTag" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
       <input class="input" name="note" placeholder="Anything else? e.g. needed more salt" autocomplete="off">
-      ${app.host === "Cloudflare" ? `<span class="small muted">Your household and whoever runs FoodIsHard can see this.</span>` : ""}
+      ${app.host === "Cloudflare" ? `<span class="small muted">Your household can see this. Whoever runs FoodIsHard sees it without your name.</span>` : ""}
       <button class="btn lg primary" id="fbSave" disabled>Save</button><button type="button" class="btn" data-close>Skip</button></form>`);
 }
 function deviceText() {
@@ -1582,7 +1582,7 @@ let searchTimer;
 function openAbout() {
   const online = app.host === "Cloudflare", ha = app.mode === "live" && !online;
   const where = online
-    ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. As the account owner they <b>could technically see</b> what's stored. Cloudflare stores the data${app.region === "eu" ? " in its EU data centres" : ""} and sends the sign-in codes.</p>
+    ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. Your meal plans, shopping lists and settings are kept securely in a database on Cloudflare's servers${app.region === "eu" ? " in the EU" : ""}. They aren't shown to the host in the app. As the account owner they could access them, but only would if you asked, for example to help fix a problem. Cloudflare also sends the sign-in codes.</p>
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), and whether you've read the latest message from the host.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, their names and birth dates) and recipe feedback.</li>

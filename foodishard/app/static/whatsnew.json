@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.41",
+   "notes": [
+    "Clearer wording in About on where your data is kept and who can see it."
+   ]
+  },
+  {
    "version": "0.11.40",
    "notes": [
     "Locked days stay put: Another, Swap and Skip are greyed out, and tapping one gives the lock a little shake."
