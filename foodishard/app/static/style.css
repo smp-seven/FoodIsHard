@@ -224,7 +224,7 @@ details.fold summary::-webkit-details-marker { display: none; }
 .timer.ring .t { color: var(--warm); }
 
 /* ---------- nav, menus, toast ---------- */
-.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--bg); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); }
+.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--bg); border-top: 1px solid var(--line); display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
 .nav button { border: 0; background: none; display: grid; justify-items: center; align-content: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); position: relative; }
 .nav button.on { color: var(--accent); font-weight: 700; }
 .nav .count { position: absolute; top: 8px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--warm); color: #fff; font-size: 11px; display: grid; place-items: center; }
@@ -345,3 +345,37 @@ body.gated { overflow: hidden; }
 body.gated .toast { z-index: 101; }
 body.gated .report-bubble { display: none; }
 .terms-changes li { font-weight: 600; }
+
+/* ---------- Life is hard: calm sea tones, its own tab ---------- */
+:root { --sea-bg: #EEF4F3; --sea: #2B7A8C; --sea-deep: #1E5866; --sea-soft: #E2F0F3; --sea-card: #F1F8FA; --sea-line: #D2E6EC; --sea-wave: #CFE6EC; --sea-wave2: #E4F1F4; }
+@media (prefers-color-scheme: dark) {
+  :root { --sea-bg: #151C1D; --sea: #72C2D3; --sea-deep: #A5DCE7; --sea-soft: #1B2F35; --sea-card: #1E2A2E; --sea-line: #2C4249; --sea-wave: #22383F; --sea-wave2: #1C2C31; }
+}
+body.sea { --bg: var(--sea-bg); --accent: var(--sea); --accent-dark: var(--sea-deep); --accent-soft: var(--sea-soft); }
+body.sea .nav button.on { color: var(--sea); }
+body.life-on .nav button { font-size: 11.5px; }
+.life-top { position: relative; margin: -14px -16px 8px; padding: 14px 16px 34px; background: linear-gradient(180deg, var(--sea-soft), transparent); }
+.life-top .head { position: relative; z-index: 1; }
+.life-waves { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 40px; }
+.life-waves path:first-child { fill: var(--sea-wave); animation: lifeDrift 9s ease-in-out infinite alternate; }
+.life-waves path:last-child { fill: var(--sea-wave2); }
+@keyframes lifeDrift { from { transform: translateX(-8px); } to { transform: translateX(8px); } }
+.chores { display: grid; gap: 10px; }
+.chore { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; text-align: left; border-radius: var(--r-lg); border: 1px solid var(--sea-line); background: var(--sea-card); color: var(--ink); transition: transform .15s ease, box-shadow .3s ease; }
+.chore:active { transform: scale(.985); }
+.chore b { display: block; font-size: 16.5px; }
+.chore-emoji { font-size: 28px; line-height: 1; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--surface); flex: none; }
+.chore-sub { display: block; font-size: 13.5px; color: var(--ink); opacity: .85; margin-top: 2px; }
+.chore .ok, .chore .slot.done { color: var(--sea-deep); font-weight: 600; }
+.chore .ok svg, .chore .slot svg { vertical-align: -2px; margin-right: 3px; }
+.chore.done { background: var(--surface); }
+.chore.done .chore-emoji { background: var(--sea-soft); }
+.chore.flash { animation: choreGlow 1s ease-out; }
+@keyframes choreGlow { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sea) 45%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+.slots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.slot { font-size: 12.5px; padding: 3px 9px; border-radius: 999px; background: var(--surface); border: 1px solid var(--sea-line); color: var(--muted); }
+.slot.done { background: var(--sea-soft); border-color: transparent; }
+.life-empty .chip { background: var(--sea-card); border-color: var(--sea-line); }
+.chore-emoji-input { width: 64px; flex: none; text-align: center; font-size: 22px; padding: 0 6px; }
+.emoji-chip { font-size: 18px; padding: 0 10px; }
+@media (prefers-reduced-motion: reduce) { .life-waves path:first-child, .chore.flash { animation: none; } }

@@ -103,7 +103,8 @@ function go(tab) {
   if (tab === "settings" && !["settings", "admin", "feedback"].includes(app.tab)) app.prevTab = app.tab; if (location.hash !== "#" + tab) location.hash = tab; else { app.tab = tab; render(); } }
 function fromHash() {
   const t = (location.hash || "#tonight").slice(1), was = app.tab;
-  app.tab = ["tonight", "week", "shop", "recipes", "settings", "admin", "feedback"].includes(t) ? t : "tonight";
+  app.tab = ["tonight", "week", "shop", "recipes", "life", "settings", "admin", "feedback"].includes(t) ? t : "tonight";
+  if (app.tab === "life" && !(app.state && lifeOn())) app.tab = "tonight"; // Life is hard is switched off
   if ((app.tab === "admin" || app.tab === "feedback") && app.host !== "Cloudflare") app.tab = "settings";
   if (app.mode === "admin" && app.tab !== "feedback") app.tab = "admin";
   if (app.tab !== "feedback") app.fbAdmin = null; // reopening shows what's new since this visit
@@ -113,7 +114,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.48"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.49"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -129,8 +130,12 @@ function render() {
     return;
   }
   if (!app.state) return;
+  if (app.tab === "life" && !lifeOn()) app.tab = "tonight"; // switched off on another phone
   $$(".nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === app.tab));
-  const views = { tonight: viewTonight, week: viewWeek, shop: viewShop, recipes: viewRecipes, settings: viewSettings };
+  $(".nav [data-tab=life]").hidden = !lifeOn();
+  document.body.classList.toggle("life-on", lifeOn()); // five tabs
+  document.body.classList.toggle("sea", app.tab === "life"); // Life is hard has its own calm colours
+  const views = { tonight: viewTonight, week: viewWeek, shop: viewShop, recipes: viewRecipes, life: viewLife, settings: viewSettings };
   const view = $("#view");
   view.innerHTML = views[app.tab]();
   hydrateIcons(view);
@@ -657,6 +662,10 @@ function viewSettings() {
       <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="aisles"><span class="grow"><b>Aisle order</b></span><span aria-hidden="true">›</span></button>
       <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="rack"><span class="grow"><b>Spice rack &amp; cupboard</b></span><span aria-hidden="true">›</span></button>
     </div>
+
+    <p class="section-label">Around the house</p>
+    <div class="list"><label class="row" style="padding:13px 16px"><span class="grow"><b>Life is hard</b><br><span class="small muted">Adds a tab for everyday routines, like the dog fed or the bins out. See when each was last done, and by whom.</span></span>
+      <span class="switch"><input type="checkbox" data-set="bool" data-f="lifeOn" ${s.lifeOn ? "checked" : ""}><i></i></span></label></div>
 
     ${catalogue}
     <p class="section-label">Your data</p>
@@ -1597,7 +1606,7 @@ function onChange(e) {
       if (d.f === "weekStartDay") { app.weekStart = iso(weekStartFor(new Date(), +el.value)); render(); }
       return;
     }
-    case "bool": return send({ op: "settings", patch: { [d.f]: el.checked } });
+    case "bool": send({ op: "settings", patch: { [d.f]: el.checked } }); if (d.f === "lifeOn" && el.checked) toast("Life tab added"); return;
     case "acctName": case "acctHousehold": {
       const body = d.set === "acctName" ? { name: el.value } : { householdName: el.value };
       accountCall("api/account/rename", body).then((a) => { app.account = { ...app.account, ...a }; toast("Saved"); if (app.account.admin) loadAccount(); }).catch((err) => toast(err.message));
@@ -1688,7 +1697,7 @@ function openAbout() {
     ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. Your meal plans, shopping lists and settings are kept securely in a database on Cloudflare's servers${app.region === "eu" ? " in the EU" : ""}. They aren't shown to the host in the app. As the account owner they could access them, but only would if you asked, for example to help fix a problem. Cloudflare also sends the sign-in codes.</p>
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), whether you've seen the latest announcement, and when you agreed to the terms of use.</li>
-         <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, whatever first name or nickname you give them, the month and year they were born, and how many weeks early, if they were. Never their exact date of birth) and recipe feedback.</li>
+         <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, whatever first name or nickname you give them, the month and year they were born, and how many weeks early, if they were. Never their exact date of birth), recipe feedback and, if you use Life is hard, your routines with when and by whom each was last done.</li>
          <li><b>Allergies</b> are health information, so they're only stored if you tick them and confirm. Untick them to remove them.</li>
          <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard without your name or household attached (just the day), so they can improve the recipes. <b>Problem reports</b> include your household's name and first name so they can follow up, plus the app version, your device type and browser, and the last error. Nothing else of your household's is shown to them in the app.</li>
          <li><b>In your household,</b> everyone shares the plans, lists and settings, and can see each other's name, email and when they last used the app.</li>
@@ -1826,7 +1835,7 @@ async function updateReady(worker) {
     app.update.version = fresh.length ? fresh[0].version : null;
     app.update.notes = fresh.flatMap((v) => v.notes).slice(0, 6);
   } catch { /* no notes: the button still works */ }
-  if (["tonight", "week", "shop", "recipes", "settings"].includes(app.tab) && !app.cook) render();
+  if (["tonight", "week", "shop", "recipes", "life", "settings"].includes(app.tab) && !app.cook) render();
 }
 function updateCard() {
   const u = app.update;
@@ -2294,6 +2303,151 @@ function setupLongPress() {
   document.addEventListener("contextmenu", (e) => { if (e.target.closest(".item")) e.preventDefault(); });
 }
 function toggleSelect(key) { app.selecting.has(key) ? app.selecting.delete(key) : app.selecting.add(key); render(); }
+
+// ---------------------------------------------------------------------------
+// Life is hard: household routines (Settings switch, off by default)
+// ---------------------------------------------------------------------------
+// The guiding rule is "show help, never build resentment": each routine shows when it was last done and by whom.
+// Nothing is ever overdue or red, nobody is assigned anything, and there are no points or reminders.
+const CHORE_STARTERS = [
+  { name: "Dog fed", emoji: "🦴", timing: "ampm" }, { name: "Dog walked", emoji: "🐕", timing: "daily" },
+  { name: "Washing on", emoji: "🧺", timing: "any" }, { name: "Washing out", emoji: "👕", timing: "any" },
+  { name: "Bins out", emoji: "🗑️", timing: "days", days: [] }, { name: "Bottles washed", emoji: "🍼", timing: "daily" },
+  { name: "Dishwasher on", emoji: "🍽️", timing: "daily" }, { name: "Plants watered", emoji: "🪴", timing: "any" },
+];
+const CHORE_EMOJI = ["🐕", "🐈", "🐟", "🧺", "🗑️", "♻️", "🍼", "🍽️", "🪴", "🧹", "🛏️", "💊", "📦", "🚗", "🛁", "🧸"];
+const CHORE_TIMING_NAMES = { any: "Any time", daily: "Every day", ampm: "Morning and evening", days: "Certain days" };
+const SUN_FIRST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const EVENING_FROM = 15; // a tick from 3pm counts as the evening one ("Morning and evening")
+function lifeOn() { return !!settings().lifeOn; }
+function chores() { return app.state.chores || []; }
+function firstName(n) { return String(n || "").trim().split(/\s+/)[0] || ""; }
+function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+function clockTime(d) { return d.toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit" }); }
+/** "just now", "20 min ago", "2 hours ago", "yesterday at 18:05", "on Tuesday", "12 days ago" */
+function lifeWhen(at) {
+  const d = new Date(at * 1000), now = new Date(), secs = Math.max(0, now / 1000 - at);
+  if (secs < 120) return "just now";
+  if (secs < 3600) return `${Math.floor(secs / 60)} min ago`;
+  if (secs < 6 * 3600) { const h = Math.floor(secs / 3600); return `${h} hour${h === 1 ? "" : "s"} ago`; }
+  if (sameDay(d, now)) return `today at ${clockTime(d)}`;
+  if (sameDay(d, addDays(now, -1))) return `yesterday at ${clockTime(d)}`;
+  const days = Math.round((now - d) / 864e5);
+  return days < 7 ? `on ${DOW_LONG[(d.getDay() + 6) % 7]}` : `${days} days ago`;
+}
+function choreLine(e) { const who = firstName(e.by); return `${lifeWhen(e.at)}${who ? `, ${esc(who)}` : ""}`; }
+function dayList(days) {
+  const names = [...(days || [])].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => DOW_LONG[(d + 6) % 7] + "s"); // Monday first
+  return names.length === 7 ? "Every day" : names.length ? joinNames(names) : "No days picked yet";
+}
+/** What a routine's card says. Done things get a soft tick; things not done yet just say so, quietly. */
+function choreStatus(c) {
+  const now = new Date(), log = c.log || [], last = log[log.length - 1];
+  const today = log.filter((e) => sameDay(new Date(e.at * 1000), now));
+  const lastText = last ? choreLine(last) : "Not done yet";
+  if (c.timing === "ampm") {
+    const am = today.filter((e) => new Date(e.at * 1000).getHours() < EVENING_FROM).pop(), pm = today.filter((e) => new Date(e.at * 1000).getHours() >= EVENING_FROM).pop();
+    const slot = (label, e, later) => `<span class="slot ${e ? "done" : ""}">${e ? icon("check", 13) : ""}${label}${e ? ` · ${clockTime(new Date(e.at * 1000))}${firstName(e.by) ? `, ${esc(firstName(e.by))}` : ""}` : later ? " · later" : " · not yet"}</span>`;
+    return { done: !!(am && pm) || (!!am && now.getHours() < EVENING_FROM), html: `<span class="slots">${slot("Morning", am, false)}${slot("Evening", pm, now.getHours() < EVENING_FROM)}</span>` };
+  }
+  const dueToday = c.timing === "daily" || (c.timing === "days" && (c.days || []).includes(now.getDay()));
+  if (dueToday) return today.length
+    ? { done: true, html: `<span class="ok">${icon("check", 13)}Done ${choreLine(today[today.length - 1])}</span>` }
+    : { done: false, html: `Not yet today${last ? ` <span class="muted">· last ${choreLine(last)}</span>` : ""}` };
+  if (c.timing === "days") return { done: false, html: `${esc(dayList(c.days))}${last ? ` <span class="muted">· last ${choreLine(last)}</span>` : ""}` };
+  return { done: !!last && sameDay(new Date(last.at * 1000), now), html: last ? lastText : `<span class="muted">${lastText}</span>` };
+}
+const WAVES = `<svg class="life-waves" viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 34 C 50 18, 100 18, 150 32 S 250 48, 300 32 S 370 18, 400 26 V60 H0Z"/><path d="M0 44 C 60 32, 110 34, 170 44 S 280 56, 340 44 S 390 36, 400 40 V60 H0Z"/></svg>`;
+function viewLife() {
+  const list = chores(), now = new Date();
+  const cards = list.map((c) => { const st = choreStatus(c);
+    return `<button class="chore ${st.done ? "done" : ""} ${app.lifeFlash === c.id ? "flash" : ""}" data-act="choreTap" data-id="${esc(c.id)}">
+      <span class="chore-emoji" aria-hidden="true">${esc(c.emoji || "✨")}</span>
+      <span class="grow"><b>${esc(c.name)}</b><span class="chore-sub">${st.html}</span></span></button>`; }).join("");
+  const starters = CHORE_STARTERS.filter((s) => !list.some((c) => c.name.toLowerCase() === s.name.toLowerCase()));
+  return `<div class="life-top">${header(`${DOW_LONG[(now.getDay() + 6) % 7]} · Life is hard`, "Around the house", settingsButton())}${WAVES}</div>
+    ${list.length ? `<div class="chores">${cards}</div>
+      <p class="small muted" style="text-align:center;margin:12px 0 0">Tap when it's done. Everyone in your household sees it.</p>
+      <div style="text-align:center;margin-top:14px"><button class="btn sm" data-act="lifeEdit">${icon("plus", 16)}Add or change</button></div>`
+    : `<div class="empty life-empty"><p class="h2">What needs doing around the house?</p><p>Tap any to add them, or add your own.</p>
+      <div class="chips wrap" style="justify-content:center;margin:14px 0">${starters.map((s) => `<button class="chip" data-act="choreStarter" data-name="${esc(s.name)}">${s.emoji} ${esc(s.name)}</button>`).join("")}</div>
+      <button class="btn" data-act="choreNew">${icon("plus", 16)}Add your own</button></div>`}`;
+}
+/** Thanks, then a few seconds to undo. */
+function choreTap(id) {
+  const c = chores().find((x) => x.id === id); if (!c) return;
+  const key = uid() + uid();
+  app.lifeFlash = id;
+  send({ op: "chore_done", id, key });
+  setTimeout(() => { if (app.lifeFlash === id) app.lifeFlash = null; }, 900);
+  const who = firstName(app.user);
+  toast(`${who ? `Thanks, ${who}` : "Thank you"}${c.emoji ? ` ${c.emoji}` : ""}`, { undo: () => send({ op: "chore_done", id, key, undo: true }) });
+}
+function openLifeEdit({ keepScroll = false } = {}) {
+  const list = chores();
+  const starters = CHORE_STARTERS.filter((s) => !list.some((c) => c.name.toLowerCase() === s.name.toLowerCase()));
+  openSheet(`<p class="eyebrow">Life is hard</p><h2 class="title" style="font-size:24px;margin-bottom:12px">Routines</h2>
+    ${list.length ? `<div class="list">${list.map((c, i) => `<div class="row" style="padding:6px 8px 6px 16px">
+      <button class="rrow" style="padding:8px 0" data-act="choreEdit" data-id="${esc(c.id)}"><span aria-hidden="true" style="font-size:22px">${esc(c.emoji || "✨")}</span><span class="grow"><b>${esc(c.name)}</b><br><span class="small muted">${esc(c.timing === "days" ? dayList(c.days) : CHORE_TIMING_NAMES[c.timing] || "Any time")}</span></span></button>
+      <button class="icon-btn sm" data-act="choreMove" data-id="${esc(c.id)}" data-d="-1" ${i ? "" : "disabled"} aria-label="Move up">${icon("up", 16)}</button>
+      <button class="icon-btn sm" data-act="choreMove" data-id="${esc(c.id)}" data-d="1" ${i < list.length - 1 ? "" : "disabled"} aria-label="Move down">${icon("down", 16)}</button></div>`).join("")}</div>` : ""}
+    ${starters.length ? `<p class="section-label">Ideas</p><div class="chips wrap">${starters.map((s) => `<button class="chip" data-act="choreStarter" data-name="${esc(s.name)}" data-sheet="1">${s.emoji} ${esc(s.name)}</button>`).join("")}</div>` : ""}
+    <button class="btn primary" style="width:100%;margin-top:16px" data-act="choreNew">${icon("plus", 16)}Add your own</button>`, { keepScroll });
+}
+function openChore(draft, { keepScroll = false } = {}) {
+  app.choreDraft = draft;
+  const d = draft;
+  openSheet(`<p class="eyebrow">Life is hard</p><h2 class="title" style="font-size:24px;margin-bottom:12px">${d.id ? "Change routine" : "New routine"}</h2>
+    <div class="stack" style="gap:14px">
+      <div class="row" style="gap:10px"><input class="input chore-emoji-input" id="choreEmoji" value="${esc(d.emoji || "")}" maxlength="16" aria-label="Emoji" placeholder="✨">
+        <input class="input" id="choreName" value="${esc(d.name || "")}" maxlength="60" placeholder="e.g. Cat fed" aria-label="Name"></div>
+      <div class="chips wrap">${CHORE_EMOJI.map((e) => `<button class="chip emoji-chip ${d.emoji === e ? "on" : ""}" data-act="choreEmoji" data-e="${e}" aria-label="Use ${e}">${e}</button>`).join("")}</div>
+      <div><p class="small muted" style="margin:0 0 6px">When</p>
+        <div class="chips wrap">${Object.entries(CHORE_TIMING_NAMES).map(([k, v]) => `<button class="chip ${d.timing === k ? "on" : ""}" data-act="choreTiming" data-t="${k}">${v}</button>`).join("")}</div></div>
+      ${d.timing === "days" ? `<div class="chips wrap">${[1, 2, 3, 4, 5, 6, 0].map((n) => `<button class="chip ${(d.days || []).includes(n) ? "on" : ""}" data-act="choreDay" data-n="${n}">${SUN_FIRST[n]}</button>`).join("")}</div>` : ""}
+      <p class="small muted" style="margin:0">${{ any: "Shows when it was last done.", daily: "Shows whether it's been done today.", ampm: "Shows the morning one and the evening one (from 3pm).", days: "Shows whether it's been done on the days you pick." }[d.timing]}</p>
+      <button class="btn primary" data-act="choreSave">Save</button>
+      ${d.id ? `<button class="btn" data-act="choreRemove">${app.choreRemoving ? "Tap again to remove it and its history" : `${icon("trash", 16)}Remove`}</button>` : ""}
+    </div>`, { keepScroll });
+  if (app.choreFromList) app.sheetBack = () => openLifeEdit(); // closing goes back to the list it came from
+}
+/** Keep what's been typed before redrawing the panel. */
+function choreDraftRead() {
+  const d = app.choreDraft; if (!d) return null;
+  const n = $("#choreName"), e = $("#choreEmoji");
+  if (n) d.name = n.value; if (e) d.emoji = e.value;
+  return d;
+}
+Object.assign(ACTIONS, {
+  choreTap: (d) => choreTap(d.id),
+  lifeEdit: () => openLifeEdit(),
+  choreNew: () => { app.choreRemoving = false; app.choreFromList = !$("#sheet").hidden; openChore({ name: "", emoji: "", timing: "any", days: [] }); },
+  choreEdit: (d) => { const c = chores().find((x) => x.id === d.id); if (!c) return; app.choreRemoving = false; app.choreFromList = true; openChore({ ...clone(c), log: undefined }); },
+  choreStarter: (d) => {
+    const s = CHORE_STARTERS.find((x) => x.name === d.name); if (!s) return;
+    if (s.timing === "days") { app.choreRemoving = false; app.choreFromList = !!d.sheet; openChore({ ...s, days: [] }); return; } // bins: which days?
+    send({ op: "chore_add", item: { id: uid(), ...s } });
+    if (d.sheet) openLifeEdit({ keepScroll: true });
+  },
+  choreEmoji: (d) => { const x = choreDraftRead(); if (x) { x.emoji = d.e; openChore(x, { keepScroll: true }); } },
+  choreTiming: (d) => { const x = choreDraftRead(); if (x) { x.timing = d.t; openChore(x, { keepScroll: true }); } },
+  choreDay: (d) => { const x = choreDraftRead(); if (!x) return; const n = +d.n, days = new Set(x.days || []); days.has(n) ? days.delete(n) : days.add(n); x.days = [...days]; openChore(x, { keepScroll: true }); },
+  choreMove: (d) => { send({ op: "chore_move", id: d.id, d: +d.d }); openLifeEdit({ keepScroll: true }); },
+  choreSave: () => {
+    const x = choreDraftRead(); if (!x) return;
+    const fields = { name: String(x.name || "").trim(), emoji: String(x.emoji || "").trim(), timing: x.timing, days: x.timing === "days" ? x.days || [] : [] };
+    if (!fields.name) { toast("Give it a name"); $("#choreName") && $("#choreName").focus(); return; }
+    if (x.id) send({ op: "chore_update", id: x.id, patch: fields }); else send({ op: "chore_add", item: { id: uid(), ...fields } });
+    app.choreDraft = null; openLifeEdit(); toast("Saved");
+  },
+  choreRemove: () => {
+    const x = app.choreDraft; if (!x || !x.id) return;
+    if (!app.choreRemoving) { app.choreRemoving = true; openChore(choreDraftRead(), { keepScroll: true }); return; }
+    app.choreRemoving = false; send({ op: "chore_remove", id: x.id }); app.choreDraft = null; openLifeEdit(); toast(`${x.name} removed`);
+  },
+});
+// "2 hours ago" and "Not yet today" keep up with the clock while the tab is open
+setInterval(() => { if (app.tab === "life" && !document.hidden && app.state && $("#sheet").hidden && !app.cook) render(); }, 60000);
 
 boot().catch((err) => {
   console.error(err);

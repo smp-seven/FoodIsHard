@@ -138,6 +138,23 @@ UNSAFE_KEYS = {"__proto__", "constructor", "prototype", "hasOwnProperty", "isPro
                "toLocaleString", "toString", "valueOf", "__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__"}
 
 
+# Life is hard (household routines): same limits as ops.js
+MAX_CHORES, CHORE_LOG, CHORE_TIMINGS = 30, 6, ("any", "daily", "ampm", "days")
+
+
+def chore_fields(src, was=None):
+    """Same as choreFields() in ops.js: a routine's own fields, tidied. With was, only the fields given change."""
+    was = was or {}
+    timing = (src.get("timing") or "any") if "timing" in src else was.get("timing") or "any"
+    days = sorted(set(src.get("days") or [])) if "days" in src else was.get("days") or []
+    return {
+        "name": str(src["name"]).strip()[:60] if "name" in src else was.get("name"),
+        "emoji": str(src.get("emoji") or "").strip()[:16] if "emoji" in src else was.get("emoji") or "",
+        "timing": timing,
+        "days": days if timing == "days" else [],
+    }
+
+
 def check_op(op):
     """Same checks as checkOp() in ops.js, so both versions refuse the same changes."""
     def bad():
@@ -182,6 +199,28 @@ def check_op(op):
         if not isinstance(item, dict) or long(item.get("name"), 120) or long(item.get("amount"), 120) or long(item.get("id"), 60):
             bad()
     if op["op"] == "extra_update" and isinstance(op.get("patch"), dict) and long(op["patch"].get("name"), 120):
+        bad()
+    if op["op"] in ("chore_add", "chore_update"):
+        c = op.get("item") if op["op"] == "chore_add" else op.get("patch")
+        if not isinstance(c, dict):
+            bad()
+        if op["op"] == "chore_add" and (not str(c.get("name") or "").strip() or not isinstance(c.get("id"), str) or long(c["id"], 40)):
+            bad()
+        if op["op"] == "chore_update" and any(k not in ("name", "emoji", "timing", "days") for k in c):
+            bad()
+        if "name" in c and (not str(c["name"] or "").strip() or long(c["name"], 60)):
+            bad()
+        if c.get("emoji") is not None and long(c["emoji"], 16):
+            bad()
+        if c.get("timing") is not None and c["timing"] not in CHORE_TIMINGS:
+            bad()
+        days = c.get("days")
+        if days is not None and (not isinstance(days, list) or len(days) > 7
+                                 or any(not (isinstance(d, int) and not isinstance(d, bool) and 0 <= d < 7) for d in days)):
+            bad()
+    if op["op"] == "chore_done" and (not isinstance(op.get("key"), str) or long(op["key"], 40)):
+        bad()
+    if op["op"] == "chore_move" and op.get("d") not in (1, -1):
         bad()
     if op["op"] == "feedback" and op.get("tags") is not None:
         tags = op["tags"]
@@ -301,6 +340,38 @@ def apply_op(state, op, user):
             week[op["key"]] = op["shop"]
         else:
             week.pop(op["key"], None)
+
+    # Life is hard: household routines with "last done" ticks (same as ops.js)
+    elif kind == "chore_add":
+        chores = state.setdefault("chores", [])
+        item = op["item"]
+        if not any(c.get("id") == item["id"] for c in chores):
+            if len(chores) >= MAX_CHORES:
+                raise ValueError("That's the most routines a household can have")
+            chores.append({"id": item["id"], **chore_fields(item), "log": []})
+
+    elif kind == "chore_update":
+        for c in state.get("chores") or []:
+            if c.get("id") == op.get("id"):
+                c.update(chore_fields(op.get("patch") or {}, c))
+
+    elif kind == "chore_remove":
+        state["chores"] = [c for c in state.get("chores") or [] if c.get("id") != op.get("id")]
+
+    elif kind == "chore_move":
+        chores = state.get("chores") or []
+        i = next((n for n, c in enumerate(chores) if c.get("id") == op.get("id")), -1)
+        j = i + op["d"]
+        if i >= 0 and 0 <= j < len(chores):
+            chores[i], chores[j] = chores[j], chores[i]
+
+    elif kind == "chore_done":
+        c = next((x for x in state.get("chores") or [] if x.get("id") == op.get("id")), None)
+        if c is not None:
+            log = [e for e in c.get("log") or [] if e.get("t") != op["key"]]
+            if not op.get("undo"):
+                log.append({"at": now, "by": user, "t": op["key"]})
+            c["log"] = log[-CHORE_LOG:]
 
     else:
         raise ValueError(f"unknown op {kind!r}")
@@ -446,6 +517,8 @@ class Handler(BaseHTTPRequestHandler):
             for key in ("plans", "prefs", "checks", "extras", "prices", "swaps", "shopFor", "shopPref", "pantry", "feedback"):
                 if key in state and not isinstance(state[key], dict):
                     raise ValueError(f'Backup has a damaged "{key}" section')
+            if "chores" in state and not isinstance(state["chores"], list):
+                raise ValueError('Backup has a damaged "chores" section')
         except (json.JSONDecodeError, ValueError, AttributeError) as err:
             return self._send_json({"error": str(err) or "bad backup"}, HTTPStatus.BAD_REQUEST)
         with _lock:

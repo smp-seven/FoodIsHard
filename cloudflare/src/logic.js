@@ -119,6 +119,7 @@ export function validateImport(doc) {
   if (JSON.stringify(state).length > MAX_STATE_BYTES) throw new Error("That backup is too big");
   for (const k of ["plans", "prefs", "checks", "extras", "prices", "swaps", "shopFor", "shopPref", "pantry", "feedback"])
     if (k in state && (typeof state[k] !== "object" || state[k] === null || Array.isArray(state[k]))) throw new Error(`Backup has a damaged "${k}" section`);
+  if ("chores" in state && !Array.isArray(state.chores)) throw new Error('Backup has a damaged "chores" section');
   return state;
 }
 

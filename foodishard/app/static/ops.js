@@ -2,6 +2,8 @@
 // in Python form, server.py. Every change to a household is one of these small ops.
 // Keep server.py apply_op() in step with this file.
 const MAX_PEOPLE = 10; // grown-ups and little ones each, per household
+// Life is hard (household routines): how many, and how many recent ticks each keeps ("last done" only needs a few)
+const MAX_CHORES = 30, CHORE_LOG = 6, CHORE_TIMINGS = ["any", "daily", "ampm", "days"];
 /* eslint-disable no-unused-vars */
 // Names that would reach JavaScript's shared object machinery if used as keys. Changes come
 // from phones, so every key in one is checked before it touches the data.
@@ -22,6 +24,18 @@ function checkOp(op) {
   if (op.op === "extra_update" && op.patch && long(op.patch.name, 120)) bad();
   // a household cooks for up to 10 grown-ups and 10 little ones (guests on a day cover bigger gatherings)
   if (op.op === "settings" && op.patch && ["people", "children"].some((k) => op.patch[k] != null && (!Array.isArray(op.patch[k]) || op.patch[k].length > MAX_PEOPLE))) bad();
+  if (["chore_add", "chore_update"].includes(op.op)) {
+    const c = op.op === "chore_add" ? op.item : op.patch;
+    if (!c || typeof c !== "object" || Array.isArray(c)) bad();
+    if (op.op === "chore_add" && (!String(c.name || "").trim() || typeof c.id !== "string" || long(c.id, 40))) bad();
+    if (op.op === "chore_update" && Object.keys(c).some((k) => !["name", "emoji", "timing", "days"].includes(k))) bad();
+    if ("name" in c && (!String(c.name || "").trim() || long(c.name, 60))) bad();
+    if (c.emoji != null && long(c.emoji, 16)) bad();
+    if (c.timing != null && !CHORE_TIMINGS.includes(c.timing)) bad();
+    if (c.days != null && (!Array.isArray(c.days) || c.days.length > 7 || c.days.some((d) => !(Number.isInteger(d) && d >= 0 && d < 7)))) bad();
+  }
+  if (op.op === "chore_done" && (typeof op.key !== "string" || long(op.key, 40))) bad();
+  if (op.op === "chore_move" && op.d !== 1 && op.d !== -1) bad();
   if (op.op === "feedback" && (op.tags != null && (!Array.isArray(op.tags) || op.tags.length > 12 || op.tags.some((t) => long(t, 40))))) bad();
 }
 function applyOp(state, op, user) {
@@ -73,10 +87,46 @@ function applyOp(state, op, user) {
       if (op.shop) wk[op.key] = op.shop; else delete wk[op.key];
       break;
     }
+    // Life is hard: household routines with "last done" ticks. op.key on a tick is the phone's own label for it, so Undo
+    // removes exactly that tick even if someone else ticked the same thing a moment later.
+    case "chore_add": {
+      const list = state.chores || (state.chores = []);
+      if (list.some((c) => c.id === op.item.id)) break;
+      if (list.length >= MAX_CHORES) throw new Error("That's the most routines a household can have");
+      list.push({ id: op.item.id, ...choreFields(op.item), log: [] }); break;
+    }
+    case "chore_update": (state.chores || []).forEach((c) => { if (c.id === op.id) Object.assign(c, choreFields(op.patch, c)); }); break;
+    case "chore_remove": state.chores = (state.chores || []).filter((c) => c.id !== op.id); break;
+    case "chore_move": {
+      const list = state.chores || [], i = list.findIndex((c) => c.id === op.id), j = i + op.d;
+      if (i >= 0 && j >= 0 && j < list.length) [list[i], list[j]] = [list[j], list[i]];
+      break;
+    }
+    case "chore_done": {
+      const c = (state.chores || []).find((x) => x.id === op.id);
+      if (!c) break;
+      c.log = (c.log || []).filter((e) => e.t !== op.key);
+      if (!op.undo) c.log.push({ at: now, by: user, t: op.key });
+      c.log.splice(0, Math.max(0, c.log.length - CHORE_LOG));
+      break;
+    }
     default: throw new Error("unknown op " + op.op);
   }
   state.rev = (state.rev || 0) + 1;
   return state;
+}
+
+/** A routine's own fields, tidied: name, emoji, timing ("any", "daily", "ampm" = morning and evening, "days" = certain
+    weekdays, 0 = Sunday) and days. With "was", only the fields given change. */
+function choreFields(src, was = {}) {
+  const has = (k) => src[k] !== undefined;
+  const timing = has("timing") ? src.timing || "any" : was.timing || "any";
+  const days = has("days") ? [...new Set(src.days || [])].sort() : was.days || [];
+  return {
+    name: has("name") ? String(src.name).trim().slice(0, 60) : was.name,
+    emoji: has("emoji") ? String(src.emoji || "").trim().slice(0, 16) : was.emoji || "",
+    timing, days: timing === "days" ? days : [],
+  };
 }
 
 /* Privacy: little ones are kept with month and year of birth plus weeks early, never exact birth or due dates, however

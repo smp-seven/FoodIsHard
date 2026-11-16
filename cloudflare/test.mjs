@@ -464,6 +464,23 @@ await test("delete my account: leaves the household, scrubs the name; the last o
   assert.equal(((await hh.getState()).state.extras || {})["2026-11-09"], undefined);
   assert.equal((await c("/api/account/delete", { email: "nobody@example.com", body: {} })).status, 403);
 });
+await test("life is hard: routines sync with who did them, undo removes only that tick, odd changes are refused", async () => {
+  const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "alex@example.com": "Alex", "sam@example.com": "Sam" } }) });
+  const op = (email, body) => call("/api/op", { e, email, body });
+  assert.equal((await op("alex@example.com", { op: "chore_add", item: { id: "dog", name: "Feed the dog", emoji: "🦴", timing: "ampm" } })).status, 200);
+  await op("alex@example.com", { op: "chore_done", id: "dog", key: "t1" });
+  await op("sam@example.com", { op: "chore_done", id: "dog", key: "t2" });
+  await op("alex@example.com", { op: "chore_done", id: "dog", key: "t1", undo: true });
+  let s = (await call("/api/state", { e, email: "sam@example.com" })).body.state;
+  assert.deepEqual(s.chores[0].log.map((x) => x.by), ["Sam"]);
+  for (const bad of [{ op: "chore_add", item: { id: "x", name: "" } }, { op: "chore_add", item: { id: "x", name: "Bins", timing: "hourly" } },
+    { op: "chore_update", id: "dog", patch: { log: [] } }, { op: "chore_add", item: { id: "x", name: "Bins", timing: "days", days: [9] } }])
+    assert.equal((await op("alex@example.com", bad)).status, 400, JSON.stringify(bad));
+  await call("/api/account/delete", { e, email: "sam@example.com", body: {} });
+  s = (await call("/api/state", { e, email: "alex@example.com" })).body.state;
+  assert.equal(s.chores[0].log[0].by, "a former member");
+  assert.throws(() => logic.validateImport({ settings: { people: [] }, chores: {} }), /chores/);
+});
 await test("admin message: everyone sees it once, until they dismiss it; a new one shows again", async () => {
   const e = makeEnv({ HOUSEHOLDS: JSON.stringify({ a: { "alex@example.com": "Alex", "admin@example.com": "Me" }, b: { "priya@example.com": "Priya" } }) });
   const c = (p, o = {}) => call(p, { e, ...o });
