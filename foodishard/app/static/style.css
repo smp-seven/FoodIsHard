@@ -319,9 +319,9 @@ body.has-bubble.has-dock .view { padding-bottom: calc(var(--nav-h) + 140px + env
 
 /* "Start here" under the Settings button for a new household (until Settings is first opened) */
 .start-wrap { position: relative; display: inline-flex; }
-.start-bubble { position: absolute; top: calc(100% + 10px); right: 0; z-index: 6; white-space: nowrap; pointer-events: none;
+.start-bubble { position: absolute; top: 50%; right: calc(100% + 12px); z-index: 6; white-space: nowrap; pointer-events: none;
   background: var(--accent); color: var(--on-accent); font-size: 13px; font-weight: 700; padding: 6px 11px; border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0,0,0,.15); animation: start-bob 2.2s ease-in-out infinite; }
-.start-bubble::before { content: ""; position: absolute; top: -6px; right: 16px; border: 6px solid transparent; border-top: 0; border-bottom-color: var(--accent); }
-@keyframes start-bob { 50% { transform: translateY(3px); } }
+  box-shadow: 0 4px 14px rgba(0,0,0,.15); transform: translateY(-50%); animation: start-nudge 2.2s ease-in-out infinite; }
+.start-bubble::after { content: ""; position: absolute; top: 50%; right: -6px; transform: translateY(-50%); border: 6px solid transparent; border-right: 0; border-left-color: var(--accent); }
+@keyframes start-nudge { 50% { transform: translate(-3px, -50%); } }
 @media (prefers-reduced-motion: reduce) { .start-bubble { animation: none; } }

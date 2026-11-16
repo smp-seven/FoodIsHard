@@ -312,3 +312,6 @@ Fixes from a review of the new features:
 
 ## 0.11.36
 - New households: a "Start here" bubble under the glowing Settings button until Settings is first opened (per device; not used up by the admin preview).
+
+## 0.11.37
+- "Start here" bubble now sits to the left of the Settings button.
