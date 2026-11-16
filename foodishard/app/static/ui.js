@@ -115,7 +115,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.51"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.52"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2378,11 +2378,20 @@ function viewLife() {
       <button class="btn" data-act="choreNew">${icon("plus", 16)}Add your own</button></div>`}`;
 }
 /** Thanks, then a few seconds to undo. */
-const CHORE_JUST_DONE = 30 * 60; // a tap within 30 minutes of the last tick asks first, so a double tap can't count twice
-function choreTap(id, { again = false } = {}) {
+/** The tick that makes a routine "done" right now: today's latest (for morning-and-evening, the latest in the current
+    half of the day). Tapping a done routine takes that tick back; tapping one that isn't done ticks it. */
+function currentTick(c) {
+  const now = new Date(), evening = now.getHours() >= EVENING_FROM;
+  return (c.log || []).filter((e) => { const d = new Date(e.at * 1000); return sameDay(d, now) && (c.timing !== "ampm" || (d.getHours() >= EVENING_FROM) === evening); }).pop() || null;
+}
+function choreTap(id) {
   const c = chores().find((x) => x.id === id); if (!c) return;
-  const last = (c.log || [])[(c.log || []).length - 1];
-  if (!again && last && Date.now() / 1000 - last.at < CHORE_JUST_DONE) return openChoreJustDone(id);
+  const cur = currentTick(c);
+  if (cur && cur.t) { // already done for now: untick it (Undo puts it back)
+    send({ op: "chore_done", id, key: cur.t, undo: true });
+    toast(`${c.name}: not done`, { undo: () => send({ op: "chore_done", id, key: uid() + uid() }) });
+    return;
+  }
   const key = uid() + uid();
   app.lifeFlash = id;
   send({ op: "chore_done", id, key });
@@ -2390,15 +2399,11 @@ function choreTap(id, { again = false } = {}) {
   const who = firstName(app.user);
   toast(`${who ? `Thanks, ${who}` : "Thank you"}${c.emoji ? ` ${c.emoji}` : ""}`, { undo: () => send({ op: "chore_done", id, key, undo: true }) });
 }
-/** Tapped something that was only just done: done again, or take that tick back (a mis-tap, or testing). */
-function openChoreJustDone(id) {
-  const c = chores().find((x) => x.id === id), last = c && (c.log || [])[(c.log || []).length - 1]; if (!last) return;
-  openSheet(`<div class="row" style="gap:12px;margin-bottom:6px"><span class="chore-emoji" aria-hidden="true">${esc(c.emoji || "✨")}</span><div><p class="eyebrow">Life is hard</p><h2 class="title" style="font-size:24px;margin:0">${esc(c.name)}</h2></div></div>
-    <p>Done ${choreLine(last)}.</p>
-    <div class="stack" style="gap:10px">
-      <button class="btn primary" data-act="choreAgain" data-id="${esc(c.id)}">${icon("check", 16)}It's been done again</button>
-      <button class="btn" data-act="choreUntick" data-id="${esc(c.id)}" data-t="${esc(last.t || "")}">Take that back, it wasn't done</button>
-    </div>`);
+/** Remove a routine and its history, after a quick check. */
+function removeChore(id, then) {
+  const c = chores().find((x) => x.id === id); if (!c) return;
+  if (!window.confirm(`Remove "${c.name}" and its history?`)) return;
+  send({ op: "chore_remove", id }); then(); toast(`${c.name} removed`);
 }
 /** A routine's recent ticks, newest first, each with Remove (for a tick that shouldn't be there). */
 function choreRecent(id) {
@@ -2414,7 +2419,8 @@ function openLifeEdit({ keepScroll = false } = {}) {
     ${list.length ? `<div class="list">${list.map((c, i) => `<div class="row" style="padding:6px 8px 6px 16px">
       <button class="rrow" style="padding:8px 0" data-act="choreEdit" data-id="${esc(c.id)}"><span aria-hidden="true" style="font-size:22px">${esc(c.emoji || "✨")}</span><span class="grow"><b>${esc(c.name)}</b><br><span class="small muted">${esc(c.timing === "days" ? dayList(c.days) : CHORE_TIMING_NAMES[c.timing] || "Any time")}</span></span></button>
       <button class="icon-btn sm" data-act="choreMove" data-id="${esc(c.id)}" data-d="-1" ${i ? "" : "disabled"} aria-label="Move up">${icon("up", 16)}</button>
-      <button class="icon-btn sm" data-act="choreMove" data-id="${esc(c.id)}" data-d="1" ${i < list.length - 1 ? "" : "disabled"} aria-label="Move down">${icon("down", 16)}</button></div>`).join("")}</div>` : ""}
+      <button class="icon-btn sm" data-act="choreMove" data-id="${esc(c.id)}" data-d="1" ${i < list.length - 1 ? "" : "disabled"} aria-label="Move down">${icon("down", 16)}</button>
+      <button class="icon-btn sm" data-act="choreDelete" data-id="${esc(c.id)}" aria-label="Remove ${esc(c.name)}">${icon("trash", 16)}</button></div>`).join("")}</div>` : ""}
     ${starters.length ? `<p class="section-label">Ideas</p><div class="chips wrap">${starters.map((s) => `<button class="chip" data-act="choreStarter" data-name="${esc(s.name)}" data-sheet="1">${s.emoji} ${esc(s.name)}</button>`).join("")}</div>` : ""}
     <button class="btn primary" style="width:100%;margin-top:16px" data-act="choreNew">${icon("plus", 16)}Add your own</button>`, { keepScroll });
 }
@@ -2432,7 +2438,7 @@ function openChore(draft, { keepScroll = false } = {}) {
       <p class="small muted" style="margin:0">${{ any: "Shows when it was last done.", daily: "Shows whether it's been done today.", ampm: "Shows the morning one and the evening one (from 3pm).", days: "Shows whether it's been done on the days you pick." }[d.timing]}</p>
       <button class="btn primary" data-act="choreSave">Save</button>
       ${d.id ? choreRecent(d.id) : ""}
-      ${d.id ? `<button class="btn" data-act="choreRemove">${app.choreRemoving ? "Tap again to remove it and its history" : `${icon("trash", 16)}Remove`}</button>` : ""}
+      ${d.id ? `<button class="btn" data-act="choreRemove">${icon("trash", 16)}Remove this routine</button>` : ""}
     </div>`, { keepScroll });
   if (app.choreFromList) app.sheetBack = () => openLifeEdit(); // closing goes back to the list it came from
 }
@@ -2445,7 +2451,6 @@ function choreDraftRead() {
 }
 Object.assign(ACTIONS, {
   choreTap: (d) => choreTap(d.id),
-  choreAgain: (d) => { closeSheet(); choreTap(d.id, { again: true }); },
   choreUntick: (d) => {
     if (!d.t) return;
     send({ op: "chore_done", id: d.id, key: d.t, undo: true });
@@ -2453,11 +2458,11 @@ Object.assign(ACTIONS, {
     toast("Taken back");
   },
   lifeEdit: () => openLifeEdit(),
-  choreNew: () => { app.choreRemoving = false; app.choreFromList = !$("#sheet").hidden; openChore({ name: "", emoji: "", timing: "any", days: [] }); },
-  choreEdit: (d) => { const c = chores().find((x) => x.id === d.id); if (!c) return; app.choreRemoving = false; app.choreFromList = true; openChore({ ...clone(c), log: undefined }); },
+  choreNew: () => { app.choreFromList = !$("#sheet").hidden; openChore({ name: "", emoji: "", timing: "any", days: [] }); },
+  choreEdit: (d) => { const c = chores().find((x) => x.id === d.id); if (!c) return; app.choreFromList = true; openChore({ ...clone(c), log: undefined }); },
   choreStarter: (d) => {
     const s = CHORE_STARTERS.find((x) => x.name === d.name); if (!s) return;
-    if (s.timing === "days") { app.choreRemoving = false; app.choreFromList = !!d.sheet; openChore({ ...s, days: [] }); return; } // bins: which days?
+    if (s.timing === "days") { app.choreFromList = !!d.sheet; openChore({ ...s, days: [] }); return; } // bins: which days?
     const id = uid();
     if (!d.sheet) app.lifeAdding = true; // keep the other ideas on screen while you're adding
     send({ op: "chore_add", item: { id, ...s } });
@@ -2476,10 +2481,10 @@ Object.assign(ACTIONS, {
     if (x.id) send({ op: "chore_update", id: x.id, patch: fields }); else send({ op: "chore_add", item: { id: uid(), ...fields } });
     app.choreDraft = null; openLifeEdit(); toast("Saved");
   },
+  choreDelete: (d) => removeChore(d.id, () => openLifeEdit({ keepScroll: true })),
   choreRemove: () => {
     const x = app.choreDraft; if (!x || !x.id) return;
-    if (!app.choreRemoving) { app.choreRemoving = true; openChore(choreDraftRead(), { keepScroll: true }); return; }
-    app.choreRemoving = false; send({ op: "chore_remove", id: x.id }); app.choreDraft = null; openLifeEdit(); toast(`${x.name} removed`);
+    removeChore(x.id, () => { app.choreDraft = null; openLifeEdit(); });
   },
 });
 // "2 hours ago" and "Not yet today" keep up with the clock while the tab is open
