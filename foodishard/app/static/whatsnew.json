@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.42",
+   "notes": [
+    "A few small tweaks."
+   ]
+  },
+  {
    "version": "0.11.41",
    "notes": [
     "Clearer wording in About on where your data is kept and who can see it."

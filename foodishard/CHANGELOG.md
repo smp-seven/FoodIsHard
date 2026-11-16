@@ -327,3 +327,6 @@ Fixes from a review of the new features:
 
 ## 0.11.41
 - About and privacy policy: clearer wording on where data is kept and the host's access (not shown in the app; only accessed if asked). Rating form note updated for anonymous ratings.
+
+## 0.11.42
+- About and privacy policy: "latest announcement" instead of "latest message from the host".
