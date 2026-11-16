@@ -297,3 +297,6 @@ Fixes from a review of the new features:
 
 ## 0.11.31
 - Admin: "See it as a new household" shows a blank household on screen only (nothing sent, saved or synced) with a banner to go back.
+
+## 0.11.32
+- Shops you use: ticks on selected shops, faded dashed chips for ones turned off, and a "N of M selected" line.

@@ -108,7 +108,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.31"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.32"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -634,7 +634,8 @@ function viewSettings() {
     <p class="section-label">Shopping &amp; prices</p>
     <div class="list">
       <div class="stack" style="padding:14px 16px;gap:8px"><b>Shops you use</b>
-        <div class="chips wrap">${SHOP_ORDER.map((k) => `<button class="chip ${shopsOn.includes(k) ? "on" : ""}" data-act="shopToggle" data-k="${k}">${esc(shopName(k))}</button>`).join("")}</div></div>
+        <span class="small muted">${shopsOn.length === SHOP_ORDER.length ? "All selected. Tap any you don't use to turn it off." : `${shopsOn.length} of ${SHOP_ORDER.length} selected. Tap to turn on or off.`}</span>
+        <div class="chips wrap">${SHOP_ORDER.map((k) => { const on = shopsOn.includes(k); return `<button class="chip pick ${on ? "on" : ""}" data-act="shopToggle" data-k="${k}" aria-pressed="${on}">${on ? icon("check", 14) : ""}${esc(shopName(k))}</button>`; }).join("")}</div></div>
       <label class="stack" style="padding:14px 16px;gap:6px"><b>Estimate prices at</b><select class="input" data-set="text" data-f="priceShop">${enabledShops().map((k) => `<option value="${k}" ${priceShop() === k ? "selected" : ""}>${esc(shopName(k, false))}</option>`).join("")}</select>
         <span class="small muted">${esc(app.ing.prices_note || "")}</span></label>
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Swaps like frozen veg, garlic paste, bottled lemon${saving > 0.05 ? ` · about ${money(saving)} ${s.budget ? "saved" : "cheaper"} this week` : ""}</span></span>
