@@ -227,9 +227,44 @@ function settings() { return app.state.settings; }
 // Older versions had a single settings.baby; it's read as the first child until saved again.
 function kidsAll() {
   const s = settings();
-  if (Array.isArray(s.children) && s.children.length) return s.children;
+  if (Array.isArray(s.children) && s.children.length) return s.children.map(privateKid);
   const b = s.baby || {};
-  return b.include || b.born ? [{ id: "c1", name: b.name || "Baby", born: b.born || "", due: b.due || "", stage: b.stage || "smooth", portion: b.portion ?? 0.25, dismissed: b.dismissed || [] }] : [];
+  return b.include || b.born ? [privateKid({ id: "c1", name: b.name || "", born: b.born || "", due: b.due || "", stage: b.stage || "smooth", portion: b.portion ?? 0.25, dismissed: b.dismissed || [] })] : [];
+}
+/* Privacy: a little one is stored with a first name or nickname (optional), the month and year they were born ("2026-01")
+   and how many weeks early they were. Not their exact birth date or due date. Ages are worked out from the last day of the
+   birth month, so they're never overstated (safety advice like "no honey before 1" errs on the late side). */
+function kidBornDate(c) {
+  const m = /^(\d{4})-(\d{2})/.exec((c && c.born) || "");
+  return m ? new Date(+m[1], +m[2], 0) : null; // day 0 of the next month = last day of the birth month
+}
+function kidEarlyWeeks(c) {
+  if (!c) return 0;
+  if (c.early != null && c.early !== "") return Math.max(0, Math.min(20, Math.round(+c.early) || 0));
+  if (c.due && /^\d{4}-\d{2}-\d{2}$/.test(c.born || "")) return Math.max(0, Math.min(20, Math.round((parseISO(c.due) - parseISO(c.born)) / 6048e5))); // older data
+  return 0;
+}
+function kidAge(c, corrected = false) {
+  const b = kidBornDate(c); if (!b) return null;
+  return monthsBetween(corrected ? addDays(b, 7 * kidEarlyWeeks(c)) : b, new Date());
+}
+function monthsText(age) {
+  if (!age) return "";
+  if (age.m < 0) return "not born yet";
+  if (age.m >= 24) return `${Math.floor(age.m / 12)} years`;
+  return `${age.m} month${age.m === 1 ? "" : "s"}`;
+}
+/** Older versions kept the exact birth date and due date: trim to month and year, plus weeks early. */
+function privateKid(c) {
+  if (!c || !(/^\d{4}-\d{2}-\d{2}/.test(c.born || "") || c.due)) return c;
+  const out = { ...c, early: kidEarlyWeeks(c), born: (c.born || "").slice(0, 7) };
+  delete out.due;
+  return out;
+}
+/** True when stored little ones still carry exact dates (fixed once on load, see ui.js). */
+function kidsNeedTrimming() {
+  const s = settings();
+  return (Array.isArray(s.children) && s.children.some((c) => c && (/^\d{4}-\d{2}-\d{2}/.test(c.born || "") || c.due))) || !!(s.baby && (s.baby.born || s.baby.due));
 }
 function kidsOn() { const s = settings(); return s.childrenOn ?? !!(s.baby && s.baby.include); }
 function kids() { return kidsOn() ? kidsAll() : []; }
@@ -238,7 +273,7 @@ function kidStyle(c) { return `--kid:${kidColour(c)}`; }
 function saveKids(list, on = kidsOn()) { return send({ op: "settings", patch: { children: list, childrenOn: on } }); }
 function updateKid(id, patch) { saveKids(kidsAll().map((k) => (k.id === id ? { ...k, ...patch } : k))); }
 function joinNames(names) { return names.length <= 1 ? (names[0] || "") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`; }
-function kidNames(list = kids()) { return joinNames(list.map((k) => k.name || "Baby")); }
+function kidNames(list = kids()) { return joinNames(list.map((k) => k.name || "Little one")); }
 
 function household() {
   const s = settings();
@@ -248,10 +283,9 @@ function household() {
   return { adults, kids: little, factor: factor || 1 };
 }
 function kidInfo(c) {
-  const ageActual = c.born ? monthsBetween(parseISO(c.born), new Date()) : null;
-  const ageCorrected = c.due ? monthsBetween(parseISO(c.due), new Date()) : ageActual;
-  let firstBirthday = null;
-  if (c.born) { firstBirthday = parseISO(c.born); firstBirthday.setFullYear(firstBirthday.getFullYear() + 1); }
+  const ageActual = kidAge(c), ageCorrected = kidEarlyWeeks(c) ? kidAge(c, true) : ageActual;
+  let firstBirthday = kidBornDate(c);
+  if (firstBirthday) firstBirthday.setFullYear(firstBirthday.getFullYear() + 1); // end of the month they turn 1
   const months = ageActual ? ageActual.m : 9;
   const saltLimit = months < 12 ? 1 : months < 48 ? 2 : 3; // NHS daily maximums
   return { ageActual, ageCorrected, firstBirthday, underOne: months < 12, saltLimit };
@@ -264,11 +298,11 @@ const BABY_STAGE_FROM = [["smooth", 0], ["finger", 7], ["chopped", 10], ["family
 const BABY_PORTION_FROM = [[6, 0.2], [9, 0.25], [12, 0.33], [24, 0.4], [48, 0.5]]; // months, share of an adult portion
 const PORTION_WORDS = { 0.2: "a fifth", 0.25: "a quarter", 0.33: "a third", 0.4: "two-fifths", 0.5: "half" };
 function kidSuggestions(c) {
-  if (!c.born) return [];
+  if (!kidBornDate(c)) return [];
   const info = kidInfo(c), age = info.ageCorrected || info.ageActual;
   if (!age || age.m < 0) return [];
-  const name = c.name || "Baby", m = age.m, corrected = c.due && c.due !== c.born;
-  const ageWords = `${ageText(corrected ? c.due : c.born)}${corrected ? " (corrected)" : ""}`;
+  const name = c.name || "Your little one", m = age.m, corrected = kidEarlyWeeks(c) > 0;
+  const ageWords = `${monthsText(corrected ? info.ageCorrected : info.ageActual)}${corrected ? " (corrected)" : ""}`;
   const out = [];
   if (m < 6) out.push({ key: "start", info: true, text: `${name} is ${ageWords}. Most babies start solid food at around 6 months${corrected ? "; for babies born early, ask your health visitor when to start" : ""}. Their portions are here for when you're ready.` });
   const order = BABY_STAGE_FROM.map(([k]) => k);

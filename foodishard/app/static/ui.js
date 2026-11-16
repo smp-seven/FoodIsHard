@@ -56,6 +56,8 @@ async function boot() {
   fromHash();
   backGuard();
   nightOwl();
+  // Older versions kept little ones' exact birth and due dates: trim them to month and year, plus weeks early (once)
+  if ((app.mode === "live" || app.mode === "demo") && kidsNeedTrimming()) send({ op: "settings", patch: { children: kidsAll(), ...(settings().baby ? { baby: null } : {}) } }, { rerender: false });
   if (app.mode === "live") { startPolling(); flushQueue(); }
   if (app.mode === "live" && app.host === "Cloudflare" && !app.offline && !app.signedOut) {
     loadAccount(); loadNotice();
@@ -109,7 +111,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.42"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.43"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -195,7 +197,7 @@ function kcalTiles(r, onHero) {
 function kcalShort(r) { return [...new Set(household().adults.map((p) => kcalFor(r, p.portion).toLocaleString("en-GB")))].join(" / ") + "&nbsp;kcal"; }
 function visibleSteps(r) { const inc = kids().length > 0; return r.steps.filter((s) => inc || !s.baby); }
 /** Coloured name chips, one per child. */
-function kidChips(list = kids()) { return list.map((k) => `<span class="kid-chip" style="${kidStyle(k)}">${esc(k.name || "Baby")}</span>`).join(""); }
+function kidChips(list = kids()) { return list.map((k) => `<span class="kid-chip" style="${kidStyle(k)}">${esc(k.name || "Little one")}</span>`).join(""); }
 /** One coloured note per child for a recipe, at their own stage. */
 /** Things worth flagging for one child and one recipe: salt from shop-bought foods, and being too young for solids. */
 function kidWarnings(r, k, info) {
@@ -223,9 +225,9 @@ function kidNotes(r, { withRules = false } = {}) {
   return kids().map((k) => {
     const info = kidInfo(k), note = personaliseStep((r.baby || {})[STAGE_NOTE[k.stage] || "smooth"] || "") || "Take their portion out before salt, stock or chilli, and cut it to a size they can manage.";
     const warn = kidWarnings(r, k, info);
-    return `<div class="baby-box kid" style="${kidStyle(k)}"><p class="kid-head"><span class="kid-dot"></span><b>${esc(k.name || "Baby")}</b> · ${esc(STAGES[k.stage]?.name || "")}</p><p style="margin:0">${esc(note)}</p>
+    return `<div class="baby-box kid" style="${kidStyle(k)}"><p class="kid-head"><span class="kid-dot"></span><b>${esc(k.name || "Little one")}</b> · ${esc(STAGES[k.stage]?.name || "")}</p><p style="margin:0">${esc(note)}</p>
       ${warn.map((w) => `<p class="small" style="margin:6px 0 0;color:var(--warn-ink);background:var(--warn-soft);padding:6px 10px;border-radius:10px">${esc(w)}</p>`).join("")}
-      ${withRules ? `<ul><li>No added salt or stock in their portion.</li>${info.underOne ? `<li>No honey until ${info.firstBirthday ? `${niceDate(info.firstBirthday)} ${info.firstBirthday.getFullYear()}` : "their first birthday"}.</li>` : ""}<li>Quarter cherry tomatoes and grapes. Nuts ground or smooth only.</li></ul>` : ""}</div>`;
+      ${withRules ? `<ul><li>No added salt or stock in their portion.</li>${info.underOne ? `<li>No honey until they turn 1${info.firstBirthday ? ` (after ${info.firstBirthday.toLocaleDateString("en-GB", { month: "long", year: "numeric" })})` : ""}.</li>` : ""}<li>Quarter cherry tomatoes and grapes. Nuts ground or smooth only.</li></ul>` : ""}</div>`;
   }).join("");
 }
 
@@ -241,7 +243,7 @@ function nudges() {
   if (!app.state) return [];
   const s = settings(), out = [];
   if (!s.allergyAsked && !(s.avoid || []).length) out.push("allergies");
-  if (kids().some((k) => !k.born)) out.push("kidBorn");
+  if (kids().some((k) => !kidBornDate(k))) out.push("kidBorn");
   return out;
 }
 // ---- Storing and reheating (FSA and NHS guidance) ----
@@ -815,7 +817,7 @@ function openMacros(id, who) {
   const { adults, kids: little } = household();
   const per = nutritionPerPortion(r);
   const tabs = adults.map((p, i) => `<button class="${String(who) === String(i) ? "on" : ""}" data-act="macros" data-id="${id}" data-who="${i}">${esc(p.name)} · ${(+p.portion).toFixed(1).replace(".0", "")}</button>`).join("")
-    + little.map((k) => `<button class="${who === `kid:${k.id}` ? "on" : ""}" data-act="macros" data-id="${id}" data-who="kid:${esc(k.id)}">${esc(k.name || "Baby")}</button>`).join("");
+    + little.map((k) => `<button class="${who === `kid:${k.id}` ? "on" : ""}" data-act="macros" data-id="${id}" data-who="kid:${esc(k.id)}">${esc(k.name || "Little one")}</button>`).join("");
   let body;
   const kid = String(who).startsWith("kid:") && little.find((k) => `kid:${k.id}` === who);
   if (kid) {
@@ -1494,7 +1496,13 @@ function onChange(e) {
       if (el.checked && !list.length) { const id = uid(); saveKids([{ id, name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); openKid(id); return; }
       return saveKids(list, el.checked);
     }
-    case "kid": { updateKid(d.id, { [d.f]: d.f === "name" ? el.value.trim() : el.value }); if (d.f !== "name") refreshPanel(); return; }
+    case "kid": {
+      const k = kidsAll().find((x) => x.id === d.id) || {}, [y, m] = (k.born || "").split("-");
+      const patch = d.f === "bornMonth" || d.f === "bornYear"
+        ? { born: `${d.f === "bornYear" ? el.value : y || new Date().getFullYear()}-${d.f === "bornMonth" ? el.value : m || "01"}` }
+        : d.f === "early" ? { early: +el.value || 0 } : { [d.f]: d.f === "name" ? el.value.trim() : el.value };
+      updateKid(d.id, patch); if (d.f !== "name") refreshPanel(); return;
+    }
     case "text": return send({ op: "settings", patch: { [d.f]: el.value } });
     case "num": {
       send({ op: "settings", patch: { [d.f]: +el.value } });
@@ -1585,7 +1593,7 @@ function openAbout() {
     ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. Your meal plans, shopping lists and settings are kept securely in a database on Cloudflare's servers${app.region === "eu" ? " in the EU" : ""}. They aren't shown to the host in the app. As the account owner they could access them, but only would if you asked, for example to help fix a problem. Cloudflare also sends the sign-in codes.</p>
        <ul>
          <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), and whether you've seen the latest announcement.</li>
-         <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, their names and birth dates) and recipe feedback.</li>
+         <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, whatever first name or nickname you give them, the month and year they were born, and how many weeks early, if they were. Never their exact date of birth) and recipe feedback.</li>
          <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard anonymously, without your name or household, so they can improve the recipes. <b>Problem reports</b> include your household's name and first name so they can follow up. Nothing else of your household's is shown to them in the app.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
          <li><b>Not shared:</b> other households can never see your data, and nothing is sold or used for advertising.</li>
@@ -1636,7 +1644,7 @@ function typicalDinnerKcal() {
 function whoYouCookFor() {
   const s = settings(), { factor } = household(), kidsHere = kidsOn() ? kidsAll() : [], paused = !kidsOn() && kidsAll().length;
   const adults = s.people.map((p, i) => `<button class="rrow" data-act="person" data-i="${i}" style="padding:12px 16px"><span class="grow"><b>${esc(p.name)}</b><br><span class="small muted">${esc(sizeLabel(+p.portion || 1))} · about ${Math.round(typicalDinnerKcal() * (+p.portion || 1) / 10) * 10} kcal</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
-  const little = kidsHere.map((k) => `<button class="rrow kid-stripe ${k.born ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="grow"><b>${esc(k.name || "Little one")}</b><br><span class="small muted">${k.born ? esc(ageText(k.born).split(",")[0]) : "add a birth date"} · ${esc((STAGES[k.stage]?.name || "").split(" &")[0])} · ${esc(portionShort(k.portion))} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
+  const little = kidsHere.map((k) => `<button class="rrow kid-stripe ${kidBornDate(k) ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="grow"><b>${esc(k.name || "Little one")}</b><br><span class="small muted">${kidBornDate(k) ? esc(monthsText(kidAge(k))) : "add when they were born"} · ${esc((STAGES[k.stage]?.name || "").split(" &")[0])} · ${esc(portionShort(k.portion))} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   return `<p class="section-label">Who you cook for</p>
     <div class="list">
       <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner, signed in or not</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
@@ -1668,19 +1676,28 @@ function openPerson(i, { keepScroll = false } = {}) {
 /** A little one's panel: the same details as before (dates, stage, portion, suggestions). */
 function openKid(id, { keepScroll = false } = {}) {
   const k = kidsAll().find((x) => x.id === id); if (!k) return;
-  const corrected = k.due && k.due !== k.born;
+  const corrected = kidEarlyWeeks(k) > 0;
   openSheet(`<p class="eyebrow">Who you cook for</p><h1 class="title" style="font-size:26px">${esc(k.name || "Little one")}</h1>
     <div class="list">${kidCardHtml(k, corrected)}</div>
     <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-close>Done</button></div>`, { keepScroll });
   app.panel = { type: "kid", id };
 }
+/** Birth month and year, and weeks early: all a little one's advice needs (no exact dates are kept). */
+function kidBornFields(k) {
+  const [y, m] = (k.born || "").split("-"), now = new Date().getFullYear(), id = esc(k.id), need = kidBornDate(k) ? "" : " nudge-field";
+  const months = Array.from({ length: 12 }, (_, i) => [String(i + 1).padStart(2, "0"), new Date(2000, i, 1).toLocaleDateString("en-GB", { month: "short" })]);
+  const years = Array.from({ length: 13 }, (_, i) => String(now - i)), early = kidEarlyWeeks(k);
+  return `<div class="row" style="gap:8px">
+      <label class="grow"><span class="small muted">Born in</span><select class="input${need}" data-set="kid" data-id="${id}" data-f="bornMonth" aria-label="Month born">${m ? "" : `<option value="" selected disabled>Month</option>`}${months.map(([v, n]) => `<option value="${v}" ${v === m ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+      <label class="grow"><span class="small muted">&nbsp;</span><select class="input${need}" data-set="kid" data-id="${id}" data-f="bornYear" aria-label="Year born">${y ? "" : `<option value="" selected disabled>Year</option>`}${years.map((v) => `<option value="${v}" ${v === y ? "selected" : ""}>${v}</option>`).join("")}</select></label></div>
+    <label><span class="small muted">Born early?</span><select class="input" data-set="kid" data-id="${id}" data-f="early">${Array.from({ length: 17 }, (_, w) => `<option value="${w}" ${w === early ? "selected" : ""}>${w ? `${w} week${w === 1 ? "" : "s"} early` : "No, around their due date"}</option>`).join("")}</select></label>`;
+}
 function kidCardHtml(k, corrected) {
   return `<div class="stack kid-card" style="padding:14px 16px;gap:10px;${kidStyle(k)}">
-        <div class="row"><span class="kid-dot" aria-hidden="true"></span><input class="input grow" value="${esc(k.name)}" placeholder="Name" data-set="kid" data-id="${esc(k.id)}" data-f="name" aria-label="Child's name">
+        <div class="row"><span class="kid-dot" aria-hidden="true"></span><input class="input grow" value="${esc(k.name)}" placeholder="First name or nickname (optional)" data-set="kid" data-id="${esc(k.id)}" data-f="name" aria-label="First name or nickname (optional)">
           <button class="icon-btn plain" data-act="kidRemove" data-id="${esc(k.id)}" aria-label="Remove ${esc(k.name || "child")}">${icon("trash", 18)}</button></div>
-        <div class="row"><label class="grow"><span class="small muted">Born</span><input class="input ${k.born ? "" : "nudge-field"}" type="date" value="${esc(k.born)}" data-set="kid" data-id="${esc(k.id)}" data-f="born"></label>
-          <label class="grow"><span class="small muted">Due date (if early)</span><input class="input" type="date" value="${esc(k.due)}" data-set="kid" data-id="${esc(k.id)}" data-f="due"></label></div>
-        <span class="small muted">${k.born ? `${esc(ageText(k.born))} old${corrected ? ` · ${esc(ageText(k.due))} corrected` : ""}` : "Add their birth date."}</span>
+        ${kidBornFields(k)}
+        <span class="small muted">${kidBornDate(k) ? `About ${esc(monthsText(kidAge(k)))} old${corrected ? ` · ${esc(monthsText(kidAge(k, true)))} corrected` : ""}` : "Add the month and year they were born."}</span>
         <label><span class="small muted">Eating stage</span><select class="input" data-set="kid" data-id="${esc(k.id)}" data-f="stage">${Object.entries(STAGES).map(([s2, v]) => `<option value="${s2}" ${k.stage === s2 ? "selected" : ""}>${v.name}</option>`).join("")}</select></label>
         <span class="small muted">${esc(STAGES[k.stage]?.hint || "")}</span>
         ${kidSuggestions(k).map(babySuggestionCard).join("")}

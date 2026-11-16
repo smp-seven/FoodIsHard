@@ -330,3 +330,6 @@ Fixes from a review of the new features:
 
 ## 0.11.42
 - About and privacy policy: "latest announcement" instead of "latest message from the host".
+
+## 0.11.43
+- Little ones: stored as an optional first name or nickname, month and year of birth, and weeks early. Exact birth and due dates are no longer kept; existing data is converted once on load. Ages count from the end of the birth month so they are never overstated. About and privacy policy updated.
