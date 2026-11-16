@@ -123,6 +123,7 @@ function load(key, fallback) { try { const v = localStorage.getItem(key); return
 let sending = 0;
 function applyLocal(op) {
   applyOp(app.state, op, app.user || "you");
+  if (app.mode === "preview") return; // "Preview as a new household": nothing is saved, not even on this phone
   if (app.mode === "demo") store(DEMO_KEY, app.state); else store(CACHE_KEY, app.state);
 }
 async function send(op, { rerender = true } = {}) {
@@ -151,7 +152,7 @@ async function flushQueue() {
         if (typeof toast === "function") toast(`Couldn't save that change${msg ? `: ${msg}` : ""}. Try updating the app (Settings).`);
       }
       else if (!r.ok) throw new Error(r.status);
-      else { const res = await r.json(); app.state = res.state; }
+      else { const res = await r.json(); if (app.mode === "live") app.state = res.state; }
       const now = load(QUEUE_KEY, []);
       now.shift();
       store(QUEUE_KEY, now);
@@ -174,7 +175,7 @@ let pollTimer = null;
 function startPolling() {
   clearInterval(pollTimer);
   pollTimer = setInterval(async () => {
-    if (document.hidden) return;
+    if (document.hidden || app.mode !== "live") return; // paused while previewing as a new household
     if (load(QUEUE_KEY, []).length) return flushQueue();
     if (sending) return;
     try {

@@ -7,6 +7,7 @@
 async function boot() {
   hydrateIcons(document);
   const [rec, ing, defaults] = await Promise.all([getJSON("data/recipes.json"), getJSON("data/ingredients.json"), getJSON("data/defaults.json")]);
+  app.defaults = defaults; // a fresh household's starting point (also used by "See it as a new household")
   app.recipes = rec.recipes; app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
   app.families = rec.families; app.famById = Object.fromEntries(app.families.map((f) => [f.id, f]));
   app.themes = rec.themes || []; app.themeById = Object.fromEntries(app.themes.map((t) => [t.id, t]));
@@ -107,7 +108,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.30"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.31"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -654,7 +655,7 @@ function viewSettings() {
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">Includes notes on allergies and babies</span></span><span class="muted">›</span></button></div>
     ${accountFooter()}
-    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : "Preview: saved on this device only"} · FoodIsHard ${APP_VERSION}</p>`;
+    <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : app.mode === "preview" ? "Previewing as a new household: nothing is saved" : "Preview: saved on this device only"} · FoodIsHard ${APP_VERSION}</p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -695,6 +696,23 @@ window.addEventListener("popstate", (e) => {
    page used to land there ("Your code session is no longer available"), which looks like being signed out. So the app
    keeps one extra step at its start: the first Back stays in the app with a hint, a second Back leaves.
    Installed (home-screen) apps start fresh with no sign-in page behind them, so they're left alone. */
+/** Admin: see the app exactly as a brand-new household would. A blank household lives only on screen: nothing is
+    sent, saved or synced, and server updates are paused. "Back to my household" (or reloading) puts everything back. */
+function previewNew(on) {
+  const b = $("#banner");
+  if (on && app.mode === "live") {
+    app.previewSaved = app.state; app.mode = "preview";
+    app.state = { ...clone(app.defaults), rev: 0 };
+    ["plans", "prefs", "checks", "extras", "prices", "swaps", "shopFor", "shopPref"].forEach((k) => { app.state[k] = app.state[k] || {}; });
+    b.hidden = false; b.innerHTML = `Previewing as a new household. Nothing here is saved. <button class="btn sm" style="margin-left:8px" data-act="previewEnd">Back to my household</button>`;
+  } else if (!on && app.mode === "preview") {
+    app.state = app.previewSaved; app.previewSaved = null; app.mode = "live";
+    b.hidden = true; b.innerHTML = "";
+  } else return;
+  app.weekStart = currentWeek(); app.undoShuffle = null; app.shopAhead = 0; app.selecting.clear();
+  closeSheet({ navigating: true }); go("tonight"); render(); window.scrollTo(0, 0);
+  toast(on ? "This is what a new household sees" : "Back to your household");
+}
 /** Opened between 1am and 4am (night feeds): a quiet nod, once a night. */
 function nightOwl() {
   const now = new Date(), h = now.getHours(), night = now.toDateString();
@@ -1292,6 +1310,8 @@ const ACTIONS = {
   },
   shopPlan: () => { app.weekStart = shopWeek(); go("week"); },
   shopAhead: (d) => { app.shopAhead = Math.max(0, Math.min(SHOP_AHEAD, (app.shopAhead || 0) + +d.d)); app.selecting.clear(); app.shopTab = "all"; render(); window.scrollTo(0, 0); },
+  previewStart: () => previewNew(true),
+  previewEnd: () => previewNew(false),
   fbOpen: (d) => { app.fbKind = d.k; app.fbAdmin = null; go("feedback"); },
   adminFilter: (d) => { app.adminFilter = d.f; render(); },
   adminMember: (d) => openAdminMember(d.email),
@@ -1912,7 +1932,8 @@ function viewAdmin() {
       <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b>${ad.notice ? `<br><span class="small muted">Showing now · seen by ${ad.notice.seenBy} of ${ad.people}</span>` : ""}</span>${icon("right", 18)}</button>
       <label class="row" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>💬 Report button on every page</b><br><span class="small muted">Report a problem is always in Settings</span></span>
         <span class="switch"><input type="checkbox" data-act="adminBubble" ${ad.reportBubble !== false ? "checked" : ""}><i></i></span></label></div>
-    <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button></div>
+    <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button>
+      ${app.mode === "live" ? `<button class="btn" data-act="previewStart">See it as a new household</button>` : ""}</div>
     <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search people or households" aria-label="Search people or households" data-input="afilter" autocomplete="off"></label>
     <div class="chips" style="margin-bottom:12px">${chip("all", "Everyone")}${chip("never", `Never signed in (${never})`)}${chip("inactive", `Inactive (${inactive})`)}</div>
     <div id="adminList">${households || `<div class="empty">${ad.households.length ? "Nobody matches that." : "No households yet."}</div>`}</div>
