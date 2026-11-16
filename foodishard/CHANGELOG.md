@@ -386,3 +386,6 @@ Fixes from a review of the new features:
 
 ## 0.11.59
 - A separate test version (staging): its own Worker and data, its own sign-in rule, deployed from the staging branch, with an orange "Test version" bar. Setup steps in CLOUDFLARE.md.
+
+## 0.11.60
+- Quick leftover lunches (grown-ups): templates in data/lunches.json filled from the week's real leftovers; "As a quick lunch" on leftover items; pick a day (within 3 days) and 1 or 2 people; optional cheap basics (wraps, pittas, bread) added to the list; lunch line under the day's dinner and on Tonight; leftovers used by a lunch stop showing as spare. Checked by the recipe checker and on both servers.

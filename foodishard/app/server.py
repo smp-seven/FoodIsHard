@@ -221,6 +221,15 @@ def check_op(op):
         if days is not None and (not isinstance(days, list) or len(days) > 7
                                  or any(not (isinstance(d, int) and not isinstance(d, bool) and 0 <= d < 7) for d in days)):
             bad()
+    # a quick leftover lunch on a day (same as checkOp in ops.js)
+    if op["op"] == "day" and isinstance(op.get("day"), dict) and op["day"].get("lunch") is not None:
+        lunch = op["day"]["lunch"]
+        if (not isinstance(lunch, dict) or not isinstance(lunch.get("t"), str) or long(lunch["t"], 20)
+                or not isinstance(lunch.get("main"), str) or long(lunch["main"], 40)
+                or (lunch.get("with") is not None and (not isinstance(lunch["with"], list) or len(lunch["with"]) > 3
+                    or any(not isinstance(k, str) or long(k, 40) for k in lunch["with"])))
+                or lunch.get("n") not in (None, 1, 2) or any(k not in ("t", "main", "with", "n") for k in lunch)):
+            bad()
     if op["op"] == "chore_done" and (not isinstance(op.get("key"), str) or long(op["key"], 40) or str(op.get("slot")) not in ("None", "am", "pm", "1", "2", "3", "4", "5", "6")):
         bad()
     if op["op"] == "chore_move" and op.get("d") not in (1, -1):

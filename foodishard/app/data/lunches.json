@@ -1,0 +1,437 @@
+{
+ "note": "Quick grown-up lunches that use up the week's leftovers (part-packs). Templates, not recipes: {main} is the leftover being used up, {with} the other leftovers it can take. Not adapted for little ones. Checked by tools/check_recipes.py.",
+ "keepDays": 3,
+ "use": {
+  "halloumi": {
+   "name": "halloumi",
+   "how": "Slice the halloumi and fry it in a dry non-stick pan over a medium heat for 2 minutes each side, until golden."
+  },
+  "feta": {
+   "name": "feta",
+   "how": "Crumble the feta."
+  },
+  "paneer": {
+   "name": "paneer",
+   "how": "Cut the paneer into strips and fry in a little oil over a medium heat for 3 to 4 minutes, turning, until golden."
+  },
+  "tofu": {
+   "name": "tofu",
+   "how": "Pat the tofu dry, cut into strips and fry in a little oil over a medium-high heat for 5 to 6 minutes, turning, until golden."
+  },
+  "mozzarella": {
+   "name": "mozzarella",
+   "how": "Tear the mozzarella into small pieces."
+  },
+  "ricotta": {
+   "name": "ricotta",
+   "how": "Season the ricotta with a little pepper."
+  },
+  "cottage_cheese": {
+   "name": "cottage cheese",
+   "how": "Give the cottage cheese a stir."
+  },
+  "chickpeas": {
+   "name": "chickpeas",
+   "how": "Drain the chickpeas and roughly crush them with a fork."
+  },
+  "cannellini": {
+   "name": "cannellini beans",
+   "how": "Drain the cannellini beans and roughly crush them with a fork."
+  },
+  "black_beans": {
+   "name": "black beans",
+   "how": "Drain and rinse the black beans."
+  },
+  "kidney_beans": {
+   "name": "kidney beans",
+   "how": "Drain and rinse the kidney beans."
+  },
+  "green_lentils": {
+   "name": "lentils",
+   "how": "Drain the lentils."
+  },
+  "baked_beans": {
+   "name": "baked beans",
+   "how": "Heat the baked beans in a small pan over a medium heat for 3 to 4 minutes, stirring, until piping hot."
+  },
+  "hummus": {
+   "name": "hummus",
+   "how": "Have the hummus ready to spread."
+  },
+  "spinach": {
+   "name": "spinach",
+   "how": "Roughly chop the spinach."
+  },
+  "salad_leaves": {
+   "name": "salad leaves",
+   "how": "Rinse and dry the salad leaves."
+  },
+  "red_pepper": {
+   "name": "pepper",
+   "how": "Slice the pepper into thin strips."
+  },
+  "courgette": {
+   "name": "courgette",
+   "how": "Slice the courgette thinly and fry in a little oil over a medium heat for 4 to 5 minutes, until soft."
+  },
+  "mushrooms": {
+   "name": "mushrooms",
+   "how": "Slice the mushrooms and fry in a little oil over a medium-high heat for 4 to 5 minutes, until golden."
+  },
+  "broccoli": {
+   "name": "broccoli",
+   "how": "Cut the broccoli into small florets and fry in a little oil over a medium heat for 5 minutes, until just tender."
+  },
+  "cauliflower": {
+   "name": "cauliflower",
+   "how": "Cut the cauliflower into small florets and fry in a little oil over a medium heat for 6 to 7 minutes, until golden and tender."
+  },
+  "cherry_tomatoes": {
+   "name": "cherry tomatoes",
+   "how": "Halve the cherry tomatoes."
+  },
+  "cucumber": {
+   "name": "cucumber",
+   "how": "Slice the cucumber."
+  },
+  "avocado": {
+   "name": "avocado",
+   "how": "Halve, stone and slice the avocado."
+  },
+  "spring_onion": {
+   "name": "spring onions",
+   "how": "Thinly slice the spring onions."
+  },
+  "coriander": {
+   "name": "coriander",
+   "how": "Roughly chop the coriander."
+  },
+  "celery": {
+   "name": "celery",
+   "how": "Cut the celery into sticks."
+  },
+  "white_cabbage": {
+   "name": "cabbage",
+   "how": "Finely shred the cabbage."
+  },
+  "beansprouts": {
+   "name": "beansprouts",
+   "how": "Stir-fry the beansprouts in a little oil over a high heat for 2 to 3 minutes, until piping hot all the way through. (Beansprouts should always be cooked.)"
+  },
+  "passata": {
+   "name": "passata",
+   "how": "Have the passata ready."
+  },
+  "chopped_tomatoes": {
+   "name": "chopped tomatoes",
+   "how": "Have the chopped tomatoes ready."
+  },
+  "gnocchi": {
+   "name": "gnocchi",
+   "how": "Have the gnocchi ready."
+  }
+ },
+ "lunches": [
+  {
+   "id": "wrap",
+   "name": "{Main} wrap",
+   "emoji": "🌯",
+   "minutes": 10,
+   "base": [
+    {
+     "k": "tortillas",
+     "q": 1,
+     "u": ""
+    }
+   ],
+   "takes": [
+    "halloumi",
+    "feta",
+    "paneer",
+    "tofu",
+    "chickpeas",
+    "black_beans",
+    "kidney_beans",
+    "hummus",
+    "spinach",
+    "salad_leaves",
+    "red_pepper",
+    "mushrooms",
+    "courgette",
+    "cherry_tomatoes",
+    "cucumber",
+    "avocado",
+    "spring_onion",
+    "coriander",
+    "white_cabbage",
+    "beansprouts"
+   ],
+   "steps": [
+    "{prep}",
+    "Warm the wrap in a dry frying pan over a medium heat for 20 seconds each side.",
+    "Fill the middle with everything, fold the bottom up and roll it tightly."
+   ]
+  },
+  {
+   "id": "pitta",
+   "name": "Stuffed pitta with {main}",
+   "emoji": "🥙",
+   "minutes": 10,
+   "base": [
+    {
+     "k": "flatbread",
+     "q": 1,
+     "u": ""
+    }
+   ],
+   "takes": [
+    "halloumi",
+    "feta",
+    "paneer",
+    "tofu",
+    "chickpeas",
+    "cannellini",
+    "hummus",
+    "salad_leaves",
+    "spinach",
+    "red_pepper",
+    "cherry_tomatoes",
+    "cucumber",
+    "avocado",
+    "spring_onion",
+    "coriander",
+    "white_cabbage"
+   ],
+   "steps": [
+    "{prep}",
+    "Toast the pitta for 1 to 2 minutes until it puffs up, then carefully split it open (it lets out hot steam).",
+    "Stuff the pitta with everything."
+   ]
+  },
+  {
+   "id": "toastie",
+   "name": "{Main} toastie",
+   "emoji": "🥪",
+   "minutes": 10,
+   "base": [
+    {
+     "k": "bread",
+     "q": 2,
+     "u": "slices"
+    }
+   ],
+   "takes": [
+    "mozzarella",
+    "feta",
+    "halloumi",
+    "ricotta",
+    "baked_beans",
+    "spinach",
+    "red_pepper",
+    "mushrooms",
+    "cherry_tomatoes",
+    "spring_onion",
+    "courgette"
+   ],
+   "steps": [
+    "{prep}",
+    "Fill two slices of bread with everything and press them together.",
+    "Cook in a dry frying pan over a medium-low heat for 3 to 4 minutes each side, pressing down with a spatula, until golden and the filling is hot."
+   ]
+  },
+  {
+   "id": "quesadilla",
+   "name": "{Main} quesadilla",
+   "emoji": "🫓",
+   "minutes": 12,
+   "base": [
+    {
+     "k": "tortillas",
+     "q": 2,
+     "u": ""
+    }
+   ],
+   "takes": [
+    "black_beans",
+    "kidney_beans",
+    "mozzarella",
+    "feta",
+    "paneer",
+    "spinach",
+    "red_pepper",
+    "mushrooms",
+    "courgette",
+    "spring_onion",
+    "coriander",
+    "avocado",
+    "cherry_tomatoes"
+   ],
+   "steps": [
+    "{prep}",
+    "Spread everything over one wrap and put the other wrap on top.",
+    "Cook in a dry frying pan over a medium heat for 2 to 3 minutes each side, until golden and the filling is hot. Cut into wedges."
+   ]
+  },
+  {
+   "id": "omelette",
+   "name": "{Main} omelette",
+   "emoji": "🍳",
+   "minutes": 10,
+   "base": [
+    {
+     "k": "eggs",
+     "q": 2,
+     "u": ""
+    }
+   ],
+   "takes": [
+    "feta",
+    "mozzarella",
+    "ricotta",
+    "cottage_cheese",
+    "spinach",
+    "mushrooms",
+    "red_pepper",
+    "courgette",
+    "broccoli",
+    "cauliflower",
+    "cherry_tomatoes",
+    "spring_onion",
+    "coriander"
+   ],
+   "steps": [
+    "{prep}",
+    "Beat 2 eggs per person with a pinch of pepper.",
+    "Heat a little oil in a non-stick frying pan over a medium heat. Pour in the eggs and cook for 1 minute, then scatter everything over.",
+    "Cook for 3 to 4 more minutes, until the eggs are set all the way through, then fold in half."
+   ]
+  },
+  {
+   "id": "picky",
+   "name": "{Main} picky plate",
+   "emoji": "🧀",
+   "minutes": 8,
+   "base": [
+    {
+     "k": "flatbread",
+     "q": 1,
+     "u": ""
+    },
+    {
+     "k": "hummus",
+     "q": 50,
+     "u": "g"
+    }
+   ],
+   "takes": [
+    "halloumi",
+    "feta",
+    "mozzarella",
+    "paneer",
+    "cottage_cheese",
+    "hummus",
+    "cucumber",
+    "cherry_tomatoes",
+    "red_pepper",
+    "celery",
+    "avocado"
+   ],
+   "steps": [
+    "{prep}",
+    "Cut the pitta into strips and toast them for 1 to 2 minutes.",
+    "Arrange everything on a plate with the hummus to dip."
+   ]
+  },
+  {
+   "id": "bowl",
+   "name": "{Main} lunch bowl",
+   "emoji": "🥗",
+   "minutes": 8,
+   "base": [],
+   "takes": [
+    "chickpeas",
+    "cannellini",
+    "black_beans",
+    "kidney_beans",
+    "green_lentils",
+    "feta",
+    "halloumi",
+    "tofu",
+    "salad_leaves",
+    "spinach",
+    "cucumber",
+    "cherry_tomatoes",
+    "red_pepper",
+    "avocado",
+    "spring_onion",
+    "coriander",
+    "white_cabbage",
+    "hummus"
+   ],
+   "steps": [
+    "{prep}",
+    "Put everything in a bowl, add a splash of olive oil, a squeeze of lemon if you have one and a pinch of pepper, and toss together."
+   ]
+  },
+  {
+   "id": "soup",
+   "name": "Quick {main} soup",
+   "emoji": "🍅",
+   "minutes": 15,
+   "base": [
+    {
+     "k": "bread",
+     "q": 1,
+     "u": "slices"
+    }
+   ],
+   "takes": [
+    "passata",
+    "chopped_tomatoes",
+    "green_lentils",
+    "cannellini",
+    "spinach",
+    "red_pepper",
+    "courgette",
+    "mushrooms"
+   ],
+   "steps": [
+    "{prep}",
+    "Put everything in a small pan with a splash of water and bring to a simmer over a medium heat.",
+    "Simmer for 8 to 10 minutes, stirring now and then, until piping hot. Season with pepper and serve with the bread to dip."
+   ],
+   "needsOne": [
+    "passata",
+    "chopped_tomatoes"
+   ],
+   "selfName": "Quick tomato soup"
+  },
+  {
+   "id": "gnocchi",
+   "name": "Crispy gnocchi with {main}",
+   "emoji": "🥔",
+   "minutes": 15,
+   "base": [],
+   "takes": [
+    "gnocchi",
+    "spinach",
+    "mushrooms",
+    "cherry_tomatoes",
+    "red_pepper",
+    "courgette",
+    "mozzarella",
+    "feta",
+    "ricotta"
+   ],
+   "steps": [
+    "{prep}",
+    "Heat a little oil in a frying pan over a medium-high heat. Fry the gnocchi for 6 to 8 minutes, turning, until golden and crisp.",
+    "Add everything else and cook for 2 more minutes, until hot."
+   ],
+   "needsOne": [
+    "gnocchi"
+   ],
+   "selfName": "Crispy gnocchi with veg"
+  }
+ ]
+}

@@ -20,6 +20,7 @@ import "../../foodishard/app/static/ops.js";
 import recipes from "../../foodishard/app/data/recipes.json";
 import ingredients from "../../foodishard/app/data/ingredients.json";
 import defaults from "../../foodishard/app/data/defaults.json";
+import lunches from "../../foodishard/app/data/lunches.json";
 import {
   verifyAccessToken, withDefaults, prune, validateImport, MAX_STATE_BYTES, ONS_URL, parseOns,
   parseAdmins, syncAccessPolicy,
@@ -30,7 +31,7 @@ export { Directory };
 
 const { applyOp, trimChildren } = globalThis.FoodIsHardOps;
 const RECIPE_NAMES = { ...Object.fromEntries(recipes.recipes.map((r) => [r.id, r.name])), _problem: "Problem report" };
-const DATA = { "recipes.json": recipes, "ingredients.json": ingredients, "defaults.json": defaults };
+const DATA = { "recipes.json": recipes, "ingredients.json": ingredients, "defaults.json": defaults, "lunches.json": lunches };
 const POLL_SECONDS = 8; // how often open phones check for changes (keeps well inside the free tier)
 const WHO_CACHE_MS = 60_000; // remember who's who for a minute, to halve requests
 

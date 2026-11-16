@@ -140,6 +140,44 @@ for t in recipes.get("themes", []):
         if n < 3:
             warnings.append(f"theme {t['id']}: only {n} dinners fit, so it will repeat a lot")
 
+# Quick leftover lunches (lunches.json): every ingredient real, every template sensible and safe.
+lunch_file = DATA / "lunches.json"
+if lunch_file.exists():
+    L = json.loads(lunch_file.read_text())
+    all_items = json.loads((DATA / "ingredients.json").read_text())["items"]
+    use, seen = L.get("use", {}), set()
+    for k, u in use.items():
+        if k not in all_items:
+            errors.append(f"lunches: unknown ingredient {k!r} in use")
+        if not u.get("name") or not u.get("how"):
+            errors.append(f"lunches: {k!r} needs a name and a how")
+    if "beansprouts" in use and "cooked" not in use["beansprouts"]["how"].lower():
+        errors.append("lunches: beansprouts must always be cooked (say so in how)")
+    for l in L.get("lunches", []):
+        lid = l.get("id", "?")
+        if lid in seen:
+            errors.append(f"lunch {lid}: duplicate id")
+        seen.add(lid)
+        if "{main}" not in l.get("name", "").lower() and not l.get("selfName"):
+            errors.append(f"lunch {lid}: name must include {{Main}} or {{main}}")
+        for b in l.get("base", []):
+            m = all_items.get(b.get("k"))
+            if not m:
+                errors.append(f"lunch {lid}: unknown base ingredient {b.get('k')!r}")
+            elif (m.get("pk") or [0, ""])[1] != (b.get("u") or "") and not (b.get("u") == "slices" and (m.get("pk") or [0, ""])[1] == "slices"):
+                errors.append(f"lunch {lid}: base {b['k']} unit {b.get('u')!r} doesn't match its pack unit")
+        for k in l.get("takes", []):
+            if k not in use:
+                errors.append(f"lunch {lid}: takes {k!r}, which has no entry in use")
+        for k in l.get("needsOne", []):
+            if k not in l.get("takes", []):
+                errors.append(f"lunch {lid}: needsOne {k!r} isn't in takes")
+        steps = l.get("steps", [])
+        if not steps or steps[0] != "{prep}":
+            errors.append(f"lunch {lid}: the first step must be {{prep}}")
+        if not isinstance(l.get("minutes"), int) or not 1 <= l["minutes"] <= 30:
+            errors.append(f"lunch {lid}: minutes should be 1 to 30")
+
 for w in warnings:
     print("warning:", w)
 for e in errors:

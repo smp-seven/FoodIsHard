@@ -37,6 +37,13 @@ function checkOp(op) {
   }
   if (op.op === "chore_done" && (typeof op.key !== "string" || long(op.key, 40) || (op.slot != null && !/^(am|pm|[1-6])$/.test(String(op.slot))))) bad();
   if (op.op === "chore_move" && op.d !== 1 && op.d !== -1) bad();
+  // a quick leftover lunch on a day: which template, the leftover it uses up, up to 3 others, for 1 or 2 people
+  if (op.op === "day" && op.day && op.day.lunch != null) {
+    const l = op.day.lunch;
+    if (typeof l !== "object" || Array.isArray(l) || typeof l.t !== "string" || long(l.t, 20) || typeof l.main !== "string" || long(l.main, 40)
+      || (l.with != null && (!Array.isArray(l.with) || l.with.length > 3 || l.with.some((k) => typeof k !== "string" || long(k, 40))))
+      || (l.n != null && l.n !== 1 && l.n !== 2) || Object.keys(l).some((k) => !["t", "main", "with", "n"].includes(k))) bad();
+  }
   if (op.op === "feedback" && (op.tags != null && (!Array.isArray(op.tags) || op.tags.length > 12 || op.tags.some((t) => long(t, 40))))) bad();
 }
 function applyOp(state, op, user) {

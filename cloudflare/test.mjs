@@ -196,6 +196,14 @@ await test("terms of use: new joiners must agree before changing anything; the a
   const m = (await c("/api/admin", { email: "admin@example.com" })).body.households.flatMap((h) => h.members).find((x) => x.email === "alex@example.com");
   assert.equal(m.termsVersion, again.version); assert.ok(m.termsAt);
 });
+await test("a quick lunch on a day is checked before it's saved", async () => {
+  const day = (lunch) => call("/api/op", { email: "alex@example.com", body: { op: "day", week: "2026-11-16", i: 2, day: { recipe: null, status: "cook", lunch } } });
+  assert.equal((await day({ t: "wrap", main: "halloumi", with: ["spinach"], n: 1 })).status, 200);
+  assert.equal((await day({ t: "wrap", main: "halloumi", n: 5 })).status, 400);
+  assert.equal((await day({ t: "wrap", main: "halloumi", with: ["a", "b", "c", "d"] })).status, 400);
+  assert.equal((await day({ t: "wrap", main: "halloumi", sneaky: true })).status, 400);
+  assert.equal((await day(null)).status, 200);
+});
 await test("exact birth dates are trimmed by the server, whatever sends them", async () => {
   await call("/api/op", { email: "alex@example.com", body: { op: "settings", patch: { children: [{ id: "c1", name: "", born: "2026-01-24", due: "2026-02-13", stage: "smooth", portion: 0.25 }] } } });
   assert.deepEqual((await state("alex@example.com")).settings.children[0], { id: "c1", name: "", born: "2026-01", stage: "smooth", portion: 0.25, early: 3 });

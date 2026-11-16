@@ -6,7 +6,8 @@
 // ---------------------------------------------------------------------------
 async function boot() {
   hydrateIcons(document);
-  const [rec, ing, defaults] = await Promise.all([getJSON("data/recipes.json"), getJSON("data/ingredients.json"), getJSON("data/defaults.json")]);
+  const [rec, ing, defaults, lunches] = await Promise.all([getJSON("data/recipes.json"), getJSON("data/ingredients.json"), getJSON("data/defaults.json"), getJSON("data/lunches.json").catch(() => null)]);
+  app.lunchData = lunches || { use: {}, lunches: [], keepDays: 3 }; // quick leftover lunches (templates)
   app.defaults = defaults; // a fresh household's starting point (also used by "See it as a new household")
   app.recipes = rec.recipes; app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
   app.families = rec.families; app.famById = Object.fromEntries(app.families.map((f) => [f.id, f]));
@@ -115,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.59"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.60"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -391,6 +392,7 @@ function viewTonight() {
   return `${header(eyebrow, "Tonight", settingsButton(), { logo: true })}
     ${growing.length ? `<button class="card row" style="width:100%;margin-bottom:12px;padding:12px 16px;text-align:left;gap:10px" data-act="babyReview"><span class="grow"><b>${esc(growNames)} ${growing.length && new Set(growing.map((x) => x.kid)).size > 1 ? "are" : "is"} growing</b><br><span class="small muted">${growing.length === 1 ? "A suggestion" : `${growing.length} suggestions`} for their meals</span></span><span class="muted">›</span></button>` : ""}
     ${hero}
+    ${todayLunchCard()}
     <div class="row between" style="margin:22px 4px 10px"><h2 class="h2">Coming up</h2><button class="btn sm ghost" data-act="go" data-to="week">See the week</button></div>
     <div class="list week-mini">${upcoming.join("")}</div>
     <button class="card row" style="width:100%;margin-top:14px;padding:14px 16px;text-align:left" data-act="go" data-to="shop">
@@ -426,6 +428,7 @@ function viewWeek() {
     return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}" data-week="${week}" data-i="${i}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
       <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${kcalShort(r)}</div>
+      ${d.lunch ? lunchLine(d, i, week) : ""}
       ${dayAdjustText(d) ? `<button class="pill accent" style="border:0;margin-top:6px" data-act="eating" data-i="${i}" data-week="${week}">${icon("people", 13)} ${esc(dayAdjustText(d))}</button>` : ""}
       <div class="actions${d.locked ? " locked" : ""}">
         <button class="btn sm soft" data-act="another" data-i="${i}">${esc(family(r.family).another || "Another")}</button>
@@ -501,7 +504,8 @@ function viewShop() {
 function leftoverCard(items) {
   const left = items.filter((i) => i.leftover && !i.have && (i.done || i.bought));
   if (!left.length) return "";
-  return `<p class="section-label">Left over after this week's dinners</p><p class="small muted" style="margin:-4px 0 8px">From what you've bought, roughly what you'll have spare.</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${useUpIdeas(i).length ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>`;
+  const claimed = lunchClaims(shopWeek());
+  return `<p class="section-label">Left over after this week's dinners</p><p class="small muted" style="margin:-4px 0 8px">From what you've bought, roughly what you'll have spare.</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${claimed.get(i.k) ? `<span class="small muted">${esc(claimed.get(i.k))}</span>` : useUpIdeas(i).length || (i.k && lunchIdeas(i.k).length) ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>${lunchBasicsTip(left)}`;
 }
 /** "Bought this week": each Done shopping trip, with its total and the week's running total. */
 function boughtSection(bought, stillToBuy) {
@@ -980,9 +984,10 @@ function openSwap(k, reopen, itemKey = null) {
 }
 /** On a shopping item with some left over: recipes that use up the rest, not already planned this week. */
 function useUpCard(it) {
-  const ideas = useUpIdeas(it);
-  if (!ideas.length) return "";
-  return `<div class="card stack" style="padding:14px 16px;gap:8px"><b>Use up the rest</b><span class="small muted">You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left. Ideas that use what's left:</span>
+  const ideas = useUpIdeas(it), lunches = it.k ? lunchIdeas(it.k) : [];
+  if (!ideas.length && !lunches.length) return "";
+  if (!ideas.length) return lunchIdeasCard(it, lunches);
+  return `${lunchIdeasCard(it, lunches)}<div class="card stack" style="padding:14px 16px;gap:8px"><b>Or as a dinner</b><span class="small muted">You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left. Ideas that use what's left:</span>
     <div class="list">${ideas.map((x) => `<button class="rrow" data-act="useUpPick" data-id="${x.r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(x.r.name)}<br><span class="small" style="color:${x.whole ? "var(--accent)" : "var(--muted)"}">${useUpCover(x)}</span></span><span class="small muted">${x.r.time} min</span></button>`).join("")}</div></div>`;
 }
 /** Recipes that use up a part-pack, with how far the spare amount goes: the whole meal for your household (nothing more
@@ -1004,6 +1009,105 @@ function useUpIdeas(it) {
     .filter(Boolean)
     .sort((a, b) => (b.whole - a.whole) || (a.whole ? recipeWeight(b.r.id) - recipeWeight(a.r.id) : b.portions - a.portions) || a.r.time - b.r.time)
     .slice(0, 4);
+}
+/* ---- Quick leftover lunches (grown-ups only) ----------------------------------------------------------------------
+   Templates in data/lunches.json (wrap, pitta, toastie...) filled from the week's real leftovers, so a bit of spare
+   halloumi becomes "Halloumi wrap with spinach" on Wednesday. A lunch sits on a day alongside its dinner (day.lunch),
+   and the leftovers it uses stop showing as spare. Cheap basics (wraps, pittas, bread) are suggested, never assumed. */
+const lunchUse = (k) => ((app.lunchData || {}).use || {})[k];
+const lunchTemplate = (id) => ((app.lunchData || {}).lunches || []).find((l) => l.id === id);
+const capFirst = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+function lunchName(t, main, withKs) {
+  if (!t) return "Lunch";
+  const nm = (k) => (lunchUse(k) || { name: k }).name;
+  if ((t.needsOne || []).includes(main) && t.selfName) return withKs.length ? `${t.selfName.replace(/ with veg$/, "")} with ${joinNames(withKs.map(nm))}` : t.selfName;
+  if (/with \{main\}/.test(t.name)) return t.name.replace("{main}", joinNames([main, ...withKs].map(nm)));
+  const base = t.name.replace("{Main}", capFirst(nm(main))).replace("{main}", nm(main));
+  return withKs.length ? `${base} with ${joinNames(withKs.map(nm))}` : base;
+}
+/** Leftovers already given to a planned lunch this week: ingredient → "Wed lunch". */
+function lunchClaims(week) {
+  const out = new Map(), start = parseISO(week);
+  planFor(week).forEach((d, i) => { if (d && d.lunch) [d.lunch.main, ...(d.lunch.with || [])].forEach((k) => out.set(k, `${DOW[mondayIndex(addDays(start, i))]} lunch`)); });
+  return out;
+}
+/** What's on this week's list (or a staple), by catalogue ingredient. */
+function onListKeys(week) { return new Set(buildList(week).map((i) => i.k || catalogueMatch(i.name)).filter(Boolean)); }
+/** Lunch ideas that use up a leftover: the leftover itself plus up to two other leftovers the lunch can take. */
+function lunchIdeas(k, week = shopWeek()) {
+  if (!lunchUse(k)) return [];
+  const days = planFor(week), left = partPacks(days), claimed = lunchClaims(week), avoid = new Set(avoidList()), onList = onListKeys(week);
+  if (!left.has(k) || claimed.has(k)) return [];
+  const pool = [...left.keys()].filter((x) => x !== k && !claimed.has(x) && lunchUse(x));
+  return ((app.lunchData || {}).lunches || []).filter((t) => t.takes.includes(k)).map((t) => {
+    const need = t.needsOne || [];
+    if (need.length && !need.includes(k) && !need.some((x) => pool.includes(x))) return null;
+    if (t.base.some((b) => [...(ingMeta(b.k).al || []), ...(ingMeta(b.k).mc || [])].some((a) => avoid.has(a)))) return null;
+    const must = need.length && !need.includes(k) ? [need.find((x) => pool.includes(x))] : [];
+    const withKs = [...must, ...pool.filter((x) => t.takes.includes(x) && !must.includes(x))].slice(0, 3);
+    const missing = t.base.filter((b) => !onList.has(b.k)).map((b) => b.k);
+    return { t, main: k, with: withKs, name: lunchName(t, k, withKs), missing };
+  }).filter(Boolean).sort((a, b) => a.missing.length - b.missing.length || b.with.length - a.with.length).slice(0, 4);
+}
+const ingShort = (k) => ingMeta(k).n.split(" / ")[0].toLowerCase();
+function lunchIdeasCard(it, ideas) {
+  if (!ideas.length) return "";
+  return `<div class="card stack lunch-card" style="padding:14px 16px;gap:8px"><b>As a quick lunch</b><span class="small muted">For grown-ups, on another day this week.</span>
+    <div class="list">${ideas.map((x) => `<button class="rrow" data-act="lunchPick" data-t="${x.t.id}" data-k="${esc(x.main)}" data-item="${esc(it.key)}"><span aria-hidden="true" style="font-size:22px">${x.t.emoji}</span><span class="grow">${esc(x.name)}${x.missing.length ? `<br><span class="small muted">Needs ${esc(joinNames(x.missing.map(ingShort)))}</span>` : ""}</span><span class="small muted">${x.t.minutes} min</span></button>`).join("")}</div></div>`;
+}
+/** A gentle nudge: nothing on the list to wrap leftovers in? A cheap pack of pittas opens up most lunches. */
+function lunchBasicsTip(left) {
+  if (!left.some((i) => i.k && lunchUse(i.k))) return "";
+  const onList = onListKeys(shopWeek());
+  if (["tortillas", "flatbread", "bread"].some((k) => onList.has(k))) return "";
+  const avoid = new Set(avoidList()), k = ["flatbread", "tortillas"].find((x) => !(ingMeta(x).al || []).some((a) => avoid.has(a)));
+  if (!k) return "";
+  const p = basePrice(k);
+  return `<div class="card row" style="margin-top:8px;padding:12px 16px;gap:10px"><span aria-hidden="true">💡</span><span class="grow small">A pack of ${esc(ingShort(k))}${p ? ` (about ${money(p.p * shopMult(priceShop()))})` : ""} turns these into quick lunches.</span><button class="btn sm" data-act="lunchBasic" data-k="${k}">Add</button></div>`;
+}
+function addBasic(k, why) {
+  const p = basePrice(k);
+  send({ op: "extra_add", week: shopWeek(), item: { id: uid(), name: ingMeta(k).n, price: p ? +(p.p * shopMult(priceShop())).toFixed(2) : null, qty: 1, shop: "any", amount: why || null } });
+}
+/** Pick a day (today onwards, within a few days so opened food is still good) and how many it's for. */
+function openLunchPick(tId, main, itemKey, keep = {}) {
+  const idea = lunchIdeas(main).find((x) => x.t.id === tId); if (!idea) return;
+  const week = shopWeek(), start = parseISO(week), today = iso(new Date()), last = iso(addDays(new Date(), (app.lunchData || {}).keepDays || 3));
+  const n = keep.n || 1, add = keep.add || new Set(idea.missing);
+  app.lunchPickState = { tId, main, with: idea.with, itemKey, n, add };
+  const days = planFor(week).map((d, i) => ({ d, i, date: addDays(start, i) })).filter(({ date }) => iso(date) >= today && iso(date) <= last);
+  openSheet(`<p class="eyebrow">Quick lunch</p><h1 class="title" style="font-size:26px">${idea.t.emoji} ${esc(idea.name)}</h1>
+    <p class="small muted">About ${idea.t.minutes} minutes. For grown-ups: not adapted for little ones.</p>
+    <div class="chips" style="margin:10px 0">${[1, 2].map((k) => `<button class="chip ${n === k ? "on" : ""}" data-act="lunchN" data-n="${k}">For ${k}</button>`).join("")}</div>
+    ${idea.missing.length ? `<div class="stack" style="gap:6px;margin-bottom:10px">${idea.missing.map((k) => `<label class="row" style="gap:10px"><input type="checkbox" data-act="lunchAdd" data-k="${k}" ${add.has(k) ? "checked" : ""}><span class="small">Add ${esc(ingShort(k))} to the list${basePrice(k) ? ` (about ${money(basePrice(k).p * shopMult(priceShop()))})` : ""}. Skip if you've got some.</span></label>`).join("")}</div>` : ""}
+    <p class="muted" style="margin:6px 0">Which day?</p>
+    ${days.length ? `<div class="list">${days.map(({ d, i, date }) => `<button class="rrow" data-act="lunchPut" data-i="${i}"><span class="grow"><b>${DOW_LONG[mondayIndex(date)]}</b>${d && d.lunch ? `<br><span class="small muted">Replaces ${esc(lunchName(lunchTemplate(d.lunch.t), d.lunch.main, d.lunch.with || []))}</span>` : ""}</span><span class="muted">›</span></button>`).join("")}</div>`
+      : `<p class="small muted">No days left this week. Opened food keeps about ${(app.lunchData || {}).keepDays || 3} days in the fridge.</p>`}`, { keepScroll: !!keep.n });
+  if (itemKey) app.sheetBack = () => openItem(itemKey);
+}
+function lunchLine(d, i, week) {
+  const t = lunchTemplate(d.lunch.t);
+  return `<button class="lunch-line" data-act="lunchOpen" data-i="${i}" data-week="${week}"><span aria-hidden="true">${t ? t.emoji : "🥪"}</span> Lunch: ${esc(lunchName(t, d.lunch.main, d.lunch.with || []))}</button>`;
+}
+function todayLunchCard() {
+  const week = currentWeek(), i = mondayIndex(new Date()) - mondayIndex(parseISO(week)), d = planFor(week)[(i + 7) % 7];
+  if (!d || !d.lunch) return "";
+  const t = lunchTemplate(d.lunch.t);
+  return `<button class="card row lunch-today" style="width:100%;margin-top:12px;padding:12px 16px;text-align:left;gap:10px" data-act="lunchOpen" data-i="${(i + 7) % 7}" data-week="${week}"><span aria-hidden="true" style="font-size:22px">${t ? t.emoji : "🥪"}</span><span class="grow"><span class="small muted">Lunch today</span><br><b>${esc(lunchName(t, d.lunch.main, d.lunch.with || []))}</b></span><span class="muted">›</span></button>`;
+}
+function openLunch(i, week) {
+  const d = planFor(week)[i]; if (!d || !d.lunch) return;
+  const t = lunchTemplate(d.lunch.t), n = d.lunch.n || 1, ks = [d.lunch.main, ...(d.lunch.with || [])];
+  if (!t) return;
+  const prep = ks.map((k) => (lunchUse(k) || {}).how).filter(Boolean);
+  const steps = t.steps.flatMap((st) => (st === "{prep}" ? prep : [st]));
+  const say = { tortillas: ["wrap", "wraps"], flatbread: ["pitta", "pittas"], bread: ["slice of bread", "slices of bread"], eggs: ["egg", "eggs"] };
+  const base = t.base.map((b) => { const q = b.q * n, w = say[b.k]; return w ? `${q} ${q === 1 ? w[0] : w[1]}` : `${q}${b.u ? ` ${b.u}` : ""} ${ingShort(b.k)}`; });
+  openSheet(`<p class="eyebrow">Quick lunch · ${DOW_LONG[mondayIndex(addDays(parseISO(week), i))]}</p><h1 class="title" style="font-size:26px">${t.emoji} ${esc(lunchName(t, d.lunch.main, d.lunch.with || []))}</h1>
+    <p class="small muted">For ${n}, about ${t.minutes} minutes. For grown-ups: not adapted for little ones.</p>
+    <p><b>Uses your leftover</b> ${esc(joinNames(ks.map((k) => (lunchUse(k) || { name: k }).name)))}${base.length ? `, plus ${esc(joinNames(base))}` : ""}.</p>
+    <ol class="lunch-steps">${steps.map((st) => `<li>${esc(st)}</li>`).join("")}</ol>
+    <button class="btn" style="width:100%" data-act="lunchRemove" data-i="${i}" data-week="${week}">${icon("trash", 16)}Remove this lunch</button>`);
 }
 /** How far the spare goes, in plain words. */
 function useUpCover(x) {
@@ -2506,6 +2610,20 @@ Object.assign(ACTIONS, {
     if (x.id) send({ op: "chore_update", id: x.id, patch: fields }); else send({ op: "chore_add", item: { id: uid(), ...fields } });
     app.choreDraft = null; openLifeEdit(); toast("Saved");
   },
+  lunchPick: (d) => openLunchPick(d.t, d.k, d.item),
+  lunchN: (d) => { const st = app.lunchPickState; if (st) openLunchPick(st.tId, st.main, st.itemKey, { n: +d.n, add: st.add }); },
+  lunchAdd: (d, el) => { const st = app.lunchPickState; if (st) el.checked ? st.add.add(d.k) : st.add.delete(d.k); },
+  lunchPut: (d) => {
+    const st = app.lunchPickState; if (!st) return;
+    const week = shopWeek(), i = +d.i, t = lunchTemplate(st.tId), dayName = DOW_LONG[mondayIndex(addDays(parseISO(week), i))];
+    dayUpdate(i, { lunch: { t: st.tId, main: st.main, with: st.with, n: st.n } }, week);
+    st.add.forEach((k) => addBasic(k, `for ${dayName}'s lunch`));
+    app.lunchPickState = null; app.sheetBack = null; closeSheet();
+    toast(`${lunchName(t, st.main, st.with)} is ${dayName}'s lunch`);
+  },
+  lunchOpen: (d) => openLunch(+d.i, d.week),
+  lunchRemove: (d) => { dayUpdate(+d.i, { lunch: null }, d.week); closeSheet(); toast("Lunch removed"); },
+  lunchBasic: (d) => { addBasic(d.k, "for quick lunches"); toast(`${capFirst(ingShort(d.k))} added to the list`); },
   choreDelete: (d) => removeChore(d.id, () => openLifeEdit({ keepScroll: true })),
   choreRemove: () => {
     const x = app.choreDraft; if (!x || !x.id) return;
