@@ -368,3 +368,6 @@ Fixes from a review of the new features:
 
 ## 0.11.53
 - Life is hard: the "Add or change" button is now "Add, change or remove".
+
+## 0.11.54
+- Life is hard: one way to add a routine. The first visit explains the utility with a single "Add a routine" button; the add panel shows ideas that fill in the form (nothing is added until you tap Add). Ideas removed from the page and the Routines list.
