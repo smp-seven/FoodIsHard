@@ -2,45 +2,11 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
-   "version": "0.11.67",
+   "version": "0.12.0",
    "notes": [
-    "Tapping a leftover now shows just the ideas for using it up."
-   ]
-  },
-  {
-   "version": "0.11.66",
-   "notes": [
-    "Clearer advice on keeping leftovers safely."
-   ]
-  },
-  {
-   "version": "0.11.65",
-   "notes": [
-    "Leftovers now say how long they keep once opened, and quick lunches are only offered on days while everything is still good."
-   ]
-  },
-  {
-   "version": "0.11.64",
-   "notes": [
-    "Leftover ideas show how much you have left at the top."
-   ]
-  },
-  {
-   "version": "0.11.63",
-   "notes": [
-    "Leftover ideas: lunches or a dinner swap, depending on how much is left."
-   ]
-  },
-  {
-   "version": "0.11.62",
-   "notes": [
-    "Fixed: in cooking mode, \"most of the cheese\" and \"the last of the cheese\" now show the right amounts, not the full amount twice."
-   ]
-  },
-  {
-   "version": "0.11.60",
-   "notes": [
-    "New: quick lunches from leftovers. Got a bit of halloumi or spinach spare? Tap it on the shopping list for lunch ideas (wraps, pittas, toasties and more) and pick a day. It sits under that day's dinner."
+    "New: quick lunches from leftovers. Tap something left over on the shopping list for easy grown-up lunches (wraps, pittas, toasties and more) and pick a day. It sits under that day's dinner.",
+    "Leftovers now say how much is left and how long it keeps once opened, with tips for keeping it safely.",
+    "Bigger leftovers can also swap in a dinner that uses them up."
    ]
   },
   {

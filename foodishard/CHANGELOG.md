@@ -387,26 +387,13 @@ Fixes from a review of the new features:
 ## 0.11.59
 - A separate test version (staging): its own Worker and data, its own sign-in rule, deployed from the staging branch, with an orange "Test version" bar. Setup steps in CLOUDFLARE.md.
 
-## 0.11.60
-- Quick leftover lunches (grown-ups): templates in data/lunches.json filled from the week's real leftovers; "As a quick lunch" on leftover items; pick a day (within 3 days) and 1 or 2 people; optional cheap basics (wraps, pittas, bread) added to the list; lunch line under the day's dinner and on Tonight; leftovers used by a lunch stop showing as spare. Checked by the recipe checker and on both servers.
-
 ## 0.11.61
 - Cooking mode: "most of the" shows about three-quarters of the amount, and a later "the rest/last/remaining" shows the remaining quarter (half after "half the"). Fixes the full amount showing twice (e.g. the cheese in the gnocchi).
 
-## 0.11.62
-- Test version: quick lunches plus the 0.11.61 fix.
-
-## 0.11.63
-- Leftover ideas: over half a pack left leads with "Swap a dinner to use it" (clearly says it replaces that day's dinner and may add to the list); less leads with quick lunches, with dinner swaps folded under "Or swap a dinner instead…".
-
-## 0.11.64
-- Leftover ideas: the amount left (and which item) is shown at the top, above lunch and dinner-swap ideas.
-
-## 0.11.65
-- Keeping leftovers safely: perishables have "keeps N days once opened" (ko) and "freezes well" (fz) data (required by the checker). Leftovers show "Use by <day> once opened" (amber when soon), the item shows keep and freeze advice, lunch ideas skip leftovers past their best, and the lunch day picker only offers days within the shortest-keeping ingredient's window, with an amber "check the packet" note.
-
-## 0.11.66
-- Keeping figures reviewed against FSA guidance and UK packets: spinach 1 day and not for freezing, tofu not for freezing, gnocchi 2 days. Short keeping tips where they matter (tins into a covered container, tofu in fresh water, bin slimy leaves, beansprouts always cooked, filled gnocchi 1 day). Advice says the packet's use-by date always wins, and how to freeze and defrost safely.
-
-## 0.11.67
-- Leftovers: tapping an item under "Left over after this week's dinners" opens a simple ideas screen (amount, keeping advice, lunches, dinner swap) without price or shop. The shopping list item screen is unchanged.
+## 0.12.0
+- Quick leftover lunches (grown-ups): lunch templates filled from the week's real leftovers; pick a day and 1 or 2 people; cheap basics (wraps, pittas, bread) suggested, never required; a lunch line under the day's dinner and on Tonight.
+- Leftovers: amount shown first; lunches or a dinner swap first depending on how much is left; a simple leftover screen without price or shop.
+- Keeping leftovers safely: every perishable has a "keeps N days once opened" figure (reviewed against FSA guidance and UK packets, and required by the recipe checker), with use-by notes, keeping tips and freezing advice. Lunches are only offered on safe days.
+- Fixes: cooking mode amounts for "most of" and "the last of".
+- A separate test version (staging) for trying changes first.
+- Versioning: from 0.12.0, new features bump the middle number and fixes the last. Some 0.11.x releases (Life is hard, the terms agreement) were new features released as patches.
