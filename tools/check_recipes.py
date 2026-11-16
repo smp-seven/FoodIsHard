@@ -178,6 +178,19 @@ if lunch_file.exists():
         if not isinstance(l.get("minutes"), int) or not 1 <= l["minutes"] <= 30:
             errors.append(f"lunch {lid}: minutes should be 1 to 30")
 
+# Perishables (GOES_OFF in core.js) must say how long they keep once opened, so leftovers and lunches stay safe.
+import re as _re
+core_js = (ROOT / "foodishard/app/static/core.js").read_text() if (ROOT := DATA.parents[2]) else ""
+m_go = _re.search(r"const GOES_OFF = new Set\(\[(.*?)\]\)", core_js, _re.S)
+for k in (_re.findall(r'"(\w+)"', m_go.group(1)) if m_go else []):
+    it = items.get(k)
+    if not it:
+        errors.append(f"GOES_OFF: unknown ingredient {k!r}")
+    elif not isinstance(it.get("ko"), int) or not 1 <= it["ko"] <= 14:
+        errors.append(f"{k}: needs ko (days it keeps once opened, 1 to 14)")
+    elif "fz" in it and it["fz"] is not True:
+        errors.append(f"{k}: fz should be true or left out")
+
 for w in warnings:
     print("warning:", w)
 for e in errors:

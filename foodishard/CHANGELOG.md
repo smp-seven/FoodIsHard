@@ -401,3 +401,6 @@ Fixes from a review of the new features:
 
 ## 0.11.64
 - Leftover ideas: the amount left (and which item) is shown at the top, above lunch and dinner-swap ideas.
+
+## 0.11.65
+- Keeping leftovers safely: perishables have "keeps N days once opened" (ko) and "freezes well" (fz) data (required by the checker). Leftovers show "Use by <day> once opened" (amber when soon), the item shows keep and freeze advice, lunch ideas skip leftovers past their best, and the lunch day picker only offers days within the shortest-keeping ingredient's window, with an amber "check the packet" note.

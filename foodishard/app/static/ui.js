@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.64"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.65"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -505,7 +505,7 @@ function leftoverCard(items) {
   const left = items.filter((i) => i.leftover && !i.have && (i.done || i.bought));
   if (!left.length) return "";
   const claimed = lunchClaims(shopWeek());
-  return `<p class="section-label">Left over after this week's dinners</p><p class="small muted" style="margin:-4px 0 8px">From what you've bought, roughly what you'll have spare.</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${claimed.get(i.k) ? `<span class="small muted">${esc(claimed.get(i.k))}</span>` : useUpIdeas(i).length || (i.k && lunchIdeas(i.k).length) ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>${lunchBasicsTip(left)}`;
+  return `<p class="section-label">Left over after this week's dinners</p><p class="small muted" style="margin:-4px 0 8px">From what you've bought, roughly what you'll have spare.</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span>${useByNote(i.k)}</span>${claimed.get(i.k) ? `<span class="small muted">${esc(claimed.get(i.k))}</span>` : useUpIdeas(i).length || (i.k && lunchIdeas(i.k).length) ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>${lunchBasicsTip(left)}`;
 }
 /** "Bought this week": each Done shopping trip, with its total and the week's running total. */
 function boughtSection(bought, stillToBuy) {
@@ -990,7 +990,7 @@ function useUpCard(it) {
   const share = it.k ? partPacks(planFor(shopWeek())).get(it.k) || 0 : 0, lots = share > 0.5;
   const swapHead = `<b>Swap a dinner to use it</b><span class="small muted">This replaces that day's dinner and may add things to your list.</span>`;
   // how much is left, said once at the top, whichever ideas come first
-  const amount = `<div class="card row leftover-amt" style="padding:12px 16px;gap:10px"><span aria-hidden="true" style="font-size:20px">🧺</span><span class="grow"><b>${esc(capFirst(it.leftover.replace(/ left over$/, "")))} left</b><br><span class="small muted">${esc(it.name)}, after this week's dinners</span></span></div>`;
+  const amount = `<div class="card row leftover-amt" style="padding:12px 16px;gap:10px"><span aria-hidden="true" style="font-size:20px">🧺</span><span class="grow"><b>${esc(capFirst(it.leftover.replace(/ left over$/, "")))} left</b><br><span class="small muted">${esc(it.name)}, after this week's dinners</span>${keepAdvice(it.k)}</span></div>`;
   const dinners = ideas.length ? `<div class="list">${ideas.map((x) => `<button class="rrow" data-act="useUpPick" data-id="${x.r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(x.r.name)}<br><span class="small" style="color:${x.whole ? "var(--accent)" : "var(--muted)"}">${useUpCover(x)}</span></span><span class="small muted">${x.r.time} min</span></button>`).join("")}</div>` : "";
   if (!ideas.length) return amount + lunchIdeasCard(it, lunches);
   if (lots || !lunches.length) return `${amount}<div class="card stack" style="padding:14px 16px;gap:8px">${swapHead}${dinners}</div>${lunchIdeasCard(it, lunches)}`;
@@ -1043,8 +1043,9 @@ function onListKeys(week) { return new Set(buildList(week).map((i) => i.k || cat
 function lunchIdeas(k, week = shopWeek()) {
   if (!lunchUse(k)) return [];
   const days = planFor(week), left = partPacks(days), claimed = lunchClaims(week), avoid = new Set(avoidList()), onList = onListKeys(week);
-  if (!left.has(k) || claimed.has(k)) return [];
-  const pool = [...left.keys()].filter((x) => x !== k && !claimed.has(x) && lunchUse(x));
+  const today = iso(new Date());
+  if (!left.has(k) || claimed.has(k) || iso(useByDate(k, week)) < today) return []; // past its best once opened
+  const pool = [...left.keys()].filter((x) => x !== k && !claimed.has(x) && lunchUse(x) && iso(useByDate(x, week)) >= today);
   return ((app.lunchData || {}).lunches || []).filter((t) => t.takes.includes(k)).map((t) => {
     const need = t.needsOne || [];
     if (need.length && !need.includes(k) && !need.some((x) => pool.includes(x))) return null;
@@ -1056,6 +1057,26 @@ function lunchIdeas(k, week = shopWeek()) {
   }).filter(Boolean).sort((a, b) => a.missing.length - b.missing.length || b.with.length - a.with.length).slice(0, 4);
 }
 const ingShort = (k) => ingMeta(k).n.split(" / ")[0].toLowerCase();
+/* Keeping leftovers safely: each perishable says how many days it keeps once opened (ko, in ingredients.json, checked
+   against UK guidance). A leftover is opened on the first planned dinner that uses it; it's good until that day + ko. */
+const keepDays = (k) => ingMeta(k).ko || 3;
+function openedDate(k, week) {
+  const start = parseISO(week), i = planFor(week).findIndex((d) => d && d.recipe && d.status !== "leftovers" && app.byId[d.recipe] && effectiveIngredients(app.byId[d.recipe]).some((x) => x.k === k));
+  return i >= 0 ? addDays(start, i) : new Date();
+}
+function useByDate(k, week) { return addDays(openedDate(k, week), keepDays(k)); }
+/** "use by Wed", amber when it's today or tomorrow. */
+function useByNote(k) {
+  if (!k || !ingMeta(k).ko) return "";
+  const d = useByDate(k, shopWeek()), days = Math.round((parseISO(iso(d)) - parseISO(iso(new Date()))) / 864e5);
+  if (days < 0) return `<br><span class="small keep-past">Past its best once opened: check it</span>`;
+  return `<br><span class="small ${days <= 1 ? "keep-soon" : "muted"}">Use by ${days === 0 ? "today" : days === 1 ? "tomorrow" : DOW_LONG[mondayIndex(d)]} once opened</span>`;
+}
+function keepAdvice(k) {
+  if (!k || !ingMeta(k).ko) return "";
+  const n = keepDays(k);
+  return `<br><span class="small ${n <= 2 ? "keep-soon" : "muted"}">Keeps about ${n} day${n === 1 ? "" : "s"} once opened. Check the packet.${ingMeta(k).fz ? " Or freeze it to use later." : ""}</span>`;
+}
 function lunchIdeasCard(it, ideas) {
   if (!ideas.length) return "";
   return `<div class="card stack lunch-card" style="padding:14px 16px;gap:8px"><b>As a quick lunch</b><span class="small muted">For grown-ups, on another day this week.</span>
@@ -1078,17 +1099,22 @@ function addBasic(k, why) {
 /** Pick a day (today onwards, within a few days so opened food is still good) and how many it's for. */
 function openLunchPick(tId, main, itemKey, keep = {}) {
   const idea = lunchIdeas(main).find((x) => x.t.id === tId); if (!idea) return;
-  const week = shopWeek(), start = parseISO(week), today = iso(new Date()), last = iso(addDays(new Date(), (app.lunchData || {}).keepDays || 3));
+  const week = shopWeek(), start = parseISO(week), today = iso(new Date()), ks = [main, ...idea.with];
+  // only days while everything in it is still good once opened (the shortest-keeping one decides), never past that
+  const last = iso(ks.map((k) => useByDate(k, week)).reduce((a, b) => (a < b ? a : b)));
+  const first = iso(openedDate(main, week)) > today ? iso(openedDate(main, week)) : today;
+  const shortest = ks.map((k) => [k, keepDays(k)]).sort((a, b) => a[1] - b[1])[0];
   const n = keep.n || 1, add = keep.add || new Set(idea.missing);
   app.lunchPickState = { tId, main, with: idea.with, itemKey, n, add };
-  const days = planFor(week).map((d, i) => ({ d, i, date: addDays(start, i) })).filter(({ date }) => iso(date) >= today && iso(date) <= last);
+  const days = planFor(week).map((d, i) => ({ d, i, date: addDays(start, i) })).filter(({ date }) => iso(date) >= first && iso(date) <= last);
   openSheet(`<p class="eyebrow">Quick lunch</p><h1 class="title" style="font-size:26px">${idea.t.emoji} ${esc(idea.name)}</h1>
     <p class="small muted">About ${idea.t.minutes} minutes. For grown-ups: not adapted for little ones.</p>
     <div class="chips" style="margin:10px 0">${[1, 2].map((k) => `<button class="chip ${n === k ? "on" : ""}" data-act="lunchN" data-n="${k}">For ${k}</button>`).join("")}</div>
     ${idea.missing.length ? `<div class="stack" style="gap:6px;margin-bottom:10px">${idea.missing.map((k) => `<label class="row" style="gap:10px"><input type="checkbox" data-act="lunchAdd" data-k="${k}" ${add.has(k) ? "checked" : ""}><span class="small">Add ${esc(ingShort(k))} to the list${basePrice(k) ? ` (about ${money(basePrice(k).p * shopMult(priceShop()))})` : ""}. Skip if you've got some.</span></label>`).join("")}</div>` : ""}
+    ${shortest[1] <= 3 ? `<p class="keep-warn">Once opened, ${esc((lunchUse(shortest[0]) || { name: ingShort(shortest[0]) }).name)} ${/s$/.test((lunchUse(shortest[0]) || { name: "" }).name) && !/(hummus|houmous|couscous)$/.test((lunchUse(shortest[0]) || { name: "" }).name) ? "keep" : "keeps"} about ${shortest[1]} day${shortest[1] === 1 ? "" : "s"} in the fridge. Check the packet.</p>` : ""}
     <p class="muted" style="margin:6px 0">Which day?</p>
     ${days.length ? `<div class="list">${days.map(({ d, i, date }) => `<button class="rrow" data-act="lunchPut" data-i="${i}"><span class="grow"><b>${DOW_LONG[mondayIndex(date)]}</b>${d && d.lunch ? `<br><span class="small muted">Replaces ${esc(lunchName(lunchTemplate(d.lunch.t), d.lunch.main, d.lunch.with || []))}</span>` : ""}</span><span class="muted">›</span></button>`).join("")}</div>`
-      : `<p class="small muted">No days left this week. Opened food keeps about ${(app.lunchData || {}).keepDays || 3} days in the fridge.</p>`}`, { keepScroll: !!keep.n });
+      : `<p class="small muted">No safe days left for this one this week: opened food doesn't keep long.</p>`}`, { keepScroll: !!keep.n });
   if (itemKey) app.sheetBack = () => openItem(itemKey);
 }
 function lunchLine(d, i, week) {

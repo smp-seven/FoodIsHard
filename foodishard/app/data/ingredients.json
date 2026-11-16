@@ -251,7 +251,9 @@
     2.1,
     0.35
    ],
-   "g": 1
+   "g": 1,
+   "ko": 2,
+   "fz": true
   },
   "sweet_potato": {
    "n": "Sweet potatoes",
@@ -338,7 +340,8 @@
     1.1,
     0.25
    ],
-   "g": 40
+   "g": 40,
+   "ko": 7
   },
   "red_pepper": {
    "n": "Red peppers",
@@ -368,7 +371,9 @@
     1.6,
     0
    ],
-   "g": 160
+   "g": 160,
+   "ko": 5,
+   "fz": true
   },
   "courgette": {
    "n": "Courgettes",
@@ -389,7 +394,8 @@
     1.2,
     0
    ],
-   "g": 200
+   "g": 200,
+   "ko": 4
   },
   "broccoli": {
    "n": "Broccoli",
@@ -419,7 +425,9 @@
     2.6,
     0.05
    ],
-   "g": 1
+   "g": 1,
+   "ko": 4,
+   "fz": true
   },
   "mushrooms": {
    "n": "Mushrooms",
@@ -440,7 +448,8 @@
     1.1,
     0
    ],
-   "g": 1
+   "g": 1,
+   "ko": 3
   },
   "cherry_tomatoes": {
    "n": "Cherry tomatoes",
@@ -462,7 +471,8 @@
     1,
     0
    ],
-   "g": 1
+   "g": 1,
+   "ko": 4
   },
   "lemon": {
    "n": "Lemons",
@@ -543,7 +553,8 @@
     2.8,
     0.1
    ],
-   "g": 30
+   "g": 30,
+   "ko": 3
   },
   "chapati": {
    "n": "Chapatis (or naan)",
@@ -869,7 +880,9 @@
     0,
     2.5
    ],
-   "g": 1
+   "g": 1,
+   "ko": 3,
+   "fz": true
   },
   "milk": {
    "n": "Milk",
@@ -942,7 +955,9 @@
     1,
     0
    ],
-   "g": 1
+   "g": 1,
+   "ko": 2,
+   "fz": true
   },
   "paneer": {
    "n": "Paneer",
@@ -979,7 +994,9 @@
     0,
     0.1
    ],
-   "g": 1
+   "g": 1,
+   "ko": 3,
+   "fz": true
   },
   "halloumi": {
    "n": "Halloumi",
@@ -1007,7 +1024,9 @@
     0,
     2.7
    ],
-   "g": 1
+   "g": 1,
+   "ko": 3,
+   "fz": true
   },
   "chopped_tomatoes": {
    "n": "Chopped tomatoes",
@@ -1029,7 +1048,9 @@
     1,
     0.05
    ],
-   "g": 400
+   "g": 400,
+   "ko": 2,
+   "fz": true
   },
   "black_beans": {
    "n": "Black beans",
@@ -1061,7 +1082,9 @@
     7,
     0.1
    ],
-   "g": 240
+   "g": 240,
+   "ko": 2,
+   "fz": true
   },
   "kidney_beans": {
    "n": "Kidney beans",
@@ -1083,7 +1106,9 @@
     7,
     0.1
    ],
-   "g": 240
+   "g": 240,
+   "ko": 2,
+   "fz": true
   },
   "chickpeas": {
    "n": "Chickpeas",
@@ -1105,7 +1130,9 @@
     4.6,
     0.05
    ],
-   "g": 240
+   "g": 240,
+   "ko": 2,
+   "fz": true
   },
   "green_lentils": {
    "n": "Green lentils (tinned)",
@@ -1127,7 +1154,9 @@
     4,
     0.03
    ],
-   "g": 265
+   "g": 265,
+   "ko": 2,
+   "fz": true
   },
   "baked_beans": {
    "n": "Baked beans (reduced salt & sugar)",
@@ -1149,7 +1178,9 @@
     3.8,
     0.5
    ],
-   "g": 415
+   "g": 415,
+   "ko": 2,
+   "fz": true
   },
   "peanut_butter": {
    "n": "Smooth peanut butter",
@@ -1935,7 +1966,9 @@
     2,
     0.03
    ],
-   "g": 600
+   "g": 600,
+   "ko": 4,
+   "fz": true
   },
   "spring_onion": {
    "n": "Spring onions",
@@ -1956,7 +1989,8 @@
     2.6,
     0
    ],
-   "g": 15
+   "g": 15,
+   "ko": 4
   },
   "cucumber": {
    "n": "Cucumber",
@@ -1977,7 +2011,8 @@
     0.6,
     0
    ],
-   "g": 300
+   "g": 300,
+   "ko": 2
   },
   "salad_leaves": {
    "n": "Mixed salad leaves",
@@ -1998,7 +2033,8 @@
     1.6,
     0.03
    ],
-   "g": 1
+   "g": 1,
+   "ko": 1
   },
   "white_cabbage": {
    "n": "White cabbage",
@@ -2019,7 +2055,8 @@
     2.5,
     0.02
    ],
-   "g": 900
+   "g": 900,
+   "ko": 5
   },
   "beansprouts": {
    "n": "Beansprouts",
@@ -2040,7 +2077,8 @@
     1.8,
     0
    ],
-   "g": 1
+   "g": 1,
+   "ko": 1
   },
   "avocado": {
    "n": "Avocados",
@@ -2061,7 +2099,8 @@
     3.4,
     0
    ],
-   "g": 140
+   "g": 140,
+   "ko": 2
   },
   "naan": {
    "n": "Plain naans",
@@ -2151,7 +2190,8 @@
      "auto": false
     }
    ],
-   "g": 1
+   "g": 1,
+   "ko": 2
   },
   "cottage_cheese": {
    "n": "Cottage cheese",
@@ -2178,7 +2218,8 @@
    "f": [
     "veg"
    ],
-   "g": 1
+   "g": 1,
+   "ko": 2
   },
   "mozzarella": {
    "n": "Mozzarella",
@@ -2205,7 +2246,9 @@
    "f": [
     "veg"
    ],
-   "g": 1
+   "g": 1,
+   "ko": 1,
+   "fz": true
   },
   "gnocchi": {
    "n": "Gnocchi",
@@ -2232,7 +2275,9 @@
    "mc": [
     "egg"
    ],
-   "g": 1
+   "g": 1,
+   "ko": 3,
+   "fz": true
   },
   "filo": {
    "n": "Filo pastry",
@@ -2305,7 +2350,8 @@
    "al": [
     "sesame"
    ],
-   "g": 1
+   "g": 1,
+   "ko": 2
   },
   "passata": {
    "n": "Passata",
@@ -2326,7 +2372,9 @@
     1,
     0.1
    ],
-   "g": 1
+   "g": 1,
+   "ko": 3,
+   "fz": true
   },
   "cannellini": {
    "n": "Cannellini beans",
@@ -2348,7 +2396,9 @@
     0.1
    ],
    "g": 240,
-   "u": "tin"
+   "u": "tin",
+   "ko": 2,
+   "fz": true
   },
   "roasted_peppers": {
    "n": "Roasted red peppers (jar)",
@@ -2645,5 +2695,6 @@
   }
  },
  "prices_base_period": "2026 OCT",
- "nutrition_note": "Per 100 g, estimated from UK food composition data (McCance and Widdowson's CoFID) and typical UK labels. Order: kcal, protein, carbohydrate, sugars, fat, saturates, fibre, salt."
+ "nutrition_note": "Per 100 g, estimated from UK food composition data (McCance and Widdowson's CoFID) and typical UK labels. Order: kcal, protein, carbohydrate, sugars, fat, saturates, fibre, salt.",
+ "keep_note": "ko: days an ingredient keeps in the fridge once opened or cut, in the state it's usually left in (e.g. spare whole peppers, an opened tin moved to a covered container). fz: freezes well for cooking. Checked against UK guidance; packets vary, so the app always says to check the packet."
 }

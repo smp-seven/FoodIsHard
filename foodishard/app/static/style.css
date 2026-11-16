@@ -392,3 +392,9 @@ body.life-on .nav button { font-size: 11.5px; }
 .lunch-line { display: block; margin-top: 6px; padding: 5px 10px; border: 0; border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
 .lunch-steps { padding-left: 20px; display: grid; gap: 8px; }
 .swap-more summary { cursor: pointer; list-style: revert; }
+
+/* keeping leftovers safely: amber for "use soon", stronger for "past its best" */
+.keep-soon { color: #a8620a; font-weight: 600; }
+.keep-past { color: #b3261e; font-weight: 600; }
+.keep-warn { background: #fff4e0; color: #7a4a06; border-radius: 10px; padding: 8px 12px; font-size: 13.5px; margin: 6px 0; }
+@media (prefers-color-scheme: dark) { .keep-soon { color: #f0b860; } .keep-past { color: #ff8a80; } .keep-warn { background: #3a2c12; color: #f3d9a8; } }
