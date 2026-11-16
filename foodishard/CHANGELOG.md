@@ -349,3 +349,6 @@ Fixes from a review of the new features:
 
 ## 0.11.47
 - Privacy policy rewritten: legal basis for each use, who can see what, retention for everything, rights, complaints (including the ICO), 18+. Terms: age, how changes are notified, contact route, negligence wording. About updated to match. Agreement records are deleted with the person.
+
+## 0.11.48
+- Admin preview as a new household now shows the terms agreement screen and the allergy confirmation (nothing is recorded).

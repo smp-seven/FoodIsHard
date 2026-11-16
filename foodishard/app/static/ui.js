@@ -113,7 +113,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.47"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.48"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -715,15 +715,18 @@ function previewNew(on) {
   const b = $("#banner");
   if (on && app.mode === "live") {
     app.previewSaved = app.state; app.mode = "preview"; app.previewStartSeen = false; app.previewLockSeen = false;
+    app.previewTerms = app.termsNeeded; app.termsNeeded = { version: "preview", changes: [] }; // show the agreement screen too
     app.state = { ...clone(app.defaults), rev: 0 };
     ["plans", "prefs", "checks", "extras", "prices", "swaps", "shopFor", "shopPref"].forEach((k) => { app.state[k] = app.state[k] || {}; });
     b.hidden = false; b.innerHTML = `Previewing as a new household. Nothing here is saved. <button class="btn sm" style="margin-left:8px" data-act="previewEnd">Back to my household</button>`;
   } else if (!on && app.mode === "preview") {
     app.state = app.previewSaved; app.previewSaved = null; app.mode = "live";
+    app.termsNeeded = app.previewTerms || null; app.previewTerms = null; termsUngate();
     b.hidden = true; b.innerHTML = "";
   } else return;
   app.weekStart = currentWeek(); app.undoShuffle = null; app.shopAhead = 0; app.selecting.clear();
   closeSheet({ navigating: true }); go("tonight"); render(); window.scrollTo(0, 0);
+  if (on) termsGate();
   toast(on ? "This is what a new household sees" : "Back to your household");
 }
 /** The first time someone picks a dinner for a day on the Week tab, point out the lock (it keeps a day when shuffling).
@@ -752,7 +755,7 @@ function lockedDay(i) {
 const SITE = "https://foodishard.uk/";
 function termsGate() {
   const need = app.termsNeeded;
-  if (app.host !== "Cloudflare" || app.mode !== "live" || !need || $("#termsGate")) return;
+  if (app.host !== "Cloudflare" || !["live", "preview"].includes(app.mode) || !need || $("#termsGate")) return;
   const changes = Array.isArray(need.changes) ? need.changes : [];
   document.body.insertAdjacentHTML("beforeend", `<div id="termsGate" class="terms-gate" role="dialog" aria-modal="true" aria-labelledby="termsTitle"><div class="terms-inner">
     <img src="icon-192.png" alt="" width="56" height="56" style="border-radius:14px">
@@ -788,6 +791,7 @@ function termsUpdate(need) {
 async function acceptTerms() {
   if (!$("#termsTick") || !$("#termsTick").checked) return;
   const btn = $("#termsGo"); btn.disabled = true;
+  if (app.mode === "preview") { app.termsNeeded = null; termsUngate(); allergyConsentCheck(); return; } // preview: nothing is recorded
   try {
     const res = await accountCall("api/terms/accept", { version: app.termsNeeded.version });
     termsUpdate(res.termsNeeded);
@@ -797,7 +801,7 @@ async function acceptTerms() {
 }
 /* Allergies are health information (UK GDPR "special category"), so the online version asks before storing them: once
    per household, the first time one is ticked. Households that ticked allergies before this existed are asked once too. */
-function needsAllergyConsent() { return app.host === "Cloudflare" && app.mode === "live" && !settings().allergyConsent; }
+function needsAllergyConsent() { return app.host === "Cloudflare" && ["live", "preview"].includes(app.mode) && !settings().allergyConsent; }
 const ALLERGY_CONSENT_TEXT = `Allergies are health information. To hide recipes that contain them, FoodIsHard stores the allergies you tick with your household, so everyone in it can see them. Only tick allergies for the people you cook for, with their agreement. You can untick them at any time.`;
 function openAllergyConsent(k) {
   openSheet(`<p class="eyebrow">Allergies</p><h1 class="title" style="font-size:26px">Store this allergy?</h1>
