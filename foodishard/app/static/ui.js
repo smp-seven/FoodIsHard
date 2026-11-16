@@ -17,7 +17,7 @@ async function boot() {
     const res = await getJSON("api/state");
     if (res.adminOnly) return bootAdmin(res);
     if (!res.state) throw new Error("no state");
-    app.mode = "live"; app.state = res.state; app.termsAccepted = res.termsAccepted ?? null; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
+    app.mode = "live"; app.state = res.state; app.termsNeeded = res.termsNeeded || null; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
     store(CACHE_KEY, app.state); store(HOST_KEY, { host: app.host, user: app.user, poll: app.pollMs });
   } catch (err) {
     const cached = load(CACHE_KEY, null), seenHost = load(HOST_KEY, {});
@@ -112,7 +112,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.44"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.45"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -746,16 +746,19 @@ function lockedDay(i) {
   if (el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); setTimeout(() => el.classList.remove("shake"), 1000); }
   return true;
 }
-/** Online: everyone agrees to the terms of use once before using the app (and again if they change a lot). The privacy
-    policy is linked as information. Bump TERMS_VERSION when the terms change in a way people should re-agree to. */
-const TERMS_VERSION = "2026-11-16";
+/** Online: agreeing to the terms of use. The server says who needs to (new joiners, and everyone after the admin asks
+    with a list of what's changed). The privacy policy is linked as information, not something to agree to. */
 const SITE = "https://foodishard.uk/";
 function termsGate() {
-  if (app.host !== "Cloudflare" || app.mode !== "live" || !("termsAccepted" in app) || app.termsAccepted === TERMS_VERSION || $("#termsGate")) return;
+  const need = app.termsNeeded;
+  if (app.host !== "Cloudflare" || app.mode !== "live" || !need || $("#termsGate")) return;
+  const changes = Array.isArray(need.changes) ? need.changes : [];
   document.body.insertAdjacentHTML("beforeend", `<div id="termsGate" class="terms-gate" role="dialog" aria-modal="true" aria-labelledby="termsTitle"><div class="terms-inner">
     <img src="icon-192.png" alt="" width="56" height="56" style="border-radius:14px">
-    <h1 class="title" id="termsTitle" style="font-size:28px;margin:14px 0 6px">Before you start</h1>
-    <p class="muted" style="margin:0 0 14px">FoodIsHard is a free meal planner, run by one person for friends and family. ${app.termsAccepted ? "The terms of use have changed since you last agreed. " : ""}Please read the terms of use before using it. The key points:</p>
+    <h1 class="title" id="termsTitle" style="font-size:28px;margin:14px 0 6px">${changes.length ? "The terms have been updated" : "Before you start"}</h1>
+    ${changes.length ? `<p class="muted" style="margin:0 0 10px">Please have a look at what's changed and confirm you still agree. What's changed:</p>
+    <ul class="terms-points terms-changes">${changes.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>
+    <p class="muted" style="margin:16px 0 10px">As a reminder, the key points:</p>` : `<p class="muted" style="margin:0 0 14px">FoodIsHard is a free meal planner, run by one person for friends and family. Please read the terms of use before using it. The key points:</p>`}
     <ul class="terms-points">
       <li>Recipes, nutrition and baby notes are <b>general guidance</b>, not medical or professional advice.</li>
       <li>The allergy settings only hide recipes that list an allergen. <b>Always check the label</b> of what you buy.</li>
@@ -773,10 +776,10 @@ async function acceptTerms() {
   if (!$("#termsTick") || !$("#termsTick").checked) return;
   const btn = $("#termsGo"); btn.disabled = true;
   try {
-    const res = await accountCall("api/terms/accept", { version: TERMS_VERSION });
-    app.termsAccepted = res.termsAccepted;
+    const res = await accountCall("api/terms/accept", { version: app.termsNeeded.version });
+    app.termsNeeded = res.termsNeeded || null;
     $("#termsGate").remove(); document.body.classList.remove("gated");
-  } catch { btn.disabled = false; toast("Couldn't save that. Check your connection and try again."); }
+  } catch (e) { btn.disabled = false; toast(/changed/.test(e.message) ? e.message : "Couldn't save that. Check your connection and try again."); }
 }
 /** Opened between 1am and 4am (night feeds): a quiet nod, once a night. */
 function nightOwl() {
@@ -1379,6 +1382,10 @@ const ACTIONS = {
   shopAhead: (d) => { app.shopAhead = Math.max(0, Math.min(SHOP_AHEAD, (app.shopAhead || 0) + +d.d)); app.selecting.clear(); app.shopTab = "all"; render(); window.scrollTo(0, 0); },
   termsTick: (d, el) => { $("#termsGo").disabled = !el.checked; },
   termsAccept: () => acceptTerms(),
+  adminTermsAsk: () => openSheet(`<p class="eyebrow">Admin</p><h1 class="title" style="font-size:26px">Ask everyone to agree again</h1>
+    <p class="muted">Update the terms page first. Then list what's changed, one point per line. Everyone will see this list and be asked to confirm they still agree, the next time they open the app.</p>
+    <form data-form="termsAsk" class="stack"><textarea name="changes" rows="6" maxlength="3000" placeholder="e.g. Added a section about little ones' details" required></textarea>
+      <button class="btn lg primary">Ask everyone</button><button type="button" class="btn" data-close>Cancel</button></form>`),
   previewStart: () => previewNew(true),
   previewEnd: () => previewNew(false),
   fbOpen: (d) => { app.fbKind = d.k; app.fbAdmin = null; go("feedback"); },
@@ -1570,6 +1577,13 @@ function onSubmit(e) {
   if (f.dataset.form === "adminAdd") {
     const body = { household: f.dataset.id, name: val("name").trim(), email: val("email").trim() };
     accountCall("api/admin/member", body).then(async (res) => { await loadAccount(); showInviteResult(body.name, body.email.toLowerCase(), res.signIn); }).catch((err) => toast(err.message));
+    return;
+  }
+  if (f.dataset.form === "termsAsk") {
+    const changes = val("changes").split("\n").map((x) => x.trim()).filter(Boolean);
+    if (!changes.length) return;
+    if (!window.confirm(`Ask all ${((app.adminInfo || {}).terms || {}).people || ""} people to agree to the updated terms?`)) return;
+    adminDo("api/admin/terms/ask", { changes }, () => { closeSheet(); toast("Everyone will be asked on their next visit"); });
     return;
   }
   if (f.dataset.form === "report") {
@@ -1979,7 +1993,7 @@ function viewAdmin() {
   const memberRow = (m, h) => {
     const st = memberStatus(m);
     if (f !== "all" && st !== f) return "";
-    const seen = (st === "never" ? `<span style="color:var(--warm)">Never signed in</span>` : `Active ${ago(m.lastSeen)}`) + (m.termsVersion ? "" : st === "never" ? "" : ` · <span style="color:var(--warm)">hasn't agreed to the terms yet</span>`);
+    const seen = st === "never" ? `<span style="color:var(--warm)">Never signed in</span>` : `Active ${ago(m.lastSeen)}`;
     const inviter = m.addedBy && people.find((p) => p.email === m.addedBy);
     const by = !m.addedBy || m.addedBy === "import" ? "" : ` · invited by ${inviter ? esc(inviter.name) : "an admin"}`;
     return `<div class="row" style="padding:11px 16px" data-text="${esc(`${m.name} ${m.email} ${h.name}`.toLowerCase())}"><span class="grow"><b>${esc(m.name)}</b> <span class="small muted">${esc(m.email)}</span><br>
@@ -2015,7 +2029,8 @@ function viewAdmin() {
       <button class="rrow" data-act="fbOpen" data-k="recipes" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Recipe feedback</b></span>${ad.feedback && ad.feedback.new ? `<span class="pill accent">${ad.feedback.new} new</span>` : ""}${icon("right", 18)}</button>
       <button class="rrow" data-act="adminNotice" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Message everyone</b>${ad.notice ? `<br><span class="small muted">Showing now · seen by ${ad.notice.seenBy} of ${ad.people}</span>` : ""}</span>${icon("right", 18)}</button>
       <label class="row" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>💬 Report button on every page</b><br><span class="small muted">Report a problem is always in Settings</span></span>
-        <span class="switch"><input type="checkbox" data-act="adminBubble" ${ad.reportBubble !== false ? "checked" : ""}><i></i></span></label></div>
+        <span class="switch"><input type="checkbox" data-act="adminBubble" ${ad.reportBubble !== false ? "checked" : ""}><i></i></span></label>
+      <button class="rrow" data-act="adminTermsAsk" style="padding:13px 16px;border-top:1px solid var(--line-soft)"><span class="grow"><b>Terms of use</b><br><span class="small muted">${ad.terms ? `${ad.terms.agreed} of ${ad.terms.people} agreed to the ${ad.terms.ask ? `update of ${shortDate(ad.terms.ask.at)}` : "current terms"}` : ""} · Ask everyone again</span></span>${icon("right", 18)}</button></div>
     <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn primary" data-act="adminNewHousehold">${icon("plus", 16)}New household</button>
       ${app.mode === "live" ? `<button class="btn" data-act="previewStart">See it as a new household</button>` : ""}</div>
     <label class="search" style="margin-bottom:10px">${icon("search", 18)}<input type="search" placeholder="Search people or households" aria-label="Search people or households" data-input="afilter" autocomplete="off"></label>
@@ -2129,7 +2144,7 @@ function openAdminMember(email) {
   const hit = adminFind(email); if (!hit) return;
   const { m, h } = hit, others = app.adminInfo.households.filter((x) => x.id !== h.id);
   openSheet(`<p class="eyebrow">${esc(h.name)}</p><h1 class="title" style="font-size:26px">${esc(m.name)}</h1>
-    <p class="muted">${esc(m.email)}<br>Joined ${shortDate(m.created)} · ${m.lastSeen ? `active ${ago(m.lastSeen)}` : "never signed in"}<br>${m.termsVersion ? `Agreed to the terms ${m.termsAt ? shortDate(m.termsAt) : ""}${m.termsVersion !== TERMS_VERSION ? " (an older version)" : ""}` : "Hasn't agreed to the terms yet"}</p>
+    <p class="muted">${esc(m.email)}<br>Joined ${shortDate(m.created)} · ${m.lastSeen ? `active ${ago(m.lastSeen)}` : "never signed in"}<br>${m.termsVersion ? `Agreed to the terms ${m.termsAt ? shortDate(m.termsAt) : ""}${m.termsVersion !== ((app.adminInfo || {}).terms || {}).version ? " (an older version)" : ""}` : "Hasn't agreed to the terms yet"}</p>
     <div class="stack">
       <button class="btn" data-act="adminResend" data-email="${esc(m.email)}">${icon("copy", 16)}Copy their invite message again</button>
       ${others.length ? `<p class="section-label" style="margin-bottom:4px">Move to another household</p><div class="list">${others.map((o) => `<button class="rrow" data-act="adminMoveTo" data-email="${esc(m.email)}" data-id="${esc(o.id)}"><span class="grow">${esc(o.name)}</span><span class="small muted">${o.members.length}</span></button>`).join("")}</div>` : ""}

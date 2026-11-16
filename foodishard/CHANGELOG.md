@@ -337,3 +337,6 @@ Fixes from a review of the new features:
 ## 0.11.44
 - Online: a one-time "Before you start" screen asks people to agree to the terms of use (version and time recorded; shown again if the terms version changes). Privacy policy linked as information.
 - Allergies: consent wording on the allergy question. Admin shows who has agreed to the terms. Terms and privacy policy updated.
+
+## 0.11.45
+- Terms of use: only new joiners are asked during the beta. Admin can ask everyone to agree to updated terms, with a list of what's changed shown on the agreement screen. Who needs to agree is decided by the server, so no app release is needed when the terms change.

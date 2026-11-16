@@ -168,13 +168,23 @@ await test("ops are shared within a household (email case ignored)", async () =>
   const s = await state("SAM@example.com");
   assert.equal(s.settings.dislikes, "olives"); assert.equal(s.checks["2026-11-09"].rice.by, "Sam");
 });
-await test("terms of use: not agreed at first, then recorded once someone agrees", async () => {
-  assert.equal((await call("/api/state", { email: "alex@example.com" })).body.termsAccepted, null);
+await test("terms of use: new joiners agree once; the admin can ask everyone again with a list of changes", async () => {
+  const need = (await call("/api/state", { email: "alex@example.com" })).body.termsNeeded;
+  assert.ok(need && need.version); assert.deepEqual(need.changes, []);
   assert.equal((await call("/api/terms/accept", { email: "alex@example.com", body: { version: "bad version!" } })).status, 400);
-  assert.equal((await call("/api/terms/accept", { email: "alex@example.com", body: { version: "2026-11-16" } })).body.termsAccepted, "2026-11-16");
-  assert.equal((await call("/api/state", { email: "alex@example.com" })).body.termsAccepted, "2026-11-16");
+  assert.equal((await call("/api/terms/accept", { email: "alex@example.com", body: { version: "1999-01-01" } })).status, 409);
+  assert.equal((await call("/api/terms/accept", { email: "alex@example.com", body: { version: need.version } })).body.termsNeeded, null);
+  assert.equal((await call("/api/state", { email: "alex@example.com" })).body.termsNeeded, null);
+  // only the admin can ask, and it needs a list of changes
+  assert.equal((await call("/api/admin/terms/ask", { email: "alex@example.com", body: { changes: ["x"] } })).status, 403);
+  assert.equal((await call("/api/admin/terms/ask", { email: "admin@example.com", body: { changes: [] } })).status, 400);
+  const ov = (await call("/api/admin/terms/ask", { email: "admin@example.com", body: { changes: ["Added a section about little ones"] } })).body;
+  assert.equal(ov.terms.agreed, 0);
+  const again = (await call("/api/state", { email: "alex@example.com" })).body.termsNeeded;
+  assert.deepEqual(again.changes, ["Added a section about little ones"]); assert.notEqual(again.version, need.version);
+  await call("/api/terms/accept", { email: "alex@example.com", body: { version: again.version } });
   const m = (await call("/api/admin", { email: "admin@example.com" })).body.households.flatMap((h) => h.members).find((x) => x.email === "alex@example.com");
-  assert.equal(m.termsVersion, "2026-11-16"); assert.ok(m.termsAt);
+  assert.equal(m.termsVersion, again.version); assert.ok(m.termsAt);
 });
 await test("a household cooks for at most 10 grown-ups and 10 little ones", async () => {
   const many = (n) => Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `P${i}`, portion: 1 }));

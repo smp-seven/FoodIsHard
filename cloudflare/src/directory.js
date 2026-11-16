@@ -19,6 +19,8 @@ export function cleanName(n, what = "name") {
   return v;
 }
 /** An error that's safe and useful to show to the person. */
+const TERMS_BASE = "2026-11-16"; // the first terms people agreed to; later versions come from the admin's "ask everyone"
+
 export class UserError extends Error {}
 
 const newId = () => [...crypto.getRandomValues(new Uint8Array(9))].map((b) => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
@@ -38,6 +40,8 @@ export class Directory extends DurableObject {
     // added in 0.11.44: which version of the terms each person agreed to, and when (Unix seconds)
     if (!cols.includes("terms_version")) this.sql.exec("ALTER TABLE members ADD COLUMN terms_version TEXT");
     if (!cols.includes("terms_at")) this.sql.exec("ALTER TABLE members ADD COLUMN terms_at INTEGER");
+    // beta: people who joined before agreements started aren't asked until the admin asks everyone
+    if (!this.meta("termsFrom")) this.setMeta("termsFrom", String(this.now()));
     // added in 0.9.5: when each recipe rating was left (no contents), so the admin dashboard can
     // say "3 new" without opening every household. The ratings themselves stay in each household.
     this.sql.exec("CREATE TABLE IF NOT EXISTS feedback_log (at INTEGER NOT NULL, household TEXT NOT NULL)");
@@ -52,11 +56,31 @@ export class Directory extends DurableObject {
   member(email) { return this.row("SELECT m.email, m.name, m.household, h.name AS householdName FROM members m JOIN households h ON h.id = m.household WHERE m.email = ?", email); }
   peopleCount() { return this.row("SELECT COUNT(*) AS n FROM members").n; }
   householdMembers(id) { return this.rows("SELECT email, name, added_by AS addedBy, created, last_seen AS lastSeen, terms_version AS termsVersion, terms_at AS termsAt FROM members WHERE household = ? ORDER BY created, email", id); }
-  /** The terms version this person agreed to (null if they haven't yet). */
-  termsFor(email) { const r = this.row("SELECT terms_version AS v FROM members WHERE email = ?", email); return r ? r.v : null; }
+  // ---- terms of use: who needs to agree, and the admin's "the terms have changed" request ----
+  termsAsk() { return JSON.parse(this.meta("termsAsk") || "null"); }
+  termsCurrent() { const a = this.termsAsk(); return a ? a.version : TERMS_BASE; }
+  /** What this person needs to agree to, or null. New joiners are asked; people who joined before agreements started
+      aren't, until the admin asks everyone (then everyone sees the list of what's changed). */
+  termsNeeded(email) {
+    const m = this.row("SELECT created, terms_version AS v FROM members WHERE email = ?", email);
+    if (!m) return null;
+    const ask = this.termsAsk(), version = this.termsCurrent();
+    if (m.v === version) return null;
+    if (ask) return { version, changes: ask.changes || [] };
+    return m.created >= Number(this.meta("termsFrom") || 0) ? { version, changes: [] } : null;
+  }
   acceptTerms(email, version) {
+    if (version !== this.termsCurrent()) return { error: "The terms have changed since this page opened. Please reload." };
     this.sql.exec("UPDATE members SET terms_version = ?, terms_at = ? WHERE email = ?", version, this.now(), email);
-    return { termsAccepted: this.termsFor(email) };
+    return { termsNeeded: this.termsNeeded(email) };
+  }
+  askTerms(changes) {
+    const at = this.now();
+    this.setMeta("termsAsk", JSON.stringify({ version: `v${at}`, changes, at }));
+  }
+  termsStats() {
+    const version = this.termsCurrent(), r = this.row("SELECT COUNT(*) AS n, SUM(CASE WHEN terms_version = ? THEN 1 ELSE 0 END) AS agreed FROM members", version);
+    return { version, agreed: r.agreed || 0, people: r.n || 0, ask: this.termsAsk() };
   }
   household(id) { return this.row("SELECT id, name FROM households WHERE id = ?", id); }
   meta(key) { const r = this.row("SELECT value FROM meta WHERE key = ?", key); return r ? r.value : null; }
@@ -137,7 +161,7 @@ export class Directory extends DurableObject {
   // ---- admins only (the Worker checks ADMINS before calling these) ----------
   overview() {
     const households = this.rows("SELECT id, name, created FROM households ORDER BY name COLLATE NOCASE");
-    return { households: households.map((h) => ({ ...h, members: this.householdMembers(h.id) })), people: this.peopleCount(), limits: LIMITS, lastSync: JSON.parse(this.meta("lastSync") || "null"), notice: this.noticeStats(), reportBubble: this.reportBubble() };
+    return { households: households.map((h) => ({ ...h, members: this.householdMembers(h.id) })), people: this.peopleCount(), limits: LIMITS, lastSync: JSON.parse(this.meta("lastSync") || "null"), notice: this.noticeStats(), reportBubble: this.reportBubble(), terms: this.termsStats() };
   }
 
   createHousehold(byEmail, { householdName, email, name }) {

@@ -344,3 +344,4 @@ body.has-bubble.has-dock .view { padding-bottom: calc(var(--nav-h) + 140px + env
 body.gated { overflow: hidden; }
 body.gated .toast { z-index: 101; }
 body.gated .report-bubble { display: none; }
+.terms-changes li { font-weight: 600; }

@@ -134,13 +134,14 @@ async function api(request, env, who, url) {
   // ---- the household's meal-planning data ----
   if (path === "/api/state" && !post) {
     const res = await household(env, who.household).getState(url.searchParams.get("rev"));
-    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS, termsAccepted: await dir.termsFor(who.email) });
+    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS, termsNeeded: await dir.termsNeeded(who.email) });
   }
   if (path === "/api/terms/accept" && post) {
     // Someone ticked "I agree to the terms of use". Store which version and when.
     const { version } = await readBody(request);
     if (!/^[\w.-]{1,20}$/.test(String(version || ""))) return json({ error: "Unknown terms version" }, 400);
-    return json(await dir.acceptTerms(who.email, String(version)));
+    const res = await dir.acceptTerms(who.email, String(version));
+    return json(res, res.error ? 409 : 200);
   }
   if (path === "/api/op" && post) {
     const op = await readBody(request);
@@ -217,6 +218,14 @@ async function api(request, env, who, url) {
       });
       items.sort((a, b) => b.at - a.at);
       return json({ items: items.slice(0, 3000), households: rated.size, ...(await dir.feedbackNew(who.email)) });
+    }
+    if (path === "/api/admin/terms/ask" && post) {
+      // "The terms have changed": everyone is asked to agree again on their next visit, with this list of changes
+      const { changes } = await readBody(request);
+      const list = (Array.isArray(changes) ? changes : []).map((c) => String(c).trim()).filter(Boolean);
+      if (!list.length || list.length > 20 || list.some((c) => c.length > 300)) return json({ error: "Add up to 20 changes, each under 300 characters" }, 400);
+      await dir.askTerms(list);
+      return json({ ...(await dir.overview()), ...signInInfo() });
     }
     if (path === "/api/admin/problem/delete" && post) {
       // Remove one problem report (e.g. a test). ref = "<household id>:<time it was sent>".
