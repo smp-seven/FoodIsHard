@@ -114,7 +114,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.56"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.57"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -485,7 +485,7 @@ function viewShop() {
       ${tabs.length > 1 ? `<div class="shop-tabs"><button class="chip ${app.shopTab === "all" ? "on" : ""}" data-act="shopTab" data-s="all">All · ${toGet.filter((i) => !i.done).length}</button>${tabs.map((t) => `<button class="chip ${app.shopTab === t.s ? "on" : ""}" data-act="shopTab" data-s="${t.s}">${esc(shopName(t.s))} · ${t.n}</button>`).join("")}</div>` : ""}
     </div>
     ${body || `<div class="card empty"><p><b>Everything's bought.</b> Nice work!</p></div>`}
-    ${leftoverCard(toGet)}
+    ${leftoverCard(all)}
     ${boughtSection(bought, sum(toGet))}
     ${have.length ? `<details class="fold"><summary class="section-label">Not needed this week · ${have.length}</summary><div class="list">${have.map(itemRow).join("")}</div></details>` : ""}
     ${nextWeekHint()}
@@ -495,11 +495,12 @@ function viewShop() {
       ${unchecked ? `<span class="pill warn">Check</span>` : ""}<span aria-hidden="true">›</span></button>
     <p class="small muted" style="margin:20px 4px 0">Same list everywhere: ${compare}. Prices are estimates. Tap an item to fix its price or swap it; hold to select several.</p>`;
 }
-/** "Left over this week": the part-packs in one calm card, instead of a note on every line. Tap for ideas to use them up. */
+/** "Left over after this week's dinners": what's left of packs you've actually bought (ticked or Done shopping), so you
+    can use it up. Things not bought yet aren't listed: they're not in your kitchen. Tap for ideas to use them up. */
 function leftoverCard(items) {
-  const left = items.filter((i) => i.leftover && !i.have);
+  const left = items.filter((i) => i.leftover && !i.have && (i.done || i.bought));
   if (!left.length) return "";
-  return `<p class="section-label">Left over this week</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${useUpIdeas(i).length ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>`;
+  return `<p class="section-label">Left over after this week's dinners</p><p class="small muted" style="margin:-4px 0 8px">From what you've bought, roughly what you'll have spare.</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span></span>${useUpIdeas(i).length ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>`;
 }
 /** "Bought this week": each Done shopping trip, with its total and the week's running total. */
 function boughtSection(bought, stillToBuy) {

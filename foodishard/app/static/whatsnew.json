@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.57",
+   "notes": [
+    "Fixed: \"Left over\" on the shopping list now shows what's spare from the things you've bought, not from things still to buy."
+   ]
+  },
+  {
    "version": "0.11.56",
    "notes": [
     "Updates to the Life is hard utility."

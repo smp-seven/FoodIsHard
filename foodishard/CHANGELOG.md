@@ -377,3 +377,6 @@ Fixes from a review of the new features:
 
 ## 0.11.56
 - Life is hard: new "Several times a day" timing (2 to 6). The card shows "N of M today" and one button per time, each ticked and unticked on its own. Limits checked in the app, online and Home Assistant. Ticks kept per routine raised from 6 to 8.
+
+## 0.11.57
+- Shopping: the leftovers card now lists spare amounts from items that have been bought (ticked or Done shopping), not items still to buy. Renamed "Left over after this week's dinners", with a one-line explanation.
