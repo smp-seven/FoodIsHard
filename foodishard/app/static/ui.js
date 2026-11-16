@@ -115,7 +115,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.52"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.53"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2372,7 +2372,7 @@ function viewLife() {
       ${app.lifeAdding && starters.length ? `<div class="life-ideas"><p class="section-label" style="margin-top:0">More ideas</p>
         <div class="chips wrap">${starters.map((s) => `<button class="chip" data-act="choreStarter" data-name="${esc(s.name)}">${s.emoji} ${esc(s.name)}</button>`).join("")}</div>
         <div class="row" style="justify-content:center;gap:8px;margin-top:14px"><button class="btn sm" data-act="choreNew">${icon("plus", 16)}Add your own</button><button class="btn sm" data-act="lifeIdeasDone">Done</button></div></div>`
-      : `<div style="text-align:center;margin-top:14px"><button class="btn sm" data-act="lifeEdit">${icon("plus", 16)}Add or change</button></div>`}`
+      : `<div style="text-align:center;margin-top:14px"><button class="btn sm" data-act="lifeEdit">${icon("plus", 16)}Add, change or remove</button></div>`}`
     : `<div class="empty life-empty"><p class="h2">What needs doing around the house?</p><p>Tap any to add them, or add your own.</p>
       <div class="chips wrap" style="justify-content:center;margin:14px 0">${starters.map((s) => `<button class="chip" data-act="choreStarter" data-name="${esc(s.name)}">${s.emoji} ${esc(s.name)}</button>`).join("")}</div>
       <button class="btn" data-act="choreNew">${icon("plus", 16)}Add your own</button></div>`}`;

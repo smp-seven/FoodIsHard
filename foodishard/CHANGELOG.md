@@ -365,3 +365,6 @@ Fixes from a review of the new features:
 
 ## 0.11.52
 - Life is hard: tapping a routine that is done for now unticks it (with Undo), replacing the "done again / take back" panel that could add a second tick. Routines can be removed from the list (bin button) or their edit panel, with a confirmation.
+
+## 0.11.53
+- Life is hard: the "Add or change" button is now "Add, change or remove".
