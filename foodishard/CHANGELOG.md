@@ -300,3 +300,6 @@ Fixes from a review of the new features:
 
 ## 0.11.32
 - Shops you use: ticks on selected shops, faded dashed chips for ones turned off, and a "N of M selected" line.
+
+## 0.11.33
+- Settings: "Weeknight/Weekend cooking time", with options shown as "Up to N minutes".
