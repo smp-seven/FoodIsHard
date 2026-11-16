@@ -168,6 +168,14 @@ await test("ops are shared within a household (email case ignored)", async () =>
   const s = await state("SAM@example.com");
   assert.equal(s.settings.dislikes, "olives"); assert.equal(s.checks["2026-11-09"].rice.by, "Sam");
 });
+await test("terms of use: not agreed at first, then recorded once someone agrees", async () => {
+  assert.equal((await call("/api/state", { email: "alex@example.com" })).body.termsAccepted, null);
+  assert.equal((await call("/api/terms/accept", { email: "alex@example.com", body: { version: "bad version!" } })).status, 400);
+  assert.equal((await call("/api/terms/accept", { email: "alex@example.com", body: { version: "2026-11-16" } })).body.termsAccepted, "2026-11-16");
+  assert.equal((await call("/api/state", { email: "alex@example.com" })).body.termsAccepted, "2026-11-16");
+  const m = (await call("/api/admin", { email: "admin@example.com" })).body.households.flatMap((h) => h.members).find((x) => x.email === "alex@example.com");
+  assert.equal(m.termsVersion, "2026-11-16"); assert.ok(m.termsAt);
+});
 await test("a household cooks for at most 10 grown-ups and 10 little ones", async () => {
   const many = (n) => Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `P${i}`, portion: 1 }));
   assert.equal((await call("/api/op", { email: "alex@example.com", body: { op: "settings", patch: { people: many(10) } } })).status, 200);

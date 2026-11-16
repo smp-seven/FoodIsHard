@@ -17,7 +17,7 @@ async function boot() {
     const res = await getJSON("api/state");
     if (res.adminOnly) return bootAdmin(res);
     if (!res.state) throw new Error("no state");
-    app.mode = "live"; app.state = res.state; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
+    app.mode = "live"; app.state = res.state; app.termsAccepted = res.termsAccepted ?? null; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
     store(CACHE_KEY, app.state); store(HOST_KEY, { host: app.host, user: app.user, poll: app.pollMs });
   } catch (err) {
     const cached = load(CACHE_KEY, null), seenHost = load(HOST_KEY, {});
@@ -55,6 +55,7 @@ async function boot() {
   window.addEventListener("hashchange", fromHash);
   fromHash();
   backGuard();
+  termsGate();
   nightOwl();
   // Older versions kept little ones' exact birth and due dates: trim them to month and year, plus weeks early (once)
   if ((app.mode === "live" || app.mode === "demo") && kidsNeedTrimming()) send({ op: "settings", patch: { children: kidsAll(), ...(settings().baby ? { baby: null } : {}) } }, { rerender: false });
@@ -111,7 +112,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.43"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.44"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -627,7 +628,7 @@ function viewSettings() {
     <div class="list">
       <div class="stack ${nudges().includes("allergies") ? "nudge-field" : ""}" style="padding:14px 16px;gap:8px"><b>Allergies: never include</b>
         <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
-        <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.</span>
+        <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.${app.host === "Cloudflare" ? ` By ticking allergies, you agree to them being stored with your household so the planner can avoid them. Untick them at any time to remove them.` : ""}</span>
         ${nudges().includes("allergies") ? `<button class="btn sm" style="align-self:flex-start" data-act="allergyDone">No allergies in our household</button>` : ""}</div>
       <div class="stack" style="padding:14px 16px;gap:8px"><b>Dislikes</b><input class="input" value="${esc(s.dislikes || "")}" placeholder="e.g. mushroom, feta" data-set="text" data-f="dislikes"></div>
       <div class="stack" style="padding:14px 16px 8px;gap:4px"><b>Theme nights</b></div>
@@ -744,6 +745,38 @@ function lockedDay(i) {
   const el = $(`[data-act="lock"][data-i="${i}"]`);
   if (el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); setTimeout(() => el.classList.remove("shake"), 1000); }
   return true;
+}
+/** Online: everyone agrees to the terms of use once before using the app (and again if they change a lot). The privacy
+    policy is linked as information. Bump TERMS_VERSION when the terms change in a way people should re-agree to. */
+const TERMS_VERSION = "2026-11-16";
+const SITE = "https://foodishard.uk/";
+function termsGate() {
+  if (app.host !== "Cloudflare" || app.mode !== "live" || !("termsAccepted" in app) || app.termsAccepted === TERMS_VERSION || $("#termsGate")) return;
+  document.body.insertAdjacentHTML("beforeend", `<div id="termsGate" class="terms-gate" role="dialog" aria-modal="true" aria-labelledby="termsTitle"><div class="terms-inner">
+    <img src="icon-192.png" alt="" width="56" height="56" style="border-radius:14px">
+    <h1 class="title" id="termsTitle" style="font-size:28px;margin:14px 0 6px">Before you start</h1>
+    <p class="muted" style="margin:0 0 14px">FoodIsHard is a free meal planner, run by one person for friends and family. ${app.termsAccepted ? "The terms of use have changed since you last agreed. " : ""}Please read the terms of use before using it. The key points:</p>
+    <ul class="terms-points">
+      <li>Recipes, nutrition and baby notes are <b>general guidance</b>, not medical or professional advice.</li>
+      <li>The allergy settings only hide recipes that list an allergen. <b>Always check the label</b> of what you buy.</li>
+      <li>For babies, follow NHS weaning guidance and your health visitor.</li>
+      <li>It's free and provided as-is, and may change or stop at any time.</li>
+    </ul>
+    <p style="margin:14px 0"><a href="${SITE}terms.html" target="_blank" rel="noopener">Read the terms of use</a> · <a href="${SITE}privacy.html" target="_blank" rel="noopener">Privacy policy</a></p>
+    <label class="row terms-tick"><input type="checkbox" id="termsTick" data-act="termsTick"><span>I've read and agree to the <b>terms of use</b>, including the food safety notes.</span></label>
+    <p class="small muted" style="margin:8px 0 18px">How your information is looked after is explained in the privacy policy.</p>
+    <button class="btn lg primary block" id="termsGo" data-act="termsAccept" disabled>Continue</button>
+  </div></div>`);
+  document.body.classList.add("gated");
+}
+async function acceptTerms() {
+  if (!$("#termsTick") || !$("#termsTick").checked) return;
+  const btn = $("#termsGo"); btn.disabled = true;
+  try {
+    const res = await accountCall("api/terms/accept", { version: TERMS_VERSION });
+    app.termsAccepted = res.termsAccepted;
+    $("#termsGate").remove(); document.body.classList.remove("gated");
+  } catch { btn.disabled = false; toast("Couldn't save that. Check your connection and try again."); }
 }
 /** Opened between 1am and 4am (night feeds): a quiet nod, once a night. */
 function nightOwl() {
@@ -1344,6 +1377,8 @@ const ACTIONS = {
   },
   shopPlan: () => { app.weekStart = shopWeek(); go("week"); },
   shopAhead: (d) => { app.shopAhead = Math.max(0, Math.min(SHOP_AHEAD, (app.shopAhead || 0) + +d.d)); app.selecting.clear(); app.shopTab = "all"; render(); window.scrollTo(0, 0); },
+  termsTick: (d, el) => { $("#termsGo").disabled = !el.checked; },
+  termsAccept: () => acceptTerms(),
   previewStart: () => previewNew(true),
   previewEnd: () => previewNew(false),
   fbOpen: (d) => { app.fbKind = d.k; app.fbAdmin = null; go("feedback"); },
@@ -1592,7 +1627,7 @@ function openAbout() {
   const where = online
     ? `<p>FoodIsHard online runs on a Cloudflare account belonging to its host, who invited you or your household. It's a not-for-profit project, not a business. Your meal plans, shopping lists and settings are kept securely in a database on Cloudflare's servers${app.region === "eu" ? " in the EU" : ""}. They aren't shown to the host in the app. As the account owner they could access them, but only would if you asked, for example to help fix a problem. Cloudflare also sends the sign-in codes.</p>
        <ul>
-         <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), and whether you've seen the latest announcement.</li>
+         <li><b>About you:</b> your name, your email (to sign in), your household's name, who invited you, when you last used the app (so unused places can be freed up), whether you've seen the latest announcement, and when you agreed to the terms of use.</li>
          <li><b>About your household:</b> meal plans, shopping lists, prices, settings (including any allergies you tick and, if you add little ones, whatever first name or nickname you give them, the month and year they were born, and how many weeks early, if they were. Never their exact date of birth) and recipe feedback.</li>
          <li><b>Recipe ratings and notes</b> are shown to the person who runs FoodIsHard anonymously, without your name or household, so they can improve the recipes. <b>Problem reports</b> include your household's name and first name so they can follow up. Nothing else of your household's is shown to them in the app.</li>
          <li><b>Never stored:</b> passwords (there aren't any) or payment details.</li>
@@ -1944,7 +1979,7 @@ function viewAdmin() {
   const memberRow = (m, h) => {
     const st = memberStatus(m);
     if (f !== "all" && st !== f) return "";
-    const seen = st === "never" ? `<span style="color:var(--warm)">Never signed in</span>` : `Active ${ago(m.lastSeen)}`;
+    const seen = (st === "never" ? `<span style="color:var(--warm)">Never signed in</span>` : `Active ${ago(m.lastSeen)}`) + (m.termsVersion ? "" : st === "never" ? "" : ` · <span style="color:var(--warm)">hasn't agreed to the terms yet</span>`);
     const inviter = m.addedBy && people.find((p) => p.email === m.addedBy);
     const by = !m.addedBy || m.addedBy === "import" ? "" : ` · invited by ${inviter ? esc(inviter.name) : "an admin"}`;
     return `<div class="row" style="padding:11px 16px" data-text="${esc(`${m.name} ${m.email} ${h.name}`.toLowerCase())}"><span class="grow"><b>${esc(m.name)}</b> <span class="small muted">${esc(m.email)}</span><br>
@@ -2094,7 +2129,7 @@ function openAdminMember(email) {
   const hit = adminFind(email); if (!hit) return;
   const { m, h } = hit, others = app.adminInfo.households.filter((x) => x.id !== h.id);
   openSheet(`<p class="eyebrow">${esc(h.name)}</p><h1 class="title" style="font-size:26px">${esc(m.name)}</h1>
-    <p class="muted">${esc(m.email)}<br>Joined ${shortDate(m.created)} · ${m.lastSeen ? `active ${ago(m.lastSeen)}` : "never signed in"}</p>
+    <p class="muted">${esc(m.email)}<br>Joined ${shortDate(m.created)} · ${m.lastSeen ? `active ${ago(m.lastSeen)}` : "never signed in"}<br>${m.termsVersion ? `Agreed to the terms ${m.termsAt ? shortDate(m.termsAt) : ""}${m.termsVersion !== TERMS_VERSION ? " (an older version)" : ""}` : "Hasn't agreed to the terms yet"}</p>
     <div class="stack">
       <button class="btn" data-act="adminResend" data-email="${esc(m.email)}">${icon("copy", 16)}Copy their invite message again</button>
       ${others.length ? `<p class="section-label" style="margin-bottom:4px">Move to another household</p><div class="list">${others.map((o) => `<button class="rrow" data-act="adminMoveTo" data-email="${esc(m.email)}" data-id="${esc(o.id)}"><span class="grow">${esc(o.name)}</span><span class="small muted">${o.members.length}</span></button>`).join("")}</div>` : ""}

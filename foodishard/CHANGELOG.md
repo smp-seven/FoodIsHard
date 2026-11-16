@@ -333,3 +333,7 @@ Fixes from a review of the new features:
 
 ## 0.11.43
 - Little ones: stored as an optional first name or nickname, month and year of birth, and weeks early. Exact birth and due dates are no longer kept; existing data is converted once on load. Ages count from the end of the birth month so they are never overstated. About and privacy policy updated.
+
+## 0.11.44
+- Online: a one-time "Before you start" screen asks people to agree to the terms of use (version and time recorded; shown again if the terms version changes). Privacy policy linked as information.
+- Allergies: consent wording on the allergy question. Admin shows who has agreed to the terms. Terms and privacy policy updated.

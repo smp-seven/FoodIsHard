@@ -35,6 +35,9 @@ export class Directory extends DurableObject {
     if (!cols.includes("last_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN last_seen INTEGER");
     // added in 0.9.9: the newest admin message each person has dismissed
     if (!cols.includes("notice_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN notice_seen INTEGER");
+    // added in 0.11.44: which version of the terms each person agreed to, and when (Unix seconds)
+    if (!cols.includes("terms_version")) this.sql.exec("ALTER TABLE members ADD COLUMN terms_version TEXT");
+    if (!cols.includes("terms_at")) this.sql.exec("ALTER TABLE members ADD COLUMN terms_at INTEGER");
     // added in 0.9.5: when each recipe rating was left (no contents), so the admin dashboard can
     // say "3 new" without opening every household. The ratings themselves stay in each household.
     this.sql.exec("CREATE TABLE IF NOT EXISTS feedback_log (at INTEGER NOT NULL, household TEXT NOT NULL)");
@@ -48,7 +51,13 @@ export class Directory extends DurableObject {
   now() { return Math.floor(Date.now() / 1000); }
   member(email) { return this.row("SELECT m.email, m.name, m.household, h.name AS householdName FROM members m JOIN households h ON h.id = m.household WHERE m.email = ?", email); }
   peopleCount() { return this.row("SELECT COUNT(*) AS n FROM members").n; }
-  householdMembers(id) { return this.rows("SELECT email, name, added_by AS addedBy, created, last_seen AS lastSeen FROM members WHERE household = ? ORDER BY created, email", id); }
+  householdMembers(id) { return this.rows("SELECT email, name, added_by AS addedBy, created, last_seen AS lastSeen, terms_version AS termsVersion, terms_at AS termsAt FROM members WHERE household = ? ORDER BY created, email", id); }
+  /** The terms version this person agreed to (null if they haven't yet). */
+  termsFor(email) { const r = this.row("SELECT terms_version AS v FROM members WHERE email = ?", email); return r ? r.v : null; }
+  acceptTerms(email, version) {
+    this.sql.exec("UPDATE members SET terms_version = ?, terms_at = ? WHERE email = ?", version, this.now(), email);
+    return { termsAccepted: this.termsFor(email) };
+  }
   household(id) { return this.row("SELECT id, name FROM households WHERE id = ?", id); }
   meta(key) { const r = this.row("SELECT value FROM meta WHERE key = ?", key); return r ? r.value : null; }
   setMeta(key, value) { this.sql.exec("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", key, value); }

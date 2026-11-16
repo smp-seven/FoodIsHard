@@ -134,7 +134,13 @@ async function api(request, env, who, url) {
   // ---- the household's meal-planning data ----
   if (path === "/api/state" && !post) {
     const res = await household(env, who.household).getState(url.searchParams.get("rev"));
-    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS });
+    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS, termsAccepted: await dir.termsFor(who.email) });
+  }
+  if (path === "/api/terms/accept" && post) {
+    // Someone ticked "I agree to the terms of use". Store which version and when.
+    const { version } = await readBody(request);
+    if (!/^[\w.-]{1,20}$/.test(String(version || ""))) return json({ error: "Unknown terms version" }, 400);
+    return json(await dir.acceptTerms(who.email, String(version)));
   }
   if (path === "/api/op" && post) {
     const op = await readBody(request);
