@@ -325,3 +325,6 @@ body.has-bubble.has-dock .view { padding-bottom: calc(var(--nav-h) + 140px + env
 .start-bubble::after { content: ""; position: absolute; top: 50%; right: -6px; transform: translateY(-50%); border: 6px solid transparent; border-right: 0; border-left-color: var(--accent); }
 @keyframes start-nudge { 50% { transform: translate(-3px, -50%); } }
 @media (prefers-reduced-motion: reduce) { .start-bubble { animation: none; } }
+
+/* an empty day on the Week tab: a clear, tappable "Choose a dinner" button */
+.btn.add-slot { width: 100%; justify-content: center; margin-top: 4px; background: transparent; color: var(--accent); border: 1.5px dashed var(--accent); }

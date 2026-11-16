@@ -109,7 +109,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.38"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.39"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -177,7 +177,7 @@ function startHereSeen() { return app.mode === "preview" ? !!app.previewStartSee
 function settingsButton() {
   const glow = nudges().length ? " nudge" : "";
   const btn = settingsButtonOnly(glow);
-  return glow && !startHereSeen() ? `<span class="start-wrap">${btn}<span class="start-bubble" aria-hidden="true">Start here</span></span>` : btn;
+  return glow && !startHereSeen() && app.tab === "tonight" ? `<span class="start-wrap">${btn}<span class="start-bubble" aria-hidden="true">Start here</span></span>` : btn;
 }
 function settingsButtonOnly(glow) {
   return app.update
@@ -404,7 +404,7 @@ function viewWeek() {
     if (d.status === "skip") return `<article class="day off">${dateCol}<div class="row between"><span><b>Skipped${d.note ? ` · ${esc(d.note)}` : ""}</b></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Undo</button></div></article>`;
     if (d.status === "leftovers") return `<article class="day off">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">${leftoversFrom(days, d)}</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
     if (!r) return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${theme ? `<div class="fam">${esc(theme.name)}</div>` : ""}
-      <button class="name" style="font-family:var(--sans);font-size:15px;color:var(--muted)" data-act="pick" data-i="${i}">+ Choose a dinner</button>
+      <button class="btn add-slot" data-act="pick" data-i="${i}">${icon("plus", 16)}Choose a dinner</button>
       <div class="actions"><button class="btn sm soft" data-act="skip" data-i="${i}">Skip</button></div></div></article>`;
     const c = recipeCost(r) * dayFactor(d); cost += c;
     const famText = r.emergency ? `<span class="fam quick">${theme && themeMatch(theme, r) ? esc(theme.name) : "Quick"} · ${r.time} min${isToday ? " · tonight" : ""}</span>`

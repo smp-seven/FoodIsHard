@@ -318,3 +318,6 @@ Fixes from a review of the new features:
 
 ## 0.11.38
 - Week: one-time tip pointing at the lock the first time a dinner is picked, swapped or changed for a day (skipped if the lock has been used). Stays at least 3 seconds; any touch after that dismisses it.
+
+## 0.11.39
+- Week: "Choose a dinner" on empty days is a full-width dashed button. "Start here" bubble only shows on Tonight, so it never covers other header buttons.
