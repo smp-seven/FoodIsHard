@@ -383,3 +383,6 @@ Fixes from a review of the new features:
 
 ## 0.11.58
 - Use-up ideas: ranked by how far the spare amount goes (whole meal for the household first, then portions), labelled in plain words; recipes that would need more of the ingredient are no longer suggested.
+
+## 0.11.59
+- A separate test version (staging): its own Worker and data, its own sign-in rule, deployed from the staging branch, with an orange "Test version" bar. Setup steps in CLOUDFLARE.md.

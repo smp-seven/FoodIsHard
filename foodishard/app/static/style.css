@@ -384,3 +384,6 @@ body.life-on .nav button { font-size: 11.5px; }
 
 /* morning-and-evening routines: each half is its own tappable button */
 .chore .slots button.slot { font-family: inherit; font-size: 13px; cursor: pointer; padding: 7px 12px; min-height: 36px; }
+
+/* the test copy (staging) says so at the top, so it's never mistaken for the real app */
+.staging-bar { position: sticky; top: 0; z-index: 70; background: #e8885c; color: #fff; text-align: center; font-size: 12.5px; font-weight: 700; padding: calc(4px + env(safe-area-inset-top)) 10px 4px; }

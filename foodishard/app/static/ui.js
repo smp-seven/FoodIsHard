@@ -17,7 +17,7 @@ async function boot() {
     const res = await getJSON("api/state");
     if (res.adminOnly) return bootAdmin(res);
     if (!res.state) throw new Error("no state");
-    app.mode = "live"; app.state = res.state; app.termsNeeded = res.termsNeeded || null; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
+    app.mode = "live"; app.state = res.state; app.termsNeeded = res.termsNeeded || null; app.staging = !!res.staging; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
     store(CACHE_KEY, app.state); store(HOST_KEY, { host: app.host, user: app.user, poll: app.pollMs, termsNeeded: app.termsNeeded });
   } catch (err) {
     const cached = load(CACHE_KEY, null), seenHost = load(HOST_KEY, {});
@@ -55,6 +55,7 @@ async function boot() {
   window.addEventListener("hashchange", fromHash);
   fromHash();
   backGuard();
+  if (app.staging) { document.body.classList.add("staging"); document.body.insertAdjacentHTML("afterbegin", `<div class="staging-bar">Test version: separate data, only you can see it</div>`); }
   termsGate();
   allergyConsentCheck();
   nightOwl();
@@ -114,7 +115,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.58"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.59"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });

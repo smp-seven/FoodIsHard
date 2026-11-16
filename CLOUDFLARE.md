@@ -278,3 +278,23 @@ To work on it locally:
 - `node --no-warnings cloudflare/dev-server.mjs` runs the online version on your computer at
   `http://localhost:8787/?as=you@example.com`. Change `?as=` to "be" someone else. It's for
   local testing only.
+
+## Test version (staging)
+
+A separate copy of the online app for trying changes before everyone gets them. It has its **own data** (nothing is shared with the real app) and its **own sign-in rule**, so only you can open it. The `staging` branch deploys there; `main` keeps deploying the real app. The test copy shows an orange "Test version" bar at the top.
+
+One-time setup:
+
+1. **Create the Worker from the repo.** Workers & Pages → Create → Import a repository → pick this repo.
+   - Worker name: `foodishard-staging` (must match `env.staging.name` in `wrangler.jsonc`).
+   - Production branch: `staging`.
+   - Deploy command: `npx wrangler deploy --env staging`.
+2. **Give it its own address.** In the new Worker: Settings → Domains & Routes → Add → Custom domain → e.g. `staging.<your domain>`.
+3. **Lock it to you.** Zero Trust → Access → Applications → Add → Self-hosted, for that staging address. Policy: Allow, emails = your own email address(es) only. Copy the new application's **AUD tag**.
+4. **Set its variables** (Worker → Settings → Variables and Secrets), the same names as the real app:
+   - `ACCESS_TEAM`: your team name (same as the real app).
+   - `ACCESS_AUD`: the staging application's AUD tag from step 3 (not the real app's).
+   - `ADMINS`: your email.
+5. **Open it.** Sign in at the staging address, then create a test household from the admin panel (it starts empty).
+
+Day to day: changes are pushed to `staging`, tried at the staging address, then merged into `main` to release.

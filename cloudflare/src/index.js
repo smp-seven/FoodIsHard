@@ -134,7 +134,7 @@ async function api(request, env, who, url) {
   // ---- the household's meal-planning data ----
   if (path === "/api/state" && !post) {
     const res = await household(env, who.household).getState(url.searchParams.get("rev"));
-    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS, termsNeeded: await dir.termsNeeded(who.email) });
+    return json(res.unchanged ? { ...res, poll: POLL_SECONDS } : { ...res, user: who.name, host: "Cloudflare", region: region(env), account: true, poll: POLL_SECONDS, termsNeeded: await dir.termsNeeded(who.email), ...(env.STAGING ? { staging: true } : {}) });
   }
   if (path === "/api/terms/accept" && post) {
     // Someone ticked "I agree to the terms of use". Store which version and when.

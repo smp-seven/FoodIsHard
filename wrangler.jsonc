@@ -27,5 +27,28 @@
   "keep_vars": true,
   "workers_dev": true,
   "preview_urls": false,
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // A separate test copy (deploy with: npx wrangler deploy --env staging). Its own Worker, its own Durable Objects
+  // (so its own, completely separate data), and its own Cloudflare Access app so only the owner can sign in.
+  // Built from the "staging" branch; main keeps deploying the real app. See CLOUDFLARE.md, "Test version".
+  "env": {
+    "staging": {
+      "name": "foodishard-staging",
+      "durable_objects": {
+        "bindings": [
+          { "name": "HOUSEHOLD", "class_name": "Household" },
+          { "name": "DIRECTORY", "class_name": "Directory" }
+        ]
+      },
+      "migrations": [
+        { "tag": "v1", "new_sqlite_classes": ["Household"] },
+        { "tag": "v2", "new_sqlite_classes": ["Directory"] }
+      ],
+      "vars": { "STAGING": "1" },
+      "triggers": { "crons": [] },
+      "keep_vars": true,
+      "workers_dev": true,
+      "preview_urls": false
+    }
+  }
 }
