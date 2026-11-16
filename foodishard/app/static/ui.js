@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.65"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.66"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1075,7 +1075,8 @@ function useByNote(k) {
 function keepAdvice(k) {
   if (!k || !ingMeta(k).ko) return "";
   const n = keepDays(k);
-  return `<br><span class="small ${n <= 2 ? "keep-soon" : "muted"}">Keeps about ${n} day${n === 1 ? "" : "s"} once opened. Check the packet.${ingMeta(k).fz ? " Or freeze it to use later." : ""}</span>`;
+  const m = ingMeta(k);
+  return `<br><span class="small ${n <= 2 ? "keep-soon" : "muted"}">Keeps about ${n} day${n === 1 ? "" : "s"} once opened in the fridge, but never past the packet's use-by date.${m.kt ? ` ${esc(m.kt)}` : ""}${m.fz ? " Or freeze it within that time: defrost in the fridge, use within a day, and don't refreeze." : ""}</span>`;
 }
 function lunchIdeasCard(it, ideas) {
   if (!ideas.length) return "";
@@ -1111,7 +1112,7 @@ function openLunchPick(tId, main, itemKey, keep = {}) {
     <p class="small muted">About ${idea.t.minutes} minutes. For grown-ups: not adapted for little ones.</p>
     <div class="chips" style="margin:10px 0">${[1, 2].map((k) => `<button class="chip ${n === k ? "on" : ""}" data-act="lunchN" data-n="${k}">For ${k}</button>`).join("")}</div>
     ${idea.missing.length ? `<div class="stack" style="gap:6px;margin-bottom:10px">${idea.missing.map((k) => `<label class="row" style="gap:10px"><input type="checkbox" data-act="lunchAdd" data-k="${k}" ${add.has(k) ? "checked" : ""}><span class="small">Add ${esc(ingShort(k))} to the list${basePrice(k) ? ` (about ${money(basePrice(k).p * shopMult(priceShop()))})` : ""}. Skip if you've got some.</span></label>`).join("")}</div>` : ""}
-    ${shortest[1] <= 3 ? `<p class="keep-warn">Once opened, ${esc((lunchUse(shortest[0]) || { name: ingShort(shortest[0]) }).name)} ${/s$/.test((lunchUse(shortest[0]) || { name: "" }).name) && !/(hummus|houmous|couscous)$/.test((lunchUse(shortest[0]) || { name: "" }).name) ? "keep" : "keeps"} about ${shortest[1]} day${shortest[1] === 1 ? "" : "s"} in the fridge. Check the packet.</p>` : ""}
+    ${shortest[1] <= 3 ? `<p class="keep-warn">Once opened, ${esc((lunchUse(shortest[0]) || { name: ingShort(shortest[0]) }).name)} ${/s$/.test((lunchUse(shortest[0]) || { name: "" }).name) && !/(hummus|houmous|couscous)$/.test((lunchUse(shortest[0]) || { name: "" }).name) ? "keep" : "keeps"} about ${shortest[1]} day${shortest[1] === 1 ? "" : "s"} in the fridge, and never past the packet's use-by date.</p>` : ""}
     <p class="muted" style="margin:6px 0">Which day?</p>
     ${days.length ? `<div class="list">${days.map(({ d, i, date }) => `<button class="rrow" data-act="lunchPut" data-i="${i}"><span class="grow"><b>${DOW_LONG[mondayIndex(date)]}</b>${d && d.lunch ? `<br><span class="small muted">Replaces ${esc(lunchName(lunchTemplate(d.lunch.t), d.lunch.main, d.lunch.with || []))}</span>` : ""}</span><span class="muted">›</span></button>`).join("")}</div>`
       : `<p class="small muted">No safe days left for this one this week: opened food doesn't keep long.</p>`}`, { keepScroll: !!keep.n });

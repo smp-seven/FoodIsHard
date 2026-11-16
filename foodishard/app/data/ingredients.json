@@ -252,8 +252,8 @@
     0.35
    ],
    "g": 1,
-   "ko": 2,
-   "fz": true
+   "ko": 1,
+   "kt": "Bin it if it's slimy or smells, whatever the day."
   },
   "sweet_potato": {
    "n": "Sweet potatoes",
@@ -957,7 +957,7 @@
    ],
    "g": 1,
    "ko": 2,
-   "fz": true
+   "kt": "Keep it covered in fresh water and change the water daily."
   },
   "paneer": {
    "n": "Paneer",
@@ -1050,7 +1050,8 @@
    ],
    "g": 400,
    "ko": 2,
-   "fz": true
+   "fz": true,
+   "kt": "Move it out of the tin into a covered container."
   },
   "black_beans": {
    "n": "Black beans",
@@ -1084,7 +1085,8 @@
    ],
    "g": 240,
    "ko": 2,
-   "fz": true
+   "fz": true,
+   "kt": "Move it out of the tin into a covered container."
   },
   "kidney_beans": {
    "n": "Kidney beans",
@@ -1108,7 +1110,8 @@
    ],
    "g": 240,
    "ko": 2,
-   "fz": true
+   "fz": true,
+   "kt": "Move it out of the tin into a covered container."
   },
   "chickpeas": {
    "n": "Chickpeas",
@@ -1132,7 +1135,8 @@
    ],
    "g": 240,
    "ko": 2,
-   "fz": true
+   "fz": true,
+   "kt": "Move it out of the tin into a covered container."
   },
   "green_lentils": {
    "n": "Green lentils (tinned)",
@@ -1156,7 +1160,8 @@
    ],
    "g": 265,
    "ko": 2,
-   "fz": true
+   "fz": true,
+   "kt": "Move it out of the tin into a covered container."
   },
   "baked_beans": {
    "n": "Baked beans (reduced salt & sugar)",
@@ -1180,7 +1185,8 @@
    ],
    "g": 415,
    "ko": 2,
-   "fz": true
+   "fz": true,
+   "kt": "Move it out of the tin into a covered container."
   },
   "peanut_butter": {
    "n": "Smooth peanut butter",
@@ -2034,7 +2040,8 @@
     0.03
    ],
    "g": 1,
-   "ko": 1
+   "ko": 1,
+   "kt": "Bin it if it's slimy or smells, whatever the day."
   },
   "white_cabbage": {
    "n": "White cabbage",
@@ -2078,7 +2085,8 @@
     0
    ],
    "g": 1,
-   "ko": 1
+   "ko": 1,
+   "kt": "Always cook until piping hot all the way through, and don't keep cooked leftovers with them."
   },
   "avocado": {
    "n": "Avocados",
@@ -2276,8 +2284,9 @@
     "egg"
    ],
    "g": 1,
-   "ko": 3,
-   "fz": true
+   "ko": 2,
+   "fz": true,
+   "kt": "Filled gnocchi keeps only 1 day once opened."
   },
   "filo": {
    "n": "Filo pastry",
@@ -2398,7 +2407,8 @@
    "g": 240,
    "u": "tin",
    "ko": 2,
-   "fz": true
+   "fz": true,
+   "kt": "Move it out of the tin into a covered container."
   },
   "roasted_peppers": {
    "n": "Roasted red peppers (jar)",
@@ -2696,5 +2706,5 @@
  },
  "prices_base_period": "2026 OCT",
  "nutrition_note": "Per 100 g, estimated from UK food composition data (McCance and Widdowson's CoFID) and typical UK labels. Order: kcal, protein, carbohydrate, sugars, fat, saturates, fibre, salt.",
- "keep_note": "ko: days an ingredient keeps in the fridge once opened or cut, in the state it's usually left in (e.g. spare whole peppers, an opened tin moved to a covered container). fz: freezes well for cooking. Checked against UK guidance; packets vary, so the app always says to check the packet."
+ "keep_note": "ko: days an ingredient keeps in a fridge at 0 to 5°C once opened or cut, in the state it's usually left in, never past the packet's use-by date. fz: freezes well for cooking (freeze within the ko window; defrost in the fridge, use within a day, don't refreeze). kt: a short keeping tip. Reviewed 16 Nov 2026 against FSA guidance and UK packet wording."
 }
