@@ -115,7 +115,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.50"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.51"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2378,14 +2378,34 @@ function viewLife() {
       <button class="btn" data-act="choreNew">${icon("plus", 16)}Add your own</button></div>`}`;
 }
 /** Thanks, then a few seconds to undo. */
-function choreTap(id) {
+const CHORE_JUST_DONE = 30 * 60; // a tap within 30 minutes of the last tick asks first, so a double tap can't count twice
+function choreTap(id, { again = false } = {}) {
   const c = chores().find((x) => x.id === id); if (!c) return;
+  const last = (c.log || [])[(c.log || []).length - 1];
+  if (!again && last && Date.now() / 1000 - last.at < CHORE_JUST_DONE) return openChoreJustDone(id);
   const key = uid() + uid();
   app.lifeFlash = id;
   send({ op: "chore_done", id, key });
   setTimeout(() => { if (app.lifeFlash === id) app.lifeFlash = null; }, 900);
   const who = firstName(app.user);
   toast(`${who ? `Thanks, ${who}` : "Thank you"}${c.emoji ? ` ${c.emoji}` : ""}`, { undo: () => send({ op: "chore_done", id, key, undo: true }) });
+}
+/** Tapped something that was only just done: done again, or take that tick back (a mis-tap, or testing). */
+function openChoreJustDone(id) {
+  const c = chores().find((x) => x.id === id), last = c && (c.log || [])[(c.log || []).length - 1]; if (!last) return;
+  openSheet(`<div class="row" style="gap:12px;margin-bottom:6px"><span class="chore-emoji" aria-hidden="true">${esc(c.emoji || "✨")}</span><div><p class="eyebrow">Life is hard</p><h2 class="title" style="font-size:24px;margin:0">${esc(c.name)}</h2></div></div>
+    <p>Done ${choreLine(last)}.</p>
+    <div class="stack" style="gap:10px">
+      <button class="btn primary" data-act="choreAgain" data-id="${esc(c.id)}">${icon("check", 16)}It's been done again</button>
+      <button class="btn" data-act="choreUntick" data-id="${esc(c.id)}" data-t="${esc(last.t || "")}">Take that back, it wasn't done</button>
+    </div>`);
+}
+/** A routine's recent ticks, newest first, each with Remove (for a tick that shouldn't be there). */
+function choreRecent(id) {
+  const c = chores().find((x) => x.id === id), log = c ? [...(c.log || [])].reverse() : [];
+  if (!log.length) return "";
+  return `<div><p class="small muted" style="margin:0 0 6px">Recently done</p><div class="list">${log.map((e) => `<div class="row" style="padding:8px 8px 8px 16px"><span class="grow small">${choreLine(e)}</span>
+    <button class="btn sm" data-act="choreUntick" data-id="${esc(id)}" data-t="${esc(e.t || "")}" data-from="edit">Remove</button></div>`).join("")}</div></div>`;
 }
 function openLifeEdit({ keepScroll = false } = {}) {
   const list = chores();
@@ -2411,6 +2431,7 @@ function openChore(draft, { keepScroll = false } = {}) {
       ${d.timing === "days" ? `<div class="chips wrap">${[1, 2, 3, 4, 5, 6, 0].map((n) => `<button class="chip ${(d.days || []).includes(n) ? "on" : ""}" data-act="choreDay" data-n="${n}">${SUN_FIRST[n]}</button>`).join("")}</div>` : ""}
       <p class="small muted" style="margin:0">${{ any: "Shows when it was last done.", daily: "Shows whether it's been done today.", ampm: "Shows the morning one and the evening one (from 3pm).", days: "Shows whether it's been done on the days you pick." }[d.timing]}</p>
       <button class="btn primary" data-act="choreSave">Save</button>
+      ${d.id ? choreRecent(d.id) : ""}
       ${d.id ? `<button class="btn" data-act="choreRemove">${app.choreRemoving ? "Tap again to remove it and its history" : `${icon("trash", 16)}Remove`}</button>` : ""}
     </div>`, { keepScroll });
   if (app.choreFromList) app.sheetBack = () => openLifeEdit(); // closing goes back to the list it came from
@@ -2424,6 +2445,13 @@ function choreDraftRead() {
 }
 Object.assign(ACTIONS, {
   choreTap: (d) => choreTap(d.id),
+  choreAgain: (d) => { closeSheet(); choreTap(d.id, { again: true }); },
+  choreUntick: (d) => {
+    if (!d.t) return;
+    send({ op: "chore_done", id: d.id, key: d.t, undo: true });
+    if (d.from === "edit") openChore(choreDraftRead(), { keepScroll: true }); else closeSheet();
+    toast("Taken back");
+  },
   lifeEdit: () => openLifeEdit(),
   choreNew: () => { app.choreRemoving = false; app.choreFromList = !$("#sheet").hidden; openChore({ name: "", emoji: "", timing: "any", days: [] }); },
   choreEdit: (d) => { const c = chores().find((x) => x.id === d.id); if (!c) return; app.choreRemoving = false; app.choreFromList = true; openChore({ ...clone(c), log: undefined }); },

@@ -359,3 +359,6 @@ Fixes from a review of the new features:
 
 ## 0.11.50
 - Life is hard: lighter sea blue (buttons use a pale teal with dark text). Adding an idea from the empty screen keeps the other ideas on screen, with Undo and a Done button, until you leave the tab.
+
+## 0.11.51
+- Life is hard: tapping a routine within 30 minutes of its last tick asks "done again" or "take that back", so a double tap can't count twice and a mistake can be undone after the Undo has gone. A routine's edit panel lists its recent ticks, each with Remove.
