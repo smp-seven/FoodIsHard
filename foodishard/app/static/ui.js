@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.63"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.64"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -988,11 +988,13 @@ function useUpCard(it) {
   if (!ideas.length && !lunches.length) return "";
   // How much is left decides which comes first: over half a pack is enough for a dinner; less suits a lunch.
   const share = it.k ? partPacks(planFor(shopWeek())).get(it.k) || 0 : 0, lots = share > 0.5;
-  const swapHead = `<b>Swap a dinner to use it</b><span class="small muted">This replaces that day's dinner and may add things to your list. You'll have ${esc(it.leftover.replace(/ left over$/, ""))} left.</span>`;
+  const swapHead = `<b>Swap a dinner to use it</b><span class="small muted">This replaces that day's dinner and may add things to your list.</span>`;
+  // how much is left, said once at the top, whichever ideas come first
+  const amount = `<div class="card row leftover-amt" style="padding:12px 16px;gap:10px"><span aria-hidden="true" style="font-size:20px">🧺</span><span class="grow"><b>${esc(capFirst(it.leftover.replace(/ left over$/, "")))} left</b><br><span class="small muted">${esc(it.name)}, after this week's dinners</span></span></div>`;
   const dinners = ideas.length ? `<div class="list">${ideas.map((x) => `<button class="rrow" data-act="useUpPick" data-id="${x.r.id}" data-item="${esc(it.key)}"><span class="grow">${esc(x.r.name)}<br><span class="small" style="color:${x.whole ? "var(--accent)" : "var(--muted)"}">${useUpCover(x)}</span></span><span class="small muted">${x.r.time} min</span></button>`).join("")}</div>` : "";
-  if (!ideas.length) return lunchIdeasCard(it, lunches);
-  if (lots || !lunches.length) return `<div class="card stack" style="padding:14px 16px;gap:8px">${swapHead}${dinners}</div>${lunchIdeasCard(it, lunches)}`;
-  return `${lunchIdeasCard(it, lunches)}<details class="card swap-more" style="padding:12px 16px"><summary class="small"><b>Or swap a dinner instead…</b></summary><div class="stack" style="gap:8px;margin-top:8px">${swapHead}${dinners}</div></details>`;
+  if (!ideas.length) return amount + lunchIdeasCard(it, lunches);
+  if (lots || !lunches.length) return `${amount}<div class="card stack" style="padding:14px 16px;gap:8px">${swapHead}${dinners}</div>${lunchIdeasCard(it, lunches)}`;
+  return `${amount}${lunchIdeasCard(it, lunches)}<details class="card swap-more" style="padding:12px 16px"><summary class="small"><b>Or swap a dinner instead…</b></summary><div class="stack" style="gap:8px;margin-top:8px">${swapHead}${dinners}</div></details>`;
 }
 /** Recipes that use up a part-pack, with how far the spare amount goes: the whole meal for your household (nothing more
     to buy) comes first, then ones it covers at least one portion of (a lunch for one, say). Ideas that would need more

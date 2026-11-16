@@ -398,3 +398,6 @@ Fixes from a review of the new features:
 
 ## 0.11.63
 - Leftover ideas: over half a pack left leads with "Swap a dinner to use it" (clearly says it replaces that day's dinner and may add to the list); less leads with quick lunches, with dinner swaps folded under "Or swap a dinner instead…".
+
+## 0.11.64
+- Leftover ideas: the amount left (and which item) is shown at the top, above lunch and dinner-swap ideas.
