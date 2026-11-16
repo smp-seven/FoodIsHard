@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.35",
+   "notes": [
+    "A few small tweaks."
+   ]
+  },
+  {
    "version": "0.11.34",
    "notes": [
     "Clearer shuffle button on the week: \"Shuffle the rest\" when some days are locked, \"Shuffle the week\" when none are."

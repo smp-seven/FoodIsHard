@@ -306,3 +306,6 @@ Fixes from a review of the new features:
 
 ## 0.11.34
 - Week: the shuffle button says "Shuffle the rest" when days are locked, otherwise "Shuffle the week".
+
+## 0.11.35
+- Tonight: the shopping card says "Shopping list" when nothing is left to buy.
