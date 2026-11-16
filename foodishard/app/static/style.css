@@ -347,12 +347,14 @@ body.gated .report-bubble { display: none; }
 .terms-changes li { font-weight: 600; }
 
 /* ---------- Life is hard: calm sea tones, its own tab ---------- */
-:root { --sea-bg: #EEF4F3; --sea: #2B7A8C; --sea-deep: #1E5866; --sea-soft: #E2F0F3; --sea-card: #F1F8FA; --sea-line: #D2E6EC; --sea-wave: #CFE6EC; --sea-wave2: #E4F1F4; }
+:root { --sea-bg: #EEF4F3; --sea: #4A9DB0; --sea-deep: #2F7D8F; --sea-btn: #9ED3DE; --sea-on: #0F3038; --sea-soft: #E2F0F3; --sea-card: #F1F8FA; --sea-line: #D2E6EC; --sea-wave: #CFE6EC; --sea-wave2: #E4F1F4; }
 @media (prefers-color-scheme: dark) {
-  :root { --sea-bg: #151C1D; --sea: #72C2D3; --sea-deep: #A5DCE7; --sea-soft: #1B2F35; --sea-card: #1E2A2E; --sea-line: #2C4249; --sea-wave: #22383F; --sea-wave2: #1C2C31; }
+  :root { --sea-bg: #151C1D; --sea-btn: #7CC6D5; --sea-on: #0D262C; --sea: #8ACFDD; --sea-deep: #A5DCE7; --sea-soft: #1B2F35; --sea-card: #1E2A2E; --sea-line: #2C4249; --sea-wave: #22383F; --sea-wave2: #1C2C31; }
 }
-body.sea { --bg: var(--sea-bg); --accent: var(--sea); --accent-dark: var(--sea-deep); --accent-soft: var(--sea-soft); }
+body.sea { --bg: var(--sea-bg); --on-accent: var(--sea-on); --accent: var(--sea); --accent-dark: var(--sea-deep); --accent-soft: var(--sea-soft); }
 body.sea .nav button.on { color: var(--sea); }
+body.sea .btn.primary { background: var(--sea-btn); border-color: var(--sea-btn); color: var(--sea-on); } /* lighter, with dark text so it stays easy to read */
+.life-ideas { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--sea-line); }
 body.life-on .nav button { font-size: 11.5px; }
 .life-top { position: relative; margin: -14px -16px 8px; padding: 14px 16px 34px; background: linear-gradient(180deg, var(--sea-soft), transparent); }
 .life-top .head { position: relative; z-index: 1; }

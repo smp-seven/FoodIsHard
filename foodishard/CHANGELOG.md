@@ -356,3 +356,6 @@ Fixes from a review of the new features:
 ## 0.11.49
 - Life is hard: an optional fifth tab for household routines (Settings → Around the house, off by default). Each routine shows when it was last done and by whom, with one tap to mark it done (and Undo). Optional timing: any time, every day, morning and evening, or certain weekdays. Starter ideas plus your own, with an emoji. Calm sea colours. No overdue warnings, points, reminders or assigning.
 - Syncs through the household in both versions (new `chore_*` changes in ops.js, mirrored in server.py). Each routine keeps only its last 6 ticks. Backups include routines. About and the privacy policy mention them.
+
+## 0.11.50
+- Life is hard: lighter sea blue (buttons use a pale teal with dark text). Adding an idea from the empty screen keeps the other ideas on screen, with Undo and a Done button, until you leave the tab.

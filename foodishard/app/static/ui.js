@@ -104,7 +104,8 @@ function go(tab) {
 function fromHash() {
   const t = (location.hash || "#tonight").slice(1), was = app.tab;
   app.tab = ["tonight", "week", "shop", "recipes", "life", "settings", "admin", "feedback"].includes(t) ? t : "tonight";
-  if (app.tab === "life" && !(app.state && lifeOn())) app.tab = "tonight"; // Life is hard is switched off
+  if (app.tab === "life" && !(app.state && lifeOn())) { app.tab = "tonight"; history.replaceState(null, "", "#tonight"); } // Life is hard is switched off
+  if (app.tab !== "life") app.lifeAdding = false; // "More ideas" shows only while you're adding
   if ((app.tab === "admin" || app.tab === "feedback") && app.host !== "Cloudflare") app.tab = "settings";
   if (app.mode === "admin" && app.tab !== "feedback") app.tab = "admin";
   if (app.tab !== "feedback") app.fbAdmin = null; // reopening shows what's new since this visit
@@ -114,7 +115,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.49"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.50"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2368,7 +2369,10 @@ function viewLife() {
   return `<div class="life-top">${header(`${DOW_LONG[(now.getDay() + 6) % 7]} · Life is hard`, "Around the house", settingsButton())}${WAVES}</div>
     ${list.length ? `<div class="chores">${cards}</div>
       <p class="small muted" style="text-align:center;margin:12px 0 0">Tap when it's done. Everyone in your household sees it.</p>
-      <div style="text-align:center;margin-top:14px"><button class="btn sm" data-act="lifeEdit">${icon("plus", 16)}Add or change</button></div>`
+      ${app.lifeAdding && starters.length ? `<div class="life-ideas"><p class="section-label" style="margin-top:0">More ideas</p>
+        <div class="chips wrap">${starters.map((s) => `<button class="chip" data-act="choreStarter" data-name="${esc(s.name)}">${s.emoji} ${esc(s.name)}</button>`).join("")}</div>
+        <div class="row" style="justify-content:center;gap:8px;margin-top:14px"><button class="btn sm" data-act="choreNew">${icon("plus", 16)}Add your own</button><button class="btn sm" data-act="lifeIdeasDone">Done</button></div></div>`
+      : `<div style="text-align:center;margin-top:14px"><button class="btn sm" data-act="lifeEdit">${icon("plus", 16)}Add or change</button></div>`}`
     : `<div class="empty life-empty"><p class="h2">What needs doing around the house?</p><p>Tap any to add them, or add your own.</p>
       <div class="chips wrap" style="justify-content:center;margin:14px 0">${starters.map((s) => `<button class="chip" data-act="choreStarter" data-name="${esc(s.name)}">${s.emoji} ${esc(s.name)}</button>`).join("")}</div>
       <button class="btn" data-act="choreNew">${icon("plus", 16)}Add your own</button></div>`}`;
@@ -2426,9 +2430,13 @@ Object.assign(ACTIONS, {
   choreStarter: (d) => {
     const s = CHORE_STARTERS.find((x) => x.name === d.name); if (!s) return;
     if (s.timing === "days") { app.choreRemoving = false; app.choreFromList = !!d.sheet; openChore({ ...s, days: [] }); return; } // bins: which days?
-    send({ op: "chore_add", item: { id: uid(), ...s } });
+    const id = uid();
+    if (!d.sheet) app.lifeAdding = true; // keep the other ideas on screen while you're adding
+    send({ op: "chore_add", item: { id, ...s } });
     if (d.sheet) openLifeEdit({ keepScroll: true });
+    toast(`${s.name} added`, { undo: () => { send({ op: "chore_remove", id }); if (d.sheet && !$("#sheet").hidden) openLifeEdit({ keepScroll: true }); } });
   },
+  lifeIdeasDone: () => { app.lifeAdding = false; render(); },
   choreEmoji: (d) => { const x = choreDraftRead(); if (x) { x.emoji = d.e; openChore(x, { keepScroll: true }); } },
   choreTiming: (d) => { const x = choreDraftRead(); if (x) { x.timing = d.t; openChore(x, { keepScroll: true }); } },
   choreDay: (d) => { const x = choreDraftRead(); if (!x) return; const n = +d.n, days = new Set(x.days || []); days.has(n) ? days.delete(n) : days.add(n); x.days = [...days]; openChore(x, { keepScroll: true }); },
