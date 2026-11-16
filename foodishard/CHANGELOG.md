@@ -389,3 +389,9 @@ Fixes from a review of the new features:
 
 ## 0.11.60
 - Quick leftover lunches (grown-ups): templates in data/lunches.json filled from the week's real leftovers; "As a quick lunch" on leftover items; pick a day (within 3 days) and 1 or 2 people; optional cheap basics (wraps, pittas, bread) added to the list; lunch line under the day's dinner and on Tonight; leftovers used by a lunch stop showing as spare. Checked by the recipe checker and on both servers.
+
+## 0.11.61
+- Cooking mode: "most of the" shows about three-quarters of the amount, and a later "the rest/last/remaining" shows the remaining quarter (half after "half the"). Fixes the full amount showing twice (e.g. the cheese in the gnocchi).
+
+## 0.11.62
+- Test version: quick lunches plus the 0.11.61 fix.

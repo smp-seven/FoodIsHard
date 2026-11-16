@@ -606,13 +606,19 @@ function stepIngredients(text, ings, before = "") {
       if (!clash) taken.push([a, b, t]);
       if (!found.includes(idx)) found.push(idx);
       const lead = low.slice(Math.max(0, a - 20), a);
+      const said = (word) => termsOf[idx].some((t2) => new RegExp(`\\b${word}the ${t2}`).test(earlier));
       if (/\bhalf (?:of )?the $/.test(lead)) share[idx] = "half"; // "half the oil"
-      else if (/\brest of the $/.test(lead) && !share[idx]) // the rest is half only if an earlier step used half; otherwise it's most of it
-        share[idx] = termsOf[idx].some((t2) => new RegExp(`\\bhalf (?:of )?the ${t2}`).test(earlier)) ? "half" : "the rest";
+      else if (/\bmost of the $/.test(lead) && !share[idx]) share[idx] = "most"; // "most of the cheese": about three-quarters
+      else if (/\b(?:rest|last) of the $|\bremaining $/.test(lead) && !share[idx]) // the rest: half after "half the", a quarter after "most of the"
+        share[idx] = said("half (?:of )?") ? "half" : said("most of ") ? "rest-of-most" : "the rest";
     }
   }
-  return found.sort((a, b) => a - b).map((idx) => (share[idx] === "half" ? { ...ings[idx], q: ings[idx].q == null ? null : ings[idx].q * 0.5, part: "half" }
-    : share[idx] ? { ...ings[idx], part: share[idx] } : ings[idx]));
+  const PARTS = { half: [0.5, "half"], most: [0.75, "most"], "rest-of-most": [0.25, "the rest"] };
+  return found.sort((a, b) => a - b).map((idx) => {
+    const p = PARTS[share[idx]];
+    if (p) return { ...ings[idx], q: ings[idx].q == null ? null : ings[idx].q * p[0], part: p[1] };
+    return share[idx] ? { ...ings[idx], part: share[idx] } : ings[idx];
+  });
 }
 function scaleStep(text, factor) { return text.replace(/\{\{(\d+(?:\.\d+)?)\|(\w+)\}\}/g, (_, n, u) => fmtQty(+n * factor, u)); }
 /** Shopping notes that mention "the baby": named for your children, or dropped if you have none. */
