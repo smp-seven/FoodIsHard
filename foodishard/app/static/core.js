@@ -145,6 +145,12 @@ async function flushQueue() {
       if (!queue.length) break;
       const r = await appFetch("api/op", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(queue[0]) });
       if (r.status === 403 && app.host === "Cloudflare") throw new SignedOutError("not in a household"); // keep the queue
+      if (r.status === 428) { // the terms of use need agreeing first: show the screen and keep the queue for afterwards
+        let need = null; try { need = (await r.json()).termsNeeded; } catch { /* not json */ }
+        app.termsNeeded = need || app.termsNeeded || null;
+        if (typeof termsGate === "function") termsGate();
+        throw new SignedOutError("terms");
+      }
       if (r.status >= 400 && r.status < 500) {
         // Rejected (e.g. this phone is running an old copy of the app): say so rather than quietly undo it.
         const why = await r.text(); console.warn("op rejected", queue[0], why);
@@ -184,6 +190,7 @@ function startPolling() {
       if (res.poll && res.poll * 1000 !== app.pollMs) { app.pollMs = res.poll * 1000; startPolling(); return; }
       if (res.state && !sending) {
         app.state = res.state; store(CACHE_KEY, app.state);
+        if ("termsNeeded" in res && typeof termsUpdate === "function") termsUpdate(res.termsNeeded); // agreed on another phone, or asked again
         const typing = document.activeElement && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
         if (!typing && !app.selecting.size) render();
       }

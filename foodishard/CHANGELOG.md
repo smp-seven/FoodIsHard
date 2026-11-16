@@ -340,3 +340,9 @@ Fixes from a review of the new features:
 
 ## 0.11.45
 - Terms of use: only new joiners are asked during the beta. Admin can ask everyone to agree to updated terms, with a list of what's changed shown on the agreement screen. Who needs to agree is decided by the server, so no app release is needed when the terms change.
+
+## 0.11.46
+- Terms: the server enforces agreement for data changes and restores; offline reloads still show the screen; the app behind it is unreachable; agreeing on one phone clears the screen on others; every agreement is kept as a record; members no longer receive each other's agreement dates.
+- Allergies: consent asked before the first is stored, and once for households that already had allergies ticked; recorded with the household.
+- Ratings: admin sees the day only, and the rating log no longer notes the household.
+- Little ones: exact birth dates are trimmed by the server too (ops, loading, restores; Home Assistant mirrored).

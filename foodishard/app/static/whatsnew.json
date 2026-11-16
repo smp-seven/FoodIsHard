@@ -2,6 +2,13 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.46",
+   "notes": [
+    "Allergies are health information, so we now ask before storing them. If your household already has some ticked, you'll be asked once whether to keep them.",
+    "More privacy for recipe ratings, and other fixes."
+   ]
+  },
+  {
    "version": "0.11.45",
    "notes": [
     "Small admin improvement."

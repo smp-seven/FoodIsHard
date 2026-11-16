@@ -18,7 +18,7 @@ async function boot() {
     if (res.adminOnly) return bootAdmin(res);
     if (!res.state) throw new Error("no state");
     app.mode = "live"; app.state = res.state; app.termsNeeded = res.termsNeeded || null; app.user = res.user || ""; app.host = res.host || "Home Assistant"; app.region = res.region || null; app.pollMs = (res.poll || 4) * 1000;
-    store(CACHE_KEY, app.state); store(HOST_KEY, { host: app.host, user: app.user, poll: app.pollMs });
+    store(CACHE_KEY, app.state); store(HOST_KEY, { host: app.host, user: app.user, poll: app.pollMs, termsNeeded: app.termsNeeded });
   } catch (err) {
     const cached = load(CACHE_KEY, null), seenHost = load(HOST_KEY, {});
     if (!cached && seenHost.adminOnly) {
@@ -30,7 +30,7 @@ async function boot() {
       // opened with no signal (or an expired sign-in): use this phone's copy
       const seen = load(HOST_KEY, {});
       app.mode = "live"; app.state = cached; app.offline = !(err instanceof SignedOutError);
-      app.host = seen.host || "Home Assistant"; app.user = seen.user || ""; app.pollMs = seen.poll || 4000;
+      app.host = seen.host || "Home Assistant"; app.user = seen.user || ""; app.pollMs = seen.poll || 4000; app.termsNeeded = seen.termsNeeded || null; // offline: still ask
     } else {
       app.mode = "demo";
       app.state = load(DEMO_KEY, null) || { ...clone(defaults), rev: 0 };
@@ -56,6 +56,7 @@ async function boot() {
   fromHash();
   backGuard();
   termsGate();
+  allergyConsentCheck();
   nightOwl();
   // Older versions kept little ones' exact birth and due dates: trim them to month and year, plus weeks early (once)
   if ((app.mode === "live" || app.mode === "demo") && kidsNeedTrimming()) send({ op: "settings", patch: { children: kidsAll(), ...(settings().baby ? { baby: null } : {}) } }, { rerender: false });
@@ -112,7 +113,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.45"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.46"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -628,7 +629,7 @@ function viewSettings() {
     <div class="list">
       <div class="stack ${nudges().includes("allergies") ? "nudge-field" : ""}" style="padding:14px 16px;gap:8px"><b>Allergies: never include</b>
         <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
-        <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.${app.host === "Cloudflare" ? ` By ticking allergies, you agree to them being stored with your household so the planner can avoid them. Untick them at any time to remove them.` : ""}</span>
+        <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.${app.host === "Cloudflare" ? ` They're stored with your household so the planner can avoid them. Untick any time to remove them.` : ""}</span>
         ${nudges().includes("allergies") ? `<button class="btn sm" style="align-self:flex-start" data-act="allergyDone">No allergies in our household</button>` : ""}</div>
       <div class="stack" style="padding:14px 16px;gap:8px"><b>Dislikes</b><input class="input" value="${esc(s.dislikes || "")}" placeholder="e.g. mushroom, feta" data-set="text" data-f="dislikes"></div>
       <div class="stack" style="padding:14px 16px 8px;gap:4px"><b>Theme nights</b></div>
@@ -771,15 +772,46 @@ function termsGate() {
     <button class="btn lg primary block" id="termsGo" data-act="termsAccept" disabled>Continue</button>
   </div></div>`);
   document.body.classList.add("gated");
+  [...document.body.children].forEach((el) => { if (el.id !== "termsGate" && !el.classList.contains("toast")) el.inert = true; }); // nothing behind it can be reached
+}
+function termsUngate() {
+  const g = $("#termsGate"); if (g) g.remove();
+  document.body.classList.remove("gated");
+  [...document.body.children].forEach((el) => { el.inert = false; });
+}
+/** The server's latest word on the terms (from a sync): close the screen if agreed elsewhere, or show it if asked again. */
+function termsUpdate(need) {
+  app.termsNeeded = need || null;
+  store(HOST_KEY, { ...load(HOST_KEY, {}), termsNeeded: app.termsNeeded });
+  if (!app.termsNeeded) termsUngate(); else termsGate();
 }
 async function acceptTerms() {
   if (!$("#termsTick") || !$("#termsTick").checked) return;
   const btn = $("#termsGo"); btn.disabled = true;
   try {
     const res = await accountCall("api/terms/accept", { version: app.termsNeeded.version });
-    app.termsNeeded = res.termsNeeded || null;
-    $("#termsGate").remove(); document.body.classList.remove("gated");
+    termsUpdate(res.termsNeeded);
+    flushQueue(); // anything changed before agreeing (e.g. offline) can go now
+    allergyConsentCheck();
   } catch (e) { btn.disabled = false; toast(/changed/.test(e.message) ? e.message : "Couldn't save that. Check your connection and try again."); }
+}
+/* Allergies are health information (UK GDPR "special category"), so the online version asks before storing them: once
+   per household, the first time one is ticked. Households that ticked allergies before this existed are asked once too. */
+function needsAllergyConsent() { return app.host === "Cloudflare" && app.mode === "live" && !settings().allergyConsent; }
+const ALLERGY_CONSENT_TEXT = `Allergies are health information. To hide recipes that contain them, FoodIsHard stores the allergies you tick with your household, so everyone in it can see them. Only tick allergies for the people you cook for, with their agreement. You can untick them at any time.`;
+function openAllergyConsent(k) {
+  openSheet(`<p class="eyebrow">Allergies</p><h1 class="title" style="font-size:26px">Store this allergy?</h1>
+    <p>${ALLERGY_CONSENT_TEXT}</p>
+    <div class="stack" style="margin-top:12px"><button class="btn lg primary" data-act="allergyAgree" data-k="${esc(k)}">Yes, store it</button><button class="btn" data-close>Cancel</button></div>`);
+}
+function allergyConsentCheck() {
+  if (!needsAllergyConsent() || !(settings().avoid || []).length || app.termsNeeded || app.allergyAsked) return;
+  app.allergyAsked = true; // once per visit; it's recorded as soon as they choose
+  const names = (settings().avoid || []).map((k) => app.ing.allergens[k] || k);
+  openSheet(`<p class="eyebrow">Allergies</p><h1 class="title" style="font-size:26px">Keep your allergy settings?</h1>
+    <p>Your household has these allergies ticked: <b>${esc(joinNames(names))}</b>.</p>
+    <p>${ALLERGY_CONSENT_TEXT}</p>
+    <div class="stack" style="margin-top:12px"><button class="btn lg primary" data-act="allergyAgree">Keep them</button><button class="btn" data-act="allergyClear">Remove them</button></div>`);
 }
 /** Opened between 1am and 4am (night feeds): a quiet nod, once a night. */
 function nightOwl() {
@@ -1503,7 +1535,17 @@ const ACTIONS = {
   addPerson: () => openAddPerson(),
   removePerson: (d) => { const people = clone(settings().people); if (people.length <= 1 || !window.confirm(`Remove ${people[+d.i].name}? Portions and the shopping list will be for one fewer.`)) return; people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); closeSheet(); },
   allergyDone: () => { send({ op: "settings", patch: { allergyAsked: true } }); toast(avoidList().length ? "Saved. Recipes with those are hidden" : "Saved: no allergies"); },
-  avoid: (d) => { const a = new Set(settings().avoid || []); a.has(d.k) ? a.delete(d.k) : a.add(d.k); send({ op: "settings", patch: { avoid: [...a] } }); },
+  avoid: (d) => {
+    const a = new Set(settings().avoid || []), adding = !a.has(d.k);
+    if (adding && needsAllergyConsent()) return openAllergyConsent(d.k); // first allergy: ask before storing it
+    adding ? a.add(d.k) : a.delete(d.k); send({ op: "settings", patch: { avoid: [...a] } });
+  },
+  allergyAgree: (d) => {
+    const a = new Set(settings().avoid || []); if (d.k) a.add(d.k);
+    send({ op: "settings", patch: { avoid: [...a], allergyConsent: { at: Math.floor(Date.now() / 1000), by: app.user || "" } } });
+    closeSheet({ navigating: true }); toast(d.k ? "Saved. Recipes with that are hidden" : "Thanks. Your allergy settings are kept");
+  },
+  allergyClear: () => { send({ op: "settings", patch: { avoid: [], allergyAsked: true } }); closeSheet({ navigating: true }); toast("Allergy settings removed"); },
   shopToggle: (d) => {
     const on = new Set(settings().shops || SHOP_ORDER); on.has(d.k) ? on.delete(d.k) : on.add(d.k);
     if (!on.size) return toast("Keep at least one shop");
@@ -2066,7 +2108,7 @@ function fbOfKind() { const p = app.fbKind === "problems"; return ((app.fbAdmin 
 function fbFiltered() {
   const fb = app.fbAdmin, f = app.fbFilter || "all";
   return fbOfKind().filter((i) => f === "all"
-    || (f === "new" && i.at > fb.prevSeen)
+    || (f === "new" && fbIsNew(i, fb))
     || (f === "notes" && (i.note || i.tags.length))
     || (f === "never" && i.rating === "never")
     || (f === "kids" && i.tags.some((t) => t.startsWith("Little ones"))));
@@ -2079,12 +2121,12 @@ function viewAdminFeedback() {
   if (fb.error) return `${head}<div class="list"><div class="row" style="padding:16px"><span class="grow muted">Couldn't load: ${esc(fb.error)}</span><button class="btn sm" data-act="fbReload">Retry</button></div></div>`;
   const all = fbOfKind(), items = problems ? all : fbFiltered(), f = app.fbFilter || "all", g = problems ? "latest" : app.fbGroup || "latest";
   const homes = fb.households || 0, recipesRated = new Set(all.map((i) => i.recipe)).size;
-  const fresh = all.filter((i) => i.at > fb.prevSeen).length;
+  const fresh = all.filter((i) => fbIsNew(i, fb)).length;
   const count = (fn) => all.filter(fn).length;
   const chip = (id, label, n) => `<button class="chip ${f === id ? "on" : ""}" data-act="fbFilter" data-f="${id}">${label}${n != null ? ` (${n})` : ""}</button>`;
   const entry = (i, showRecipe) => `<div class="row" style="padding:11px 16px;align-items:flex-start" data-text="${esc(`${i.recipeName} ${i.household} ${i.by} ${i.note} ${i.tags.join(" ")}`.toLowerCase())}">
-      <span class="grow">${showRecipe ? `<b>${esc(i.recipeName)}</b> ` : ""}<span class="pill ${RATING_PILL[i.rating] || ""}">${esc(RATING_LABEL[i.rating] || i.rating)}</span>${i.at > fb.prevSeen ? ` <span class="pill warn">New</span>` : ""}<br>
-      <span class="small muted">${[i.household, i.by].filter(Boolean).map(esc).join(" · ")}${i.household || i.by ? " · " : ""}${i.at ? `${shortDate(i.at)} (${ago(i.at)})` : "date unknown"}</span>
+      <span class="grow">${showRecipe ? `<b>${esc(i.recipeName)}</b> ` : ""}<span class="pill ${RATING_PILL[i.rating] || ""}">${esc(RATING_LABEL[i.rating] || i.rating)}</span>${fbIsNew(i, fb) ? ` <span class="pill warn">New</span>` : ""}<br>
+      <span class="small muted">${[i.household, i.by].filter(Boolean).map(esc).join(" · ")}${i.household || i.by ? " · " : ""}${i.at ? (i.recipe === "_problem" ? `${shortDate(i.at)} (${ago(i.at)})` : shortDate(i.at)) : "date unknown"}</span>
       ${i.tags.length ? `<br><span class="small">${i.tags.map(esc).join(" · ")}</span>` : ""}
       ${i.note ? `<br><span style="font-style:italic">“${esc(i.note)}”</span>` : ""}</span>
       ${i.ref ? `<button class="icon-btn sm" data-act="problemDelete" data-ref="${esc(i.ref)}" aria-label="Delete this report">${icon("trash", 16)}</button>` : ""}</div>`;
@@ -2119,6 +2161,9 @@ function viewAdminFeedback() {
     <div class="empty" data-none hidden>Nothing matches that.</div>`;
 }
 /** Everyone's feedback as plain text for Claude, grouped by recipe, without names. */
+/** "New since you last looked". Ratings only carry the day they were left (anonymity), so a rating counts as new if its
+    day hasn't fully passed before your last look. */
+function fbIsNew(i, fb) { return i.recipe === "_problem" ? i.at > fb.prevSeen : i.at + 86400 > fb.prevSeen; }
 /** Problem reports as plain text to paste to Claude: newest first, no names. */
 function problemsText() {
   const list = fbOfKind();

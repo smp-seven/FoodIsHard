@@ -28,7 +28,7 @@ import { Directory } from "./directory.js";
 
 export { Directory };
 
-const { applyOp } = globalThis.FoodIsHardOps;
+const { applyOp, trimChildren } = globalThis.FoodIsHardOps;
 const RECIPE_NAMES = { ...Object.fromEntries(recipes.recipes.map((r) => [r.id, r.name])), _problem: "Problem report" };
 const DATA = { "recipes.json": recipes, "ingredients.json": ingredients, "defaults.json": defaults };
 const POLL_SECONDS = 8; // how often open phones check for changes (keeps well inside the free tier)
@@ -143,13 +143,16 @@ async function api(request, env, who, url) {
     const res = await dir.acceptTerms(who.email, String(version));
     return json(res, res.error ? 409 : 200);
   }
+  // Changing household data needs the current terms agreed (the app shows the agreement screen when it gets a 428)
+  const termsBlock = async () => { const need = await dir.termsNeeded(who.email); return need ? json({ error: "Please agree to the terms of use first", termsNeeded: need }, 428) : null; };
   if (path === "/api/op" && post) {
+    const blocked = await termsBlock(); if (blocked) return blocked;
     const op = await readBody(request);
     const res = await household(env, who.household).op(op, who.name);
     if (op && op.op === "feedback") await dir.noteFeedback(who.household, op.recipe === "_problem" ? "problem" : "recipe");
     return json({ ...res, user: who.name });
   }
-  if (path === "/api/import" && post) return json({ ...(await household(env, who.household).importState(await readBody(request))), user: who.name });
+  if (path === "/api/import" && post) return (await termsBlock()) || json({ ...(await household(env, who.household).importState(await readBody(request))), user: who.name });
 
   // ---- a message from the admin, shown once ----
   if (path === "/api/notice" && !post) return json({ notice: await dir.noticeFor(who.email), reportBubble: await dir.reportBubble() });
@@ -211,7 +214,7 @@ async function api(request, env, who, url) {
             const problem = recipe === "_problem";
             if (!problem) rated.add(h.id);
             items.push({ household: problem ? h.name : "", recipe, recipeName: RECIPE_NAMES[recipe] || recipe, rating: String(f.rating || ""),
-              tags: Array.isArray(f.tags) ? f.tags.map(String) : [], note: String(f.note || ""), at: Number(f.at) || 0, by: problem ? String(f.by || "") : "",
+              tags: Array.isArray(f.tags) ? f.tags.map(String) : [], note: String(f.note || ""), at: problem ? Number(f.at) || 0 : Math.floor((Number(f.at) || 0) / 86400) * 86400, by: problem ? String(f.by || "") : "", // ratings: the day only
               ...(problem ? { ref: `${h.id}:${Number(f.at) || 0}` } : {}) });
           }
         }
@@ -354,7 +357,10 @@ export default {
 /** One household's data. Cloudflare runs one copy of this per household, one request at a time. */
 export class Household extends DurableObject {
   async load() {
-    if (!this.state) this.state = withDefaults(await this.ctx.storage.get("state"), { ...defaults, rev: 0 });
+    if (!this.state) {
+      this.state = withDefaults(await this.ctx.storage.get("state"), { ...defaults, rev: 0 });
+      if (this.state.settings) trimChildren(this.state.settings); // older data with exact birth dates: trimmed when loaded (saved on the next change)
+    }
     return this.state;
   }
   async save() {
@@ -384,6 +390,7 @@ export class Household extends DurableObject {
     const current = await this.load();
     const state = withDefaults(structuredClone(incoming), { ...defaults, rev: 0 });
     state.rev = Math.max(current.rev || 0, state.rev || 0) + 1; // phones always see it as new
+    if (state.settings) trimChildren(state.settings); // a backup from before 0.11.43 may hold exact birth dates
     this.state = state;
     await this.save();
     return { state };

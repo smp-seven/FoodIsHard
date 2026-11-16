@@ -42,11 +42,15 @@ export class Directory extends DurableObject {
     if (!cols.includes("terms_at")) this.sql.exec("ALTER TABLE members ADD COLUMN terms_at INTEGER");
     // beta: people who joined before agreements started aren't asked until the admin asks everyone
     if (!this.meta("termsFrom")) this.setMeta("termsFrom", String(this.now()));
+    // added in 0.11.46: every agreement kept (not just the latest), as a record of who agreed to what and when
+    this.sql.exec("CREATE TABLE IF NOT EXISTS terms_log (email TEXT NOT NULL, version TEXT NOT NULL, at INTEGER NOT NULL)");
     // added in 0.9.5: when each recipe rating was left (no contents), so the admin dashboard can
     // say "3 new" without opening every household. The ratings themselves stay in each household.
     this.sql.exec("CREATE TABLE IF NOT EXISTS feedback_log (at INTEGER NOT NULL, household TEXT NOT NULL)");
     // added in 0.11.17: recipe ratings and problem reports are counted separately
     if (!this.sql.exec("PRAGMA table_info(feedback_log)").toArray().some((c) => c.name === "kind")) this.sql.exec("ALTER TABLE feedback_log ADD COLUMN kind TEXT");
+    // recipe ratings are anonymous: the log only notes that one was left, not which household left it
+    this.sql.exec("UPDATE feedback_log SET household = '' WHERE (kind IS NULL OR kind <> 'problem') AND household <> ''");
   }
 
   // ---- small helpers -------------------------------------------------------
@@ -71,7 +75,9 @@ export class Directory extends DurableObject {
   }
   acceptTerms(email, version) {
     if (version !== this.termsCurrent()) return { error: "The terms have changed since this page opened. Please reload." };
-    this.sql.exec("UPDATE members SET terms_version = ?, terms_at = ? WHERE email = ?", version, this.now(), email);
+    const at = this.now();
+    this.sql.exec("UPDATE members SET terms_version = ?, terms_at = ? WHERE email = ?", version, at, email);
+    this.sql.exec("INSERT INTO terms_log (email, version, at) VALUES (?, ?, ?)", email, version, at);
     return { termsNeeded: this.termsNeeded(email) };
   }
   askTerms(changes) {
@@ -125,7 +131,9 @@ export class Directory extends DurableObject {
   account(email) {
     const me = this.member(email);
     if (!me) throw new UserError("You're not in a household");
-    return { me, household: { id: me.household, name: me.householdName, members: this.householdMembers(me.household) }, people: this.peopleCount(), limits: LIMITS };
+    // household members see each other's name, email and when they last used the app; agreement dates are for the admin only
+    const members = this.householdMembers(me.household).map(({ termsVersion, termsAt, ...m }) => m);
+    return { me, household: { id: me.household, name: me.householdName, members }, people: this.peopleCount(), limits: LIMITS };
   }
 
   invite(byEmail, { email, name }) {
@@ -263,13 +271,16 @@ export class Directory extends DurableObject {
   // ---- recipe feedback ------------------------------------------------------
   noteFeedback(household, kind = "recipe") {
     const now = this.now();
-    this.sql.exec("INSERT INTO feedback_log (at, household, kind) VALUES (?, ?, ?)", now, household, kind === "problem" ? "problem" : "recipe");
+    const problem = kind === "problem"; // ratings are anonymous, so their log entry has no household
+    this.sql.exec("INSERT INTO feedback_log (at, household, kind) VALUES (?, ?, ?)", now, problem ? household : "", problem ? "problem" : "recipe");
     this.sql.exec("DELETE FROM feedback_log WHERE at < ?", now - 400 * 86400);
   }
   /** How many ratings have arrived since this admin last opened the Feedback screen. */
   feedbackNew(email) {
     const seen = Number(this.meta(`feedbackSeen:${email}`) || 0), problemsSeen = Number(this.meta(`problemsSeen:${email}`) || 0);
-    const count = (since, problem) => this.row(`SELECT COUNT(*) AS n FROM feedback_log f JOIN households h ON h.id = f.household WHERE f.at > ? AND ${problem ? "f.kind = 'problem'" : "(f.kind IS NULL OR f.kind <> 'problem')"}`, since).n;
+    const count = (since, problem) => (problem
+      ? this.row("SELECT COUNT(*) AS n FROM feedback_log f JOIN households h ON h.id = f.household WHERE f.at > ? AND f.kind = 'problem'", since)
+      : this.row("SELECT COUNT(*) AS n FROM feedback_log WHERE at > ? AND (kind IS NULL OR kind <> 'problem')", since)).n;
     return { new: count(seen, false), seen, problems: count(problemsSeen, true), problemsSeen };
   }
   markFeedbackSeen(email, kind) { this.setMeta(`${kind === "problems" ? "problemsSeen" : "feedbackSeen"}:${email}`, String(this.now())); return this.feedbackNew(email); }

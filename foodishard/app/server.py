@@ -75,6 +75,30 @@ def _load_merge(state):
     return state
 
 
+def trim_children(settings):
+    """Little ones keep month and year of birth plus weeks early, never exact dates (mirrors trimChildren in ops.js)."""
+    import datetime as _dt
+    def fix(c):
+        if not isinstance(c, dict):
+            return c
+        born, due = str(c.get("born") or ""), c.get("due")
+        if not (re.match(r"^\d{4}-\d{2}-\d{2}", born) or due):
+            return c
+        early = c.get("early")
+        if early in (None, "") and due and re.match(r"^\d{4}-\d{2}-\d{2}$", born):
+            try:
+                early = round((_dt.date.fromisoformat(str(due)[:10]) - _dt.date.fromisoformat(born)).days / 7)
+            except ValueError:
+                early = 0
+        out = {k: v for k, v in c.items() if k != "due"}
+        out["born"] = born[:7]
+        out["early"] = max(0, min(20, int(round(float(early or 0)))))
+        return out
+    if isinstance(settings.get("children"), list):
+        settings["children"] = [fix(c) for c in settings["children"]]
+    return settings
+
+
 KEEP_WEEKS = {"lists": 8, "plans": 52}  # same as KEEP_WEEKS in cloudflare/src/logic.js
 
 
@@ -174,6 +198,7 @@ def apply_op(state, op, user):
         patch = op.get("patch") or {}
         for key, value in patch.items():
             state["settings"][key] = value
+        trim_children(state["settings"])  # same as trimChildren in ops.js
 
     elif kind == "plan":
         state["plans"][op["week"]] = op["plan"]

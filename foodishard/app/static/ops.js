@@ -29,7 +29,7 @@ function applyOp(state, op, user) {
   const now = Math.floor(Date.now() / 1000);
   const bag = (k) => state[k] || (state[k] = {});
   switch (op.op) {
-    case "settings": Object.assign(state.settings, op.patch || {}); break;
+    case "settings": Object.assign(state.settings, op.patch || {}); trimChildren(state.settings); break;
     case "plan": state.plans[op.week] = op.plan; break;
     case "day": {
       const plan = state.plans[op.week] || (state.plans[op.week] = { days: [null, null, null, null, null, null, null] });
@@ -79,4 +79,25 @@ function applyOp(state, op, user) {
   return state;
 }
 
-globalThis.FoodIsHardOps = { applyOp };
+/* Privacy: little ones are kept with month and year of birth plus weeks early, never exact birth or due dates, however
+   the data arrives (an older app, a restored backup). Weeks early is worked out from the old dates when they're there. */
+function trimChildren(settings) {
+  const day = /^\d{4}-\d{2}-\d{2}/;
+  const fix = (c) => {
+    if (!c || typeof c !== "object" || !(day.test(c.born || "") || c.due)) return c;
+    let early = Number.isFinite(+c.early) && c.early !== "" && c.early != null ? +c.early : 0;
+    if (!(c.early != null && c.early !== "") && c.due && day.test(c.born || "")) early = Math.round((Date.parse(c.due) - Date.parse(c.born)) / 6048e5) || 0;
+    const out = { ...c, born: String(c.born || "").slice(0, 7), early: Math.max(0, Math.min(20, Math.round(early))) };
+    delete out.due;
+    return out;
+  };
+  if (Array.isArray(settings.children)) settings.children = settings.children.map(fix);
+  if (settings.baby && (settings.baby.born || settings.baby.due)) {
+    if (!Array.isArray(settings.children) || !settings.children.length) settings.children = [fix({ id: "c1", name: settings.baby.name || "", born: settings.baby.born || "", due: settings.baby.due || "", stage: settings.baby.stage || "smooth", portion: settings.baby.portion ?? 0.25, dismissed: settings.baby.dismissed || [] })];
+    if (settings.childrenOn == null) settings.childrenOn = !!settings.baby.include;
+    settings.baby = null;
+  }
+  return settings;
+}
+
+globalThis.FoodIsHardOps = { applyOp, trimChildren };
