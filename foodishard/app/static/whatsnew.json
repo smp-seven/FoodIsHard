@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.61",
+   "notes": [
+    "Fixed: in cooking mode, \"most of the cheese\" and \"the last of the cheese\" now show the right amounts, not the full amount twice."
+   ]
+  },
+  {
    "version": "0.11.59",
    "notes": [
     "A few small tweaks."

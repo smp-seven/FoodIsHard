@@ -386,3 +386,6 @@ Fixes from a review of the new features:
 
 ## 0.11.59
 - A separate test version (staging): its own Worker and data, its own sign-in rule, deployed from the staging branch, with an orange "Test version" bar. Setup steps in CLOUDFLARE.md.
+
+## 0.11.61
+- Cooking mode: "most of the" shows about three-quarters of the amount, and a later "the rest/last/remaining" shows the remaining quarter (half after "half the"). Fixes the full amount showing twice (e.g. the cheese in the gnocchi).
