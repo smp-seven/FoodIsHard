@@ -395,3 +395,6 @@ Fixes from a review of the new features:
 
 ## 0.11.62
 - Test version: quick lunches plus the 0.11.61 fix.
+
+## 0.11.63
+- Leftover ideas: over half a pack left leads with "Swap a dinner to use it" (clearly says it replaces that day's dinner and may add to the list); less leads with quick lunches, with dinner swaps folded under "Or swap a dinner instead…".
