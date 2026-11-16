@@ -108,7 +108,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.33"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.34"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -420,7 +420,7 @@ function viewWeek() {
       <button class="icon-btn" data-act="week" data-d="-1" aria-label="Previous week">${icon("left", 18)}</button>
       <button class="icon-btn" data-act="week" data-d="1" aria-label="Next week">${icon("right", 18)}</button>${settingsButton()}</div>`)}
     <div class="row" style="margin:0 4px 12px">
-      <button class="btn primary" style="white-space:nowrap" data-act="shuffle">${any ? (app.undoShuffle && app.undoShuffle.week === week ? "Shuffle again" : "Shuffle unlocked") : "Plan my week"}</button>
+      <button class="btn primary" style="white-space:nowrap" data-act="shuffle">${any ? (app.undoShuffle && app.undoShuffle.week === week ? "Shuffle again" : days.some((d) => d.locked) ? "Shuffle the rest" : "Shuffle the week") : "Plan my week"}</button>
       ${app.undoShuffle && app.undoShuffle.week === week ? `<button class="btn" style="white-space:nowrap" data-act="undoShuffle" aria-label="Undo shuffle">${icon("refresh", 16)}Undo</button>` : ""}
       ${any ? `<span class="small muted">≈ ${money(cost)} of food${settings().budget ? " · budget swaps on" : ""}</span>` : ""}
     </div>

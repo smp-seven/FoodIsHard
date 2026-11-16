@@ -303,3 +303,6 @@ Fixes from a review of the new features:
 
 ## 0.11.33
 - Settings: "Weeknight/Weekend cooking time", with options shown as "Up to N minutes".
+
+## 0.11.34
+- Week: the shuffle button says "Shuffle the rest" when days are locked, otherwise "Shuffle the week".
