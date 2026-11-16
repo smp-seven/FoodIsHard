@@ -34,7 +34,7 @@ function checkOp(op) {
     if (c.timing != null && !CHORE_TIMINGS.includes(c.timing)) bad();
     if (c.days != null && (!Array.isArray(c.days) || c.days.length > 7 || c.days.some((d) => !(Number.isInteger(d) && d >= 0 && d < 7)))) bad();
   }
-  if (op.op === "chore_done" && (typeof op.key !== "string" || long(op.key, 40))) bad();
+  if (op.op === "chore_done" && (typeof op.key !== "string" || long(op.key, 40) || (op.slot != null && !["am", "pm"].includes(op.slot)))) bad();
   if (op.op === "chore_move" && op.d !== 1 && op.d !== -1) bad();
   if (op.op === "feedback" && (op.tags != null && (!Array.isArray(op.tags) || op.tags.length > 12 || op.tags.some((t) => long(t, 40))))) bad();
 }
@@ -106,7 +106,7 @@ function applyOp(state, op, user) {
       const c = (state.chores || []).find((x) => x.id === op.id);
       if (!c) break;
       c.log = (c.log || []).filter((e) => e.t !== op.key);
-      if (!op.undo) c.log.push({ at: now, by: user, t: op.key });
+      if (!op.undo) c.log.push({ at: now, by: user, t: op.key, ...(op.slot ? { s: op.slot } : {}) }); // s: morning or evening, for those routines
       c.log.splice(0, Math.max(0, c.log.length - CHORE_LOG));
       break;
     }

@@ -371,3 +371,6 @@ Fixes from a review of the new features:
 
 ## 0.11.54
 - Life is hard: one way to add a routine. The first visit explains the utility with a single "Add a routine" button; the add panel shows ideas that fill in the form (nothing is added until you tap Add). Ideas removed from the page and the Routines list.
+
+## 0.11.55
+- Life is hard: morning-and-evening routines have separate Morning and Evening buttons, each ticked and unticked on its own at any time of day. Ticks remember which half they were for (older ticks still go by the time they were made). Home Assistant mirrored.

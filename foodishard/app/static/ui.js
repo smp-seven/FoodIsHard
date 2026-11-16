@@ -114,7 +114,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.54"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.55"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2346,9 +2346,10 @@ function choreStatus(c) {
   const today = log.filter((e) => sameDay(new Date(e.at * 1000), now));
   const lastText = last ? choreLine(last) : "Not done yet";
   if (c.timing === "ampm") {
-    const am = today.filter((e) => new Date(e.at * 1000).getHours() < EVENING_FROM).pop(), pm = today.filter((e) => new Date(e.at * 1000).getHours() >= EVENING_FROM).pop();
-    const slot = (label, e, later) => `<span class="slot ${e ? "done" : ""}">${e ? icon("check", 13) : ""}${label}${e ? ` · ${clockTime(new Date(e.at * 1000))}${firstName(e.by) ? `, ${esc(firstName(e.by))}` : ""}` : later ? " · later" : " · not yet"}</span>`;
-    return { done: !!(am && pm) || (!!am && now.getHours() < EVENING_FROM), html: `<span class="slots">${slot("Morning", am, false)}${slot("Evening", pm, now.getHours() < EVENING_FROM)}</span>` };
+    const am = today.filter((e) => tickSlot(e) === "am").pop(), pm = today.filter((e) => tickSlot(e) === "pm").pop();
+    // two buttons: each half is ticked and unticked on its own, whatever the time
+    const slot = (label, s, e, later) => `<button class="slot ${e ? "done" : ""}" data-act="choreSlot" data-id="${esc(c.id)}" data-s="${s}" aria-pressed="${!!e}">${e ? icon("check", 13) : ""}${label}${e ? ` · ${clockTime(new Date(e.at * 1000))}${firstName(e.by) ? `, ${esc(firstName(e.by))}` : ""}` : later ? " · later" : " · not yet"}</button>`;
+    return { done: !!(am && pm), slots: true, html: `<span class="slots">${slot("Morning", "am", am, false)}${slot("Evening", "pm", pm, now.getHours() < EVENING_FROM)}</span>` };
   }
   const dueToday = c.timing === "daily" || (c.timing === "days" && (c.days || []).includes(now.getDay()));
   if (dueToday) return today.length
@@ -2361,9 +2362,10 @@ const WAVES = `<svg class="life-waves" viewBox="0 0 400 60" preserveAspectRatio=
 function viewLife() {
   const list = chores(), now = new Date();
   const cards = list.map((c) => { const st = choreStatus(c);
-    return `<button class="chore ${st.done ? "done" : ""} ${app.lifeFlash === c.id ? "flash" : ""}" data-act="choreTap" data-id="${esc(c.id)}">
-      <span class="chore-emoji" aria-hidden="true">${esc(c.emoji || "✨")}</span>
-      <span class="grow"><b>${esc(c.name)}</b><span class="chore-sub">${st.html}</span></span></button>`; }).join("");
+    const inner = `<span class="chore-emoji" aria-hidden="true">${esc(c.emoji || "✨")}</span>
+      <span class="grow"><b>${esc(c.name)}</b><span class="chore-sub">${st.html}</span></span>`;
+    const cls = `chore ${st.done ? "done" : ""} ${app.lifeFlash === c.id ? "flash" : ""}`;
+    return st.slots ? `<div class="${cls} has-slots">${inner}</div>` : `<button class="${cls}" data-act="choreTap" data-id="${esc(c.id)}">${inner}</button>`; }).join("");
   return `<div class="life-top">${header(`${DOW_LONG[(now.getDay() + 6) % 7]} · Life is hard`, "Around the house", settingsButton())}${WAVES}</div>
     ${list.length ? `<div class="chores">${cards}</div>
       <p class="small muted" style="text-align:center;margin:12px 0 0">Tap when it's done, tap again to undo. Everyone in your household sees it.</p>
@@ -2375,24 +2377,29 @@ function viewLife() {
 /** Thanks, then a few seconds to undo. */
 /** The tick that makes a routine "done" right now: today's latest (for morning-and-evening, the latest in the current
     half of the day). Tapping a done routine takes that tick back; tapping one that isn't done ticks it. */
-function currentTick(c) {
-  const now = new Date(), evening = now.getHours() >= EVENING_FROM;
-  return (c.log || []).filter((e) => { const d = new Date(e.at * 1000); return sameDay(d, now) && (c.timing !== "ampm" || (d.getHours() >= EVENING_FROM) === evening); }).pop() || null;
+/** Which half of the day a tick was for: the half it was ticked for, or (older ticks) the time it was ticked. */
+function tickSlot(e) { return e.s || (new Date(e.at * 1000).getHours() < EVENING_FROM ? "am" : "pm"); }
+function currentTick(c, slot) {
+  const now = new Date();
+  return (c.log || []).filter((e) => sameDay(new Date(e.at * 1000), now) && (c.timing !== "ampm" || tickSlot(e) === slot)).pop() || null;
 }
-function choreTap(id) {
+function choreTap(id, slot) {
   const c = chores().find((x) => x.id === id); if (!c) return;
-  const cur = currentTick(c);
-  if (cur && cur.t) { // already done for now: untick it (Undo puts it back)
+  if (c.timing === "ampm" && !slot) slot = new Date().getHours() < EVENING_FROM ? "am" : "pm";
+  if (c.timing !== "ampm") slot = undefined;
+  const part = slot ? ` (${slot === "am" ? "morning" : "evening"})` : "";
+  const cur = currentTick(c, slot);
+  if (cur && cur.t) { // already done: untick it (Undo puts it back)
     send({ op: "chore_done", id, key: cur.t, undo: true });
-    toast(`${c.name}: not done`, { undo: () => send({ op: "chore_done", id, key: uid() + uid() }) });
+    toast(`${c.name}${part}: not done`, { undo: () => send({ op: "chore_done", id, key: uid() + uid(), slot }) });
     return;
   }
   const key = uid() + uid();
   app.lifeFlash = id;
-  send({ op: "chore_done", id, key });
+  send({ op: "chore_done", id, key, slot });
   setTimeout(() => { if (app.lifeFlash === id) app.lifeFlash = null; }, 900);
   const who = firstName(app.user);
-  toast(`${who ? `Thanks, ${who}` : "Thank you"}${c.emoji ? ` ${c.emoji}` : ""}`, { undo: () => send({ op: "chore_done", id, key, undo: true }) });
+  toast(`${who ? `Thanks, ${who}` : "Thank you"}${c.emoji ? ` ${c.emoji}` : ""}`, { undo: () => send({ op: "chore_done", id, key, slot, undo: true }) });
 }
 /** Remove a routine and its history, after a quick check. */
 function removeChore(id, then) {
@@ -2447,6 +2454,7 @@ function choreDraftRead() {
 }
 Object.assign(ACTIONS, {
   choreTap: (d) => choreTap(d.id),
+  choreSlot: (d) => choreTap(d.id, d.s),
   choreUntick: (d) => {
     if (!d.t) return;
     send({ op: "chore_done", id: d.id, key: d.t, undo: true });

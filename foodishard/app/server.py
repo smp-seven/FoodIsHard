@@ -218,7 +218,7 @@ def check_op(op):
         if days is not None and (not isinstance(days, list) or len(days) > 7
                                  or any(not (isinstance(d, int) and not isinstance(d, bool) and 0 <= d < 7) for d in days)):
             bad()
-    if op["op"] == "chore_done" and (not isinstance(op.get("key"), str) or long(op["key"], 40)):
+    if op["op"] == "chore_done" and (not isinstance(op.get("key"), str) or long(op["key"], 40) or op.get("slot") not in (None, "am", "pm")):
         bad()
     if op["op"] == "chore_move" and op.get("d") not in (1, -1):
         bad()
@@ -370,7 +370,7 @@ def apply_op(state, op, user):
         if c is not None:
             log = [e for e in c.get("log") or [] if e.get("t") != op["key"]]
             if not op.get("undo"):
-                log.append({"at": now, "by": user, "t": op["key"]})
+                log.append({"at": now, "by": user, "t": op["key"], **({"s": op["slot"]} if op.get("slot") else {})})
             c["log"] = log[-CHORE_LOG:]
 
     else:

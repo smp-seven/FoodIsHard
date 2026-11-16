@@ -381,3 +381,6 @@ body.life-on .nav button { font-size: 11.5px; }
 .chore-emoji-input { width: 64px; flex: none; text-align: center; font-size: 22px; padding: 0 6px; }
 .emoji-chip { font-size: 18px; padding: 0 10px; }
 @media (prefers-reduced-motion: reduce) { .life-waves path:first-child, .chore.flash { animation: none; } }
+
+/* morning-and-evening routines: each half is its own tappable button */
+.chore .slots button.slot { font-family: inherit; font-size: 13px; cursor: pointer; padding: 7px 12px; min-height: 36px; }
