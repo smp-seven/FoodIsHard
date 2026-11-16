@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.11.66"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.11.67"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -505,7 +505,7 @@ function leftoverCard(items) {
   const left = items.filter((i) => i.leftover && !i.have && (i.done || i.bought));
   if (!left.length) return "";
   const claimed = lunchClaims(shopWeek());
-  return `<p class="section-label">Left over after this week's dinners</p><p class="small muted" style="margin:-4px 0 8px">From what you've bought, roughly what you'll have spare.</p><div class="list">${left.map((i) => `<button class="rrow" data-act="itemOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span>${useByNote(i.k)}</span>${claimed.get(i.k) ? `<span class="small muted">${esc(claimed.get(i.k))}</span>` : useUpIdeas(i).length || (i.k && lunchIdeas(i.k).length) ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>${lunchBasicsTip(left)}`;
+  return `<p class="section-label">Left over after this week's dinners</p><p class="small muted" style="margin:-4px 0 8px">From what you've bought, roughly what you'll have spare.</p><div class="list">${left.map((i) => `<button class="rrow" data-act="leftoverOpen" data-key="${esc(i.key)}" style="padding:11px 16px"><span class="grow">${esc(i.name)} <span class="small muted">${esc(i.leftover.replace(/^about /, "~"))}</span>${useByNote(i.k)}</span>${claimed.get(i.k) ? `<span class="small muted">${esc(claimed.get(i.k))}</span>` : useUpIdeas(i).length || (i.k && lunchIdeas(i.k).length) ? `<span class="small" style="color:var(--accent)">Ideas ›</span>` : `<span class="muted" aria-hidden="true">›</span>`}</button>`).join("")}</div>${lunchBasicsTip(left)}`;
 }
 /** "Bought this week": each Done shopping trip, with its total and the week's running total. */
 function boughtSection(bought, stillToBuy) {
@@ -1116,7 +1116,7 @@ function openLunchPick(tId, main, itemKey, keep = {}) {
     <p class="muted" style="margin:6px 0">Which day?</p>
     ${days.length ? `<div class="list">${days.map(({ d, i, date }) => `<button class="rrow" data-act="lunchPut" data-i="${i}"><span class="grow"><b>${DOW_LONG[mondayIndex(date)]}</b>${d && d.lunch ? `<br><span class="small muted">Replaces ${esc(lunchName(lunchTemplate(d.lunch.t), d.lunch.main, d.lunch.with || []))}</span>` : ""}</span><span class="muted">›</span></button>`).join("")}</div>`
       : `<p class="small muted">No safe days left for this one this week: opened food doesn't keep long.</p>`}`, { keepScroll: !!keep.n });
-  if (itemKey) app.sheetBack = () => openItem(itemKey);
+  if (itemKey) app.sheetBack = () => openLeftover(itemKey);
 }
 function lunchLine(d, i, week) {
   const t = lunchTemplate(d.lunch.t);
@@ -1155,7 +1155,7 @@ function openUseUp(id, itemKey) {
     <p class="muted">Which day should it go on?</p>
     <div class="list">${slots.map(({ d, i, date }) => { const cur = d.recipe && app.byId[d.recipe];
       return `<button class="rrow" data-act="useUpPut" data-id="${id}" data-i="${i}"><span class="grow"><b>${DOW_LONG[mondayIndex(date)]}</b><br><span class="small muted">${d.status === "leftovers" ? "Instead of leftovers" : cur ? `Instead of ${esc(cur.name.toLowerCase())}` : "Nothing planned yet"}</span></span></button>`; }).join("") || `<div class="row" style="padding:14px 16px"><span class="muted">No free days left this week.</span></div>`}</div>`);
-  app.sheetBack = () => openItem(itemKey);
+  app.sheetBack = () => openLeftover(itemKey);
 }
 function openItem(key) {
   const it = buildList(shopWeek()).find((i) => i.key === key); if (!it) return;
@@ -1187,6 +1187,13 @@ function openItem(key) {
       </div></div>`);
 }
 
+/** From "Left over after this week's dinners": just the ideas for using it up (no price or shop: it's already bought). */
+function openLeftover(key) {
+  const it = buildList(shopWeek()).find((i) => i.key === key); if (!it) return;
+  const ideas = useUpCard(it);
+  openSheet(`<p class="eyebrow">Left over</p><h1 class="title" style="font-size:26px">${esc(it.name)}</h1>
+    <div class="stack" style="margin-top:10px">${ideas || `<div class="card" style="padding:14px 16px">${it.k ? keepAdvice(it.k).replace(/^<br>/, "") : ""}<p class="small muted" style="margin:${it.k && ingMeta(it.k).ko ? "8px" : "0"} 0 0">No lunch or dinner ideas for this one at the moment.</p></div>`}</div>`);
+}
 function openMove(keys) {
   const n = keys.length;
   app.moveKeys = keys; app.moveShop = null;
@@ -2643,6 +2650,7 @@ Object.assign(ACTIONS, {
     if (x.id) send({ op: "chore_update", id: x.id, patch: fields }); else send({ op: "chore_add", item: { id: uid(), ...fields } });
     app.choreDraft = null; openLifeEdit(); toast("Saved");
   },
+  leftoverOpen: (d) => openLeftover(d.key),
   lunchPick: (d) => openLunchPick(d.t, d.k, d.item),
   lunchN: (d) => { const st = app.lunchPickState; if (st) openLunchPick(st.tId, st.main, st.itemKey, { n: +d.n, add: st.add }); },
   lunchAdd: (d, el) => { const st = app.lunchPickState; if (st) el.checked ? st.add.add(d.k) : st.add.delete(d.k); },

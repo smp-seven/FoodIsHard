@@ -407,3 +407,6 @@ Fixes from a review of the new features:
 
 ## 0.11.66
 - Keeping figures reviewed against FSA guidance and UK packets: spinach 1 day and not for freezing, tofu not for freezing, gnocchi 2 days. Short keeping tips where they matter (tins into a covered container, tofu in fresh water, bin slimy leaves, beansprouts always cooked, filled gnocchi 1 day). Advice says the packet's use-by date always wins, and how to freeze and defrost safely.
+
+## 0.11.67
+- Leftovers: tapping an item under "Left over after this week's dinners" opens a simple ideas screen (amount, keeping advice, lunches, dinner swap) without price or shop. The shopping list item screen is unchanged.

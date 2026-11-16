@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.11.67",
+   "notes": [
+    "Tapping a leftover now shows just the ideas for using it up."
+   ]
+  },
+  {
    "version": "0.11.66",
    "notes": [
     "Clearer advice on keeping leftovers safely."
