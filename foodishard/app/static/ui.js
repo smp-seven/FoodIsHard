@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.13.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.13.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1221,6 +1221,8 @@ function swapTap(e) {
   app.swapFrom = null; e.preventDefault(); e.stopPropagation();
   if (!day || +day.dataset.day === from) { render(); return; }
   const to = +day.dataset.day, week = app.weekStart, name = (i) => DOW_LONG[mondayIndex(addDays(parseISO(week), i))];
+  const dinner = (i) => { const d = planFor(week)[i] || {}; return d.status === "leftovers" ? "leftovers" : d.status === "skip" ? "no dinner" : d.recipe && app.byId[d.recipe] ? app.byId[d.recipe].name : "nothing planned"; };
+  if (!window.confirm(`Swap ${name(from)} (${dinner(from)}) with ${name(to)} (${dinner(to)})?`)) { render(); return; } // a stray tap can't swap anything
   const rect = (i) => { const el = $(`article.day[data-day="${i}"]`); return el ? el.getBoundingClientRect() : null; };
   const ra = rect(from), rb = rect(to);
   if (!swapDays(week, from, to)) { render(); toast("Leftovers need to come after the dinner they're made from. Clear or move the leftovers night first."); return; }
