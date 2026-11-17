@@ -401,5 +401,5 @@ Fixes from a review of the new features:
 ## 0.13.0 – 0.13.1
 - Week: press and hold a day (or ⋯ → "Swap with another day…") and it lifts and wiggles; tap another day and the two dinners slide into each other's places. Swaps two dinners (recipe, leftovers, notes, lock, cook double), with Undo. Who's eating, guests and lunches stay with their date. Refused if a leftovers night would end up before the dinner it comes from.
 
-## 0.13.2
-- Week: swapping two days asks "Swap Tuesday (…) with Thursday (…)?" before it happens.
+## 0.13.2 – 0.13.3
+- Week: the Swap button (a random different recipe) asks "Swap <dinner> for a different dinner?" first. Swapping two days stays instant (with Undo).

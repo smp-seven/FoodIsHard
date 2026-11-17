@@ -2,9 +2,9 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
-   "version": "0.13.2",
+   "version": "0.13.3",
    "notes": [
-    "Swapping two days now asks you to confirm first."
+    "The Swap button on a day now checks before changing a dinner you'd picked."
    ]
   },
   {
