@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.12.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.13.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1194,6 +1194,27 @@ function openLeftover(key) {
   openSheet(`<p class="eyebrow">Left over</p><h1 class="title" style="font-size:26px">${esc(it.name)}</h1>
     <div class="stack" style="margin-top:10px">${ideas || `<div class="card" style="padding:14px 16px">${it.k ? keepAdvice(it.k).replace(/^<br>/, "") : ""}<p class="small muted" style="margin:${it.k && ingMeta(it.k).ko ? "8px" : "0"} 0 0">No lunch or dinner ideas for this one at the moment.</p></div>`}</div>`);
 }
+/** Swap two days' dinners. Only the dinner moves (recipe, leftovers, notes, lock, cook double); who's eating, guests and
+    a planned lunch stay with their date. Leftovers nights must still come after the dinner they're made from. */
+const DINNER_FIELDS = ["recipe", "status", "note", "from", "was", "double", "locked", "cooked"];
+function swapDays(week, a, b) {
+  if (a === b) return false;
+  const days = planFor(week), pick = (d) => Object.fromEntries(DINNER_FIELDS.map((k) => [k, (d || {})[k] ?? null]));
+  const next = days.map((d) => ({ ...(d || {}) }));
+  next[a] = { ...next[a], ...pick(days[b]) }; next[b] = { ...next[b], ...pick(days[a]) };
+  const moved = (i) => (i === a ? b : i === b ? a : i); // where each dinner is now
+  next.forEach((d) => { if (d.status === "leftovers" && d.from != null) d.from = moved(d.from); });
+  if (next.some((d, i) => d.status === "leftovers" && d.from != null && !(d.from < i))) return false;
+  next.forEach((d, i) => { if (JSON.stringify(d) !== JSON.stringify(days[i] || {})) send({ op: "day", week, i, day: d }); });
+  return true;
+}
+function openSwapDays(i) {
+  const week = app.weekStart, days = planFor(week), start = parseISO(week);
+  const label = (d) => d.status === "leftovers" ? "Leftovers" : d.status === "skip" ? "No dinner" : d.recipe && app.byId[d.recipe] ? app.byId[d.recipe].name : "Nothing planned";
+  openSheet(`<p class="eyebrow">Swap ${DOW_LONG[mondayIndex(addDays(start, i))]}</p><h1 class="title" style="font-size:26px">${esc(label(days[i] || {}))}</h1>
+    <p class="muted">Swap with which day? Who's eating and any lunch stay where they are.</p>
+    <div class="list">${days.map((d, j) => j === i ? "" : `<button class="rrow" data-act="swapDays" data-a="${i}" data-b="${j}"><span class="grow"><b>${DOW_LONG[mondayIndex(addDays(start, j))]}</b><br><span class="small muted">${esc(label(d || {}))}</span></span><span class="muted">›</span></button>`).join("")}</div>`);
+}
 function openMove(keys) {
   const n = keys.length;
   app.moveKeys = keys; app.moveShop = null;
@@ -1520,7 +1541,13 @@ const ACTIONS = {
     dayUpdate(i, patch, week);
   },
   dayMenu: (d, el) => openMenu(el, [["eating", "Who's eating / cook double…", "people", `data-i="${d.i}" data-week="${app.weekStart}"`], ["pickFromMenu", "Choose a recipe…", "book", `data-i="${d.i}"`], ["emergency", "Emergency meal (about 15 min)", "bolt", `data-i="${d.i}" data-week="${app.weekStart}"`],
-    ["status", "Leftovers night", "pot", `data-i="${d.i}" data-s="leftovers"`], ["status", "Clear this day", "x", `data-i="${d.i}" data-s="clear"`]]),
+    ["status", "Leftovers night", "pot", `data-i="${d.i}" data-s="leftovers"`], ["swapDaysOpen", "Swap with another day…", "swap", `data-i="${d.i}"`], ["status", "Clear this day", "x", `data-i="${d.i}" data-s="clear"`]]),
+  swapDaysOpen: (d) => { closeMenus(); openSwapDays(+d.i); },
+  swapDays: (d) => {
+    const a = +d.a, b = +d.b, week = app.weekStart, name = (i) => DOW_LONG[mondayIndex(addDays(parseISO(week), i))];
+    if (!swapDays(week, a, b)) { toast("Leftovers need to come after the dinner they're made from. Clear or move the leftovers night first."); return; }
+    closeSheet(); toast(`Swapped ${name(a)} and ${name(b)}`, { undo: () => swapDays(week, a, b) });
+  },
   pickFromMenu: (d) => { closeMenus(); openPicker(+d.i); },
   eating: (d) => { closeMenus(); openEating(d.week || app.weekStart, +d.i); },
   eatingGuests: (d) => { const day = planFor(d.week)[+d.i], g = +(day.guests != null ? day.guests : Math.max(0, +day.extra || 0)) || 0; dayUpdate(+d.i, { guests: Math.max(0, Math.min(20, g + +d.d)), extra: null }, d.week); openEating(d.week, +d.i, { keepScroll: true }); },

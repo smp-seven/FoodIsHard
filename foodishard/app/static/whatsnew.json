@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.13.0",
+   "notes": [
+    "New: swap two days' dinners. Tap ⋯ on a day, then \"Swap with another day\"."
+   ]
+  },
+  {
    "version": "0.12.0",
    "notes": [
     "New: quick lunches from leftovers. Tap something left over on the shopping list for easy grown-up lunches (wraps, pittas, toasties and more) and pick a day. It sits under that day's dinner.",
