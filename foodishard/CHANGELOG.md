@@ -398,5 +398,5 @@ Fixes from a review of the new features:
 - A separate test version (staging) for trying changes first.
 - Versioning: from 0.12.0, new features bump the middle number and fixes the last. Some 0.11.x releases (Life is hard, the terms agreement) were new features released as patches.
 
-## 0.13.0
-- Week: "Swap with another day…" in each day's ⋯ menu swaps two dinners (recipe, leftovers, notes, lock, cook double), with Undo. Who's eating, guests and lunches stay with their date. Refused if a leftovers night would end up before the dinner it comes from.
+## 0.13.0 – 0.13.1
+- Week: press and hold a day (or ⋯ → "Swap with another day…") and it lifts and wiggles; tap another day and the two dinners slide into each other's places. Swaps two dinners (recipe, leftovers, notes, lock, cook double), with Undo. Who's eating, guests and lunches stay with their date. Refused if a leftovers night would end up before the dinner it comes from.

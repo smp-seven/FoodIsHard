@@ -2,9 +2,9 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
-   "version": "0.13.0",
+   "version": "0.13.1",
    "notes": [
-    "New: swap two days' dinners. Tap ⋯ on a day, then \"Swap with another day\"."
+    "New: swap two days' dinners. Press and hold a day, then tap the day to swap with (or use ⋯ → Swap with another day)."
    ]
   },
   {

@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.13.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.13.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -413,9 +413,9 @@ function viewWeek() {
     const date = addDays(start, i), isToday = iso(date) === todayISO;
     const r = d.recipe && app.byId[d.recipe], theme = themeFor(week, i);
     const dateCol = `<div><div class="dow">${DOW[mondayIndex(date)].toUpperCase()}</div><div class="dom">${date.getDate()}</div></div>`;
-    if (d.status === "skip") return `<article class="day off">${dateCol}<div class="row between"><span><b>Skipped${d.note ? ` · ${esc(d.note)}` : ""}</b></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Undo</button></div></article>`;
-    if (d.status === "leftovers") return `<article class="day off">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">${leftoversFrom(days, d)}</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
-    if (!r) return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${theme ? `<div class="fam">${esc(theme.name)}</div>` : ""}
+    if (d.status === "skip") return `<article class="day off ${swapCls(i)}" data-day="${i}">${dateCol}<div class="row between"><span><b>Skipped${d.note ? ` · ${esc(d.note)}` : ""}</b></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Undo</button></div></article>`;
+    if (d.status === "leftovers") return `<article class="day off ${swapCls(i)}" data-day="${i}">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">${leftoversFrom(days, d)}</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
+    if (!r) return `<article class="day ${isToday ? "today" : ""} ${swapCls(i)}" data-day="${i}">${dateCol}<div>${theme ? `<div class="fam">${esc(theme.name)}</div>` : ""}
       <button class="btn add-slot" data-act="pick" data-i="${i}">${icon("plus", 16)}Choose a dinner</button>
       <div class="actions"><button class="btn sm soft" data-act="skip" data-i="${i}">Skip</button></div></div></article>`;
     const c = recipeCost(r) * dayFactor(d); cost += c;
@@ -425,7 +425,7 @@ function viewWeek() {
         <button class="icon-btn sm ${dayAdjustText(d) ? "on" : "plain"}" data-act="eating" data-i="${i}" data-week="${week}" aria-label="Who's eating: ${esc(dayAdjustText(d) || "everyone")}">${icon("people", 17)}</button>
         ${((lockBtn) => app.lockTip === i ? `<span class="start-wrap">${lockBtn}<span class="start-bubble" aria-hidden="true">Tap the lock to keep this one</span></span>` : lockBtn)(`<button class="icon-btn sm ${d.locked ? "on" : "plain"}${app.lockTip === i ? " nudge" : ""}" data-act="lock" data-i="${i}" aria-label="${d.locked ? "Unlock" : "Keep this one"}">${icon(d.locked ? "lock" : "unlock", 17)}</button>`)}
         <button class="icon-btn sm plain" data-act="dayMenu" data-i="${i}" aria-label="More">${icon("dots", 17)}</button></span></div>`;
-    return `<article class="day ${isToday ? "today" : ""}">${dateCol}<div>${fam}
+    return `<article class="day ${isToday ? "today" : ""} ${swapCls(i)}" data-day="${i}">${dateCol}<div>${fam}
       <button class="name" data-act="recipe" data-id="${r.id}" data-week="${week}" data-i="${i}">${esc(r.name)}${headlineSwaps(r).length ? ` <span class="pill warn" style="vertical-align:3px">with ${esc(headlineSwaps(r).join(", "))}</span>` : ""}</button>
       <div class="small muted" style="margin-top:2px">${r.time} min (${r.hands || r.time} hands-on) · ${money(c)} · ${kcalShort(r)}</div>
       ${d.lunch ? lunchLine(d, i, week) : ""}
@@ -1208,12 +1208,31 @@ function swapDays(week, a, b) {
   next.forEach((d, i) => { if (JSON.stringify(d) !== JSON.stringify(days[i] || {})) send({ op: "day", week, i, day: d }); });
   return true;
 }
-function openSwapDays(i) {
-  const week = app.weekStart, days = planFor(week), start = parseISO(week);
-  const label = (d) => d.status === "leftovers" ? "Leftovers" : d.status === "skip" ? "No dinner" : d.recipe && app.byId[d.recipe] ? app.byId[d.recipe].name : "Nothing planned";
-  openSheet(`<p class="eyebrow">Swap ${DOW_LONG[mondayIndex(addDays(start, i))]}</p><h1 class="title" style="font-size:26px">${esc(label(days[i] || {}))}</h1>
-    <p class="muted">Swap with which day? Who's eating and any lunch stay where they are.</p>
-    <div class="list">${days.map((d, j) => j === i ? "" : `<button class="rrow" data-act="swapDays" data-a="${i}" data-b="${j}"><span class="grow"><b>${DOW_LONG[mondayIndex(addDays(start, j))]}</b><br><span class="small muted">${esc(label(d || {}))}</span></span><span class="muted">›</span></button>`).join("")}</div>`);
+/* Swapping days by hand: hold a day (or ⋯ → Swap with another day) and it lifts and wiggles; tap another day and the
+   two dinners slide into each other's places. Tap the same day, or anywhere else, to cancel. */
+function swapCls(i) { return app.swapFrom == null ? "" : app.swapFrom === i ? "swap-from" : "swap-target"; }
+function startSwap(i) {
+  app.swapFrom = i; render();
+  try { navigator.vibrate && navigator.vibrate(20); } catch { /* fine */ }
+  toast("Tap another day to swap with. Tap this one to cancel.");
+}
+function swapTap(e) {
+  const from = app.swapFrom, day = e.target.closest("article.day[data-day]");
+  app.swapFrom = null; e.preventDefault(); e.stopPropagation();
+  if (!day || +day.dataset.day === from) { render(); return; }
+  const to = +day.dataset.day, week = app.weekStart, name = (i) => DOW_LONG[mondayIndex(addDays(parseISO(week), i))];
+  const rect = (i) => { const el = $(`article.day[data-day="${i}"]`); return el ? el.getBoundingClientRect() : null; };
+  const ra = rect(from), rb = rect(to);
+  if (!swapDays(week, from, to)) { render(); toast("Leftovers need to come after the dinner they're made from. Clear or move the leftovers night first."); return; }
+  render();
+  // slide: each card starts where the other dinner was, then glides home
+  [[from, rb, ra], [to, ra, rb]].forEach(([i, was, now]) => {
+    const el = $(`article.day[data-day="${i}"]`); if (!el || !was || !now) return;
+    el.style.transition = "none"; el.style.transform = `translateY(${was.top - now.top}px)`; el.classList.add("swapping");
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = ""; el.style.transform = ""; }));
+    setTimeout(() => el.classList.remove("swapping"), 450);
+  });
+  toast(`Swapped ${name(from)} and ${name(to)}`, { undo: () => swapDays(week, from, to) });
 }
 function openMove(keys) {
   const n = keys.length;
@@ -1541,8 +1560,8 @@ const ACTIONS = {
     dayUpdate(i, patch, week);
   },
   dayMenu: (d, el) => openMenu(el, [["eating", "Who's eating / cook double…", "people", `data-i="${d.i}" data-week="${app.weekStart}"`], ["pickFromMenu", "Choose a recipe…", "book", `data-i="${d.i}"`], ["emergency", "Emergency meal (about 15 min)", "bolt", `data-i="${d.i}" data-week="${app.weekStart}"`],
-    ["status", "Leftovers night", "pot", `data-i="${d.i}" data-s="leftovers"`], ["swapDaysOpen", "Swap with another day…", "swap", `data-i="${d.i}"`], ["status", "Clear this day", "x", `data-i="${d.i}" data-s="clear"`]]),
-  swapDaysOpen: (d) => { closeMenus(); openSwapDays(+d.i); },
+    ["status", "Leftovers night", "pot", `data-i="${d.i}" data-s="leftovers"`], ["swapStart", "Swap with another day…", "swap", `data-i="${d.i}"`], ["status", "Clear this day", "x", `data-i="${d.i}" data-s="clear"`]]),
+  swapStart: (d) => { closeMenus(); startSwap(+d.i); },
   swapDays: (d) => {
     const a = +d.a, b = +d.b, week = app.weekStart, name = (i) => DOW_LONG[mondayIndex(addDays(parseISO(week), i))];
     if (!swapDays(week, a, b)) { toast("Leftovers need to come after the dinner they're made from. Clear or move the leftovers night first."); return; }
@@ -1757,6 +1776,14 @@ const ACTIONS = {
 };
 
 function onClick(e) {
+  if (app.swapFrom != null) { // swapping days: the next tap picks the other day (or cancels)
+    if (longPressFired) { // the release of the hold that started it (if the browser counts it as a tap at all)
+      longPressFired = false;
+      if (Date.now() - (app.pressUpAt || 0) < 400) { e.preventDefault(); return; }
+    }
+    if (e.target.closest(".nav button") || app.tab !== "week") { app.swapFrom = null; render(); }
+    else return swapTap(e);
+  }
   if (e.target.closest("[data-close]") && !e.target.closest("[data-act]")) { closeSheet(); return; }
   const tab = e.target.closest(".nav button");
   if (tab) { closeSheet({ navigating: true }); go(tab.dataset.tab); return; }
@@ -2479,16 +2506,23 @@ function onInput(e) {
 let pressTimer = null, pressStart = null, longPressFired = false;
 function setupLongPress() {
   document.addEventListener("pointerdown", (e) => {
+    if (app.swapFrom != null) { longPressFired = false; return; } // swapping: a new press is just a tap on the other day
+    const day = e.target.closest("article.day[data-day]");
+    if (day && app.tab === "week" && app.swapFrom == null && !e.target.closest("input, select, textarea")) { // hold a day to swap it
+      pressStart = { x: e.clientX, y: e.clientY }; longPressFired = false;
+      pressTimer = setTimeout(() => { longPressFired = true; startSwap(+day.dataset.day); }, 500);
+      return;
+    }
     const row = e.target.closest(".item");
     if (!row || app.tab !== "shop" || e.target.closest("input")) return;
     pressStart = { x: e.clientX, y: e.clientY }; longPressFired = false;
     pressTimer = setTimeout(() => { longPressFired = true; toggleSelect(row.dataset.key); try { navigator.vibrate && navigator.vibrate(20); } catch { /* fine */ } }, 450);
   });
-  const cancel = () => { clearTimeout(pressTimer); pressTimer = null; };
+  const cancel = () => { clearTimeout(pressTimer); pressTimer = null; if (longPressFired) app.pressUpAt = Date.now(); };
   document.addEventListener("pointerup", cancel);
   document.addEventListener("pointercancel", cancel);
   document.addEventListener("pointermove", (e) => { if (pressStart && Math.hypot(e.clientX - pressStart.x, e.clientY - pressStart.y) > 10) cancel(); });
-  document.addEventListener("contextmenu", (e) => { if (e.target.closest(".item")) e.preventDefault(); });
+  document.addEventListener("contextmenu", (e) => { if (e.target.closest(".item, article.day")) e.preventDefault(); });
 }
 function toggleSelect(key) { app.selecting.has(key) ? app.selecting.delete(key) : app.selecting.add(key); render(); }
 
