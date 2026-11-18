@@ -430,3 +430,8 @@ article.day.swapping { position: relative; z-index: 3; transition: transform .38
 .ask-wrap.bubble .ask-card::after { content: ""; position: absolute; left: calc(var(--arrow-x) - 8px); width: 16px; height: 16px; background: var(--surface); border: 1px solid var(--line); transform: rotate(45deg); }
 .ask-wrap.bubble .ask-card.up::after { bottom: -9px; border-top: 0; border-left: 0; }
 .ask-wrap.bubble .ask-card.down::after { top: -9px; border-bottom: 0; border-right: 0; }
+
+/* Settings: the household's name as the heading of its section (tap to rename) */
+.hh-title { display: flex; align-items: baseline; gap: 8px; width: 100%; margin: 18px 0 10px; padding: 0 4px; background: none; border: 0; text-align: left; color: var(--ink); font-family: var(--serif); font-weight: 600; font-size: 24px; line-height: 1.15; cursor: pointer; }
+.hh-title[disabled] { cursor: default; }
+.hh-title .hh-edit { font-family: var(--sans, inherit); font-size: 15px; color: var(--muted); }

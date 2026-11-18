@@ -35,6 +35,8 @@ export class Directory extends DurableObject {
     // added in 0.9: when each person last used the app (Unix seconds, updated at most hourly)
     const cols = this.sql.exec("PRAGMA table_info(members)").toArray().map((c) => c.name);
     if (!cols.includes("last_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN last_seen INTEGER");
+    // which grown-up in the household's "who you cook for" list this account belongs to (their id there), if any
+    if (!cols.includes("person")) this.sql.exec("ALTER TABLE members ADD COLUMN person TEXT");
     // added in 0.9.9: the newest admin message each person has dismissed
     if (!cols.includes("notice_seen")) this.sql.exec("ALTER TABLE members ADD COLUMN notice_seen INTEGER");
     // added in 0.11.44: which version of the terms each person agreed to, and when (Unix seconds)
@@ -59,7 +61,7 @@ export class Directory extends DurableObject {
   now() { return Math.floor(Date.now() / 1000); }
   member(email) { return this.row("SELECT m.email, m.name, m.household, h.name AS householdName FROM members m JOIN households h ON h.id = m.household WHERE m.email = ?", email); }
   peopleCount() { return this.row("SELECT COUNT(*) AS n FROM members").n; }
-  householdMembers(id) { return this.rows("SELECT email, name, added_by AS addedBy, created, last_seen AS lastSeen, terms_version AS termsVersion, terms_at AS termsAt FROM members WHERE household = ? ORDER BY created, email", id); }
+  householdMembers(id) { return this.rows("SELECT email, name, person, added_by AS addedBy, created, last_seen AS lastSeen, terms_version AS termsVersion, terms_at AS termsAt FROM members WHERE household = ? ORDER BY created, email", id); }
   // ---- terms of use: who needs to agree, and the admin's "the terms have changed" request ----
   termsAsk() { return JSON.parse(this.meta("termsAsk") || "null"); }
   termsCurrent() { const a = this.termsAsk(); return a ? a.version : TERMS_BASE; }
@@ -136,7 +138,7 @@ export class Directory extends DurableObject {
     return { me, household: { id: me.household, name: me.householdName, members }, people: this.peopleCount(), limits: LIMITS };
   }
 
-  invite(byEmail, { email, name }) {
+  invite(byEmail, { email, name, person }) {
     const me = this.member(byEmail);
     if (!me) throw new UserError("You're not in a household");
     email = cleanEmail(email); name = cleanName(name);
@@ -144,6 +146,18 @@ export class Directory extends DurableObject {
     if (existing) throw new UserError(existing.household === me.household ? `${email} is already in your household` : `${email} is already in another household`);
     if (this.householdMembers(me.household).length >= LIMITS.perHousehold) throw new UserError(`A household can have up to ${LIMITS.perHousehold} people`);
     this.insertMember(email, me.household, name, byEmail);
+    if (person != null) this.link(byEmail, { email, person });
+    return this.account(byEmail);
+  }
+
+  /** Say which grown-up an account in your household is (person = their id in the household's list), or null for none. */
+  link(byEmail, { email, person }) {
+    const me = this.member(byEmail), target = this.member(cleanEmail(email));
+    if (!me || !target || target.household !== me.household) throw new UserError("You can only do that for people in your household");
+    person = person == null || person === "" ? null : String(person);
+    if (person != null && !/^[\w-]{1,40}$/.test(person)) throw new UserError("That person isn't right");
+    if (person != null) this.sql.exec("UPDATE members SET person = NULL WHERE household = ? AND person = ?", me.household, person); // one account each
+    this.sql.exec("UPDATE members SET person = ? WHERE email = ?", person, target.email);
     return this.account(byEmail);
   }
 

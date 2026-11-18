@@ -190,6 +190,7 @@ async function api(request, env, who, url) {
     const signIn = await syncSignIn(env);
     return json({ deleted: true, householdDeleted: !!res.deleted, stillAdmin: who.admin, signIn });
   }
+  if (path === "/api/account/link" && post) return json({ ...(await dir.link(who.email, await readBody(request))), admin: who.admin, ...signInInfo() });
   if (path === "/api/account/rename" && post) {
     const acct = await dir.rename(who.email, await readBody(request));
     whoCache.clear();

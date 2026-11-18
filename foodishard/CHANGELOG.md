@@ -413,3 +413,7 @@ Fixes from a review of the new features:
 ## 0.13.14
 - Updates: if a newer version is live but hasn't reached the phone after a minute, Update ready appears anyway and Update now clears the saved copy and reloads (plan, list and settings are on the server; nothing on the phone is lost).
 - An emergency switch for urgent fixes: phones older than `minVersion` in whatsnew.json clear their saved copy and reload when opened.
+
+## 0.14.0
+- Settings: "Who's in your household" and "Who you cook for" are now one section headed by the household's name (tap to rename). Each grown-up can be linked to their sign-in account; the email shows under them, and their panel has "Invite to the app" or "Remove from the app". Accounts not matched to a grown-up are listed as "Also uses the app". Existing households are matched by name automatically.
+- Renaming the grown-up who is you also updates the name on your ticks and notes.

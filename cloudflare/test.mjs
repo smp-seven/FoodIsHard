@@ -293,6 +293,17 @@ await test("a member invites their partner, who can then sign in to the same hou
   assert.deepEqual(policyEmails(), ["admin@example.com", "bob@example.com", "chris@example.com", "jo@example.com"]);
   assert.equal((await state("chris@example.com")).settings.dislikes, "mushrooms");
 });
+await test("accounts can be linked to a grown-up in their own household only, one account each", async () => {
+  let r = await call("/api/account/link", { email: "jo@example.com", body: { email: "jo@example.com", person: "p0" } });
+  assert.equal(r.status, 200); assert.equal(r.body.household.members.find((m) => m.email === "jo@example.com").person, "p0");
+  r = await call("/api/account/link", { email: "jo@example.com", body: { email: "chris@example.com", person: "p0" } }); // moves the link
+  const ms = r.body.household.members;
+  assert.equal(ms.find((m) => m.email === "chris@example.com").person, "p0"); assert.equal(ms.find((m) => m.email === "jo@example.com").person, null);
+  assert.equal((await call("/api/account/link", { email: "jo@example.com", body: { email: "bob@example.com", person: "p1" } })).status, 400); // another household
+  assert.equal((await call("/api/account/link", { email: "jo@example.com", body: { email: "chris@example.com", person: "<b>" } })).status, 400);
+  r = await call("/api/account/link", { email: "jo@example.com", body: { email: "chris@example.com", person: null } });
+  assert.equal(r.body.household.members.find((m) => m.email === "chris@example.com").person, null);
+});
 await test("nobody can invite themselves into someone else's household", async () => {
   // a body naming another household is ignored: invites always go to your own
   const browns = (await call("/api/account", { email: "bob@example.com" })).body.household.id;

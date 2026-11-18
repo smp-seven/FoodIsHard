@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.14.0",
+   "notes": [
+    "Settings is tidier: your household is one list, with the app's email under anyone who uses it. Tap someone to invite them to the app, and tap your household's name to rename it."
+   ]
+  },
+  {
    "version": "0.13.14",
    "notes": [
     "Updates are more reliable: if one gets stuck on your phone, Update ready now appears and fixes it."
