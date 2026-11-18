@@ -467,7 +467,9 @@ function planFor(week) {
 // family id, which is why "eggs" is mapped to brunch.
 const THEME_ALIASES = { eggs: "brunch" };
 function themeById(id) { return id ? app.themeById[THEME_ALIASES[id] || id] || null : null; }
-function themeIdForDow(dow) { const t = themeById((settings().themes || {})[String(dow)]); return t ? t.id : null; }
+// Theme nights can be switched off (the picks are kept for switching back on). Households that already set some start switched on.
+function themesOn() { const s = settings(); return s.themesOn ?? Object.keys(s.themes || {}).length > 0; }
+function themeIdForDow(dow) { if (!themesOn()) return null; const t = themeById((settings().themes || {})[String(dow)]); return t ? t.id : null; }
 function themeFor(week, i) { return themeById(themeIdForDow(mondayIndex(addDays(parseISO(week), i)))); }
 function everCooked(id) {
   if (cookedIt(id)) return true;
@@ -490,7 +492,7 @@ function themeMatch(t, r) {
 }
 function themeRecipes(t) { return app.recipes.filter((r) => usable(r) && themeMatch(t, r)); }
 /** Themes set on other days that "reserve" their recipes, so a curry night isn't undercut by a curry on Tuesday. */
-function reservedThemes() { return Object.values(settings().themes || {}).map(themeById).filter((t) => t && t.reserve); }
+function reservedThemes() { return !themesOn() ? [] : Object.values(settings().themes || {}).map(themeById).filter((t) => t && t.reserve); }
 function previousWeekRecipes(week, weeks = 1) {
   const out = new Set();
   for (let w = 1; w <= weeks; w++) planFor(iso(addDays(parseISO(week), -7 * w))).forEach((d) => { if (d.recipe) out.add(d.recipe); });
