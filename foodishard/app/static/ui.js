@@ -71,9 +71,27 @@ async function boot() {
   if (app.host === "Cloudflare" && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     // Updates: check whenever the app comes back to the front. A new version downloads quietly,
     // then waits: Settings shows "Update ready" with what's new until you press Update now.
+    // But if the update turns up just as the app opens (or comes back after an hour or more away) and
+    // nothing's been tapped yet, it switches over straight away: the Update button is only for updates
+    // that arrive while you're using it.
     navigator.serviceWorker.addEventListener("controllerchange", () => { if (app.updating) location.reload(); });
+    let freshUntil = Date.now() + 10000, touched = false, hiddenAt = 0;
+    const touch = () => { touched = true; };
+    addEventListener("pointerdown", touch, true); addEventListener("keydown", touch, true);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) hiddenAt = Date.now();
+      else if (hiddenAt && Date.now() - hiddenAt > 3600000) { freshUntil = Date.now() + 10000; touched = false; }
+    });
+    try { if (sessionStorage.getItem("fihJustUpdated")) { sessionStorage.removeItem("fihJustUpdated"); setTimeout(() => toast("FoodIsHard has been updated"), 800); } } catch { /* fine */ }
     navigator.serviceWorker.register("sw.js").then((reg) => {
-      const ready = () => { if (reg.waiting && navigator.serviceWorker.controller) updateReady(reg.waiting); };
+      const ready = () => {
+        if (!reg.waiting || !navigator.serviceWorker.controller) return;
+        if (Date.now() < freshUntil && !touched && !app.cook) {
+          try { sessionStorage.setItem("fihJustUpdated", "1"); } catch { /* fine */ }
+          app.update = { worker: reg.waiting, notes: [] }; return updateNow();
+        }
+        updateReady(reg.waiting);
+      };
       ready();
       reg.addEventListener("updatefound", () => {
         const w = reg.installing;
@@ -116,7 +134,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.13.5"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.13.6"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });

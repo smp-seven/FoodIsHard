@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.6
+- An update found as the app opens (or after an hour or more away) now applies straight away, before anything's been tapped. The Update ready card is kept for updates that arrive mid-use.
+
 ## 0.13.5
 - The "Another…" button (another pasta, another bowl and so on) asks before changing a day's dinner, like Swap.
 

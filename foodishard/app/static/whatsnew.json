@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.13.6",
+   "notes": [
+    "Updates now happen by themselves when you open the app. The Update button only appears if one arrives while you're using it."
+   ]
+  },
+  {
    "version": "0.13.5",
    "notes": [
     "The \"Another…\" button on a day now checks before changing the dinner too."
