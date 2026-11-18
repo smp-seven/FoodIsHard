@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.15.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.15.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -566,7 +566,7 @@ function itemRow(i) {
   const ago = i.boughtAgo ? `<span class="still-got">Bought ${i.boughtAgo === 1 ? "last week" : `${i.boughtAgo} weeks ago`}. Still got some? <button class="btn sm" data-act="flag" data-key="${key}" data-f="have" data-v="1">Got it</button></span>` : "";
   const selected = app.selecting.has(i.key);
   const lead = i.have ? `<button class="btn sm" data-act="flag" data-key="${key}" data-f="have" data-v="0">Need it</button>`
-    : `<input type="checkbox" class="check-input" data-act="tick" data-key="${key}" ${i.done ? "checked" : ""} aria-label="Got ${esc(i.name)}">`;
+    : `<label class="tick-zone"><input type="checkbox" class="check-input" data-act="tick" data-key="${key}" ${i.done ? "checked" : ""} aria-label="Got ${esc(i.name)}"></label>`; // the whole left edge of the row ticks it
   const stepper = i.counted && !i.have ? `<span class="mini-step"><button data-act="count" data-key="${key}" data-d="-1" aria-label="One fewer" ${i.n <= 1 ? "disabled" : ""}>−</button><b>${i.n}</b><button data-act="count" data-key="${key}" data-d="1" aria-label="One more">+</button></span>` : "";
   const remove = i.have || i.cupboard ? "" : `<button class="icon-btn sm plain" data-act="removeItem" data-key="${key}" aria-label="Remove ${esc(i.name)} from the list">${icon("x", 16)}</button>`;
   return `<div class="item ${i.done ? "done" : ""} ${selected ? "sel" : ""}" data-key="${key}">

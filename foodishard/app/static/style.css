@@ -442,3 +442,6 @@ article.day.swapping { position: relative; z-index: 3; transition: transform .38
 .subgroup { margin: 8px 10px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
 .still-got { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; font-size: 13px; color: var(--muted); }
 .still-got .btn { padding: 3px 12px; }
+/* shopping list: a wide, full-height tick area down the left of each row, for ticking off on the move */
+.item .tick-zone { align-self: stretch; display: flex; align-items: center; width: 62px; margin: -10px -12px -10px -14px; padding-left: 14px; flex: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.still-got .btn { border: 1.5px solid var(--accent); color: var(--accent); }

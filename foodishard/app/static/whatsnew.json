@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.15.1",
+   "notes": [
+    "Easier ticking on the shopping list: the whole left edge of each item ticks it."
+   ]
+  },
+  {
    "version": "0.15.0",
    "notes": [
     "New: the shopping list reminds you about big packs you bought recently, like frozen veg, pasta or a jar of paste (\"Bought 2 weeks ago. Still got some?\"), so you don't end up with two."
