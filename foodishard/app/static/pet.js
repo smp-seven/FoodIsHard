@@ -110,24 +110,6 @@
     const px = rows.flatMap((row, y) => [...row].map((c, x) => c === "." ? "" : `<rect x="${x}" y="${y}" width="1" height="1" fill="${col[c]}"/>`)).join("");
     document.body.insertAdjacentHTML("beforeend", `<button id="petMini" aria-label="${p ? p.name : "Pet"}"><svg viewBox="0 0 8 7" width="32" height="28" shape-rendering="crispEdges">${px}</svg></button>`);
     document.querySelector("#petMini").addEventListener("click", (e) => { e.stopPropagation(); e.currentTarget.remove(); open(); });
-    perch();
-  }
-  // When a panel slides up from the bottom, hop up and sit on top of it
-  function perch() {
-    const mini = document.querySelector("#petMini"), sheet = document.querySelector("#sheet");
-    if (!mini) return;
-    const panel = sheet && !sheet.hidden && sheet.querySelector(".sheet-panel");
-    if (!panel) { mini.style.bottom = ""; mini.classList.remove("perched"); return; }
-    const top = panel.getBoundingClientRect().top;
-    mini.style.bottom = `${Math.min(innerHeight - 40, innerHeight - top - 4)}px`; mini.classList.add("perched");
-  }
-  let perchT = 0;
-  const perchSoon = () => { perch(); clearTimeout(perchT); perchT = setTimeout(perch, 320); }; // and again once it's finished sliding
-  const sheetEl = document.querySelector("#sheet");
-  if (sheetEl) {
-    new MutationObserver(perchSoon).observe(sheetEl, { attributes: true, attributeFilter: ["hidden"], childList: true, subtree: true });
-    sheetEl.addEventListener("scroll", perch, true);
-    addEventListener("resize", perch);
   }
   function css() {
     if (document.querySelector("#petCss")) return;
@@ -151,8 +133,7 @@
       body.has-bubble #petMini{bottom:calc(var(--nav-h,70px) + 54px + env(safe-area-inset-bottom))}
       body.has-bubble.has-dock #petMini{bottom:calc(var(--nav-h,70px) + 124px + env(safe-area-inset-bottom))}
       #petBox .pet-close{position:absolute;z-index:1;top:10px;left:12px;background:none;border:0;font:inherit;font-size:14px;color:var(--muted,#888);cursor:pointer;padding:4px}
-      #petMini.perched{z-index:41;transition:bottom .25s ease}
-      #petMini{position:fixed;right:11px;bottom:calc(var(--nav-h,70px) + 14px + env(safe-area-inset-bottom));z-index:40;background:none;border:0;padding:4px;cursor:pointer;animation:petBob 2.4s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+      #petMini{position:fixed;right:11px;bottom:calc(var(--nav-h,70px) + 14px + env(safe-area-inset-bottom));z-index:15;background:none;border:0;padding:4px;cursor:pointer;animation:petBob 2.4s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
       @media (prefers-reduced-motion:reduce){.pet-spud,#petBox,#petBox .pet-card{animation:none!important}}</style>`);
   }
   function open() {
