@@ -2,7 +2,7 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
-   "version": "0.13.12",
+   "version": "0.13.13",
    "notes": [
     "A few small tweaks."
    ]
