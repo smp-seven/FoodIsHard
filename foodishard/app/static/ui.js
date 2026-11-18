@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.13.3"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.13.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1234,6 +1234,29 @@ function swapTap(e) {
   });
   toast(`Swapped ${name(from)} and ${name(to)}`, { undo: () => swapDays(week, from, to) });
 }
+/** The app's own "are you sure?", in place of the browser's grey box (which looks like a security warning). A small card
+    over a dimmed page; resolves true for the main button, false for Cancel, tapping outside or Escape. */
+function askConfirm(message, { ok = "OK", cancel = "Cancel", danger = false, anchor = null } = {}) {
+  return new Promise((resolve) => {
+    const old = $("#askConfirm"); if (old) old.remove();
+    // anchor: a quick yes/no in a speech bubble that pops out of the button you tapped; otherwise a card from the bottom
+    document.body.insertAdjacentHTML("beforeend", `<div id="askConfirm" class="ask-wrap ${anchor ? "bubble" : ""}" role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card">
+      <p id="askMsg">${esc(message)}</p>
+      <div class="ask-btns"><button class="btn ${anchor ? "sm" : ""}" data-ask="0">${esc(cancel)}</button><button class="btn ${anchor ? "sm" : ""} ${danger ? "danger" : "primary"}" data-ask="1">${esc(ok)}</button></div></div></div>`);
+    const wrap = $("#askConfirm");
+    if (anchor) { // sit just above the button (or below if there's no room), arrow pointing at it
+      const r = anchor.getBoundingClientRect(), card = wrap.querySelector(".ask-card"), w = card.offsetWidth, h = card.offsetHeight;
+      const above = r.top > h + 24, left = Math.max(10, Math.min(innerWidth - w - 10, r.left + r.width / 2 - w / 2));
+      card.style.left = `${left}px`; card.style.top = `${above ? r.top - h - 12 : r.bottom + 12}px`;
+      card.style.setProperty("--arrow-x", `${r.left + r.width / 2 - left}px`); card.classList.add(above ? "up" : "down");
+    }
+    const done = (v) => { document.removeEventListener("keydown", key, true); wrap.remove(); resolve(v); };
+    const key = (e) => { if (e.key === "Escape") { e.stopPropagation(); done(false); } };
+    document.addEventListener("keydown", key, true);
+    wrap.addEventListener("click", (e) => { e.stopPropagation(); const b = e.target.closest("[data-ask]"); if (b) done(b.dataset.ask === "1"); else if (e.target === wrap) done(false); });
+    requestAnimationFrame(() => { wrap.classList.add("show"); wrap.querySelector('[data-ask="1"]').focus(); });
+  });
+}
 function openMove(keys) {
   const n = keys.length;
   app.moveKeys = keys; app.moveShop = null;
@@ -1536,10 +1559,10 @@ const ACTIONS = {
     if (!next || next === cur.id) return toast(`No other ${family(cur.family).name.toLowerCase()} yet`);
     dayUpdate(i, { recipe: next }); lockTip(i);
   },
-  swapDay: (d) => {
+  swapDay: async (d) => {
     if (lockedDay(+d.i)) return;
     { const day = planFor(app.weekStart)[+d.i] || {}, r = day.recipe && app.byId[day.recipe]; // a stray tap shouldn't lose a dinner you'd picked
-      if (r && !window.confirm(`Swap ${r.name} for a different dinner?`)) return; }
+      if (r && !(await askConfirm("Swap this dinner?", { ok: "Yes", cancel: "No", anchor: $(`[data-act="swapDay"][data-i="${+d.i}"]`) }))) return; }
     const i = +d.i, days = planFor(app.weekStart), cur = days[i].recipe;
     const isEm = cur && app.byId[cur] && app.byId[cur].emergency;
     dayUpdate(i, { recipe: pickRecipe(app.weekStart, i, days, { exclude: new Set(cur ? [cur] : []), emergency: !!isEm }) }); lockTip(i);
@@ -1617,7 +1640,7 @@ const ACTIONS = {
   updateNow: () => updateNow(),
   adminNotice: () => openAdminNotice(),
   adminBubble: (d, el) => adminDo("api/admin/bubble", { on: el.checked }, () => { app.reportBubble = el.checked; reportBubble(); toast(el.checked ? "💬 button on for everyone" : "💬 button off for everyone"); }),
-  adminNoticeClear: () => { if (window.confirm("Take the message down? Anyone who hasn't seen it yet won't.")) adminDo("api/admin/notice/clear", {}, () => toast("Message taken down")); },
+  adminNoticeClear: async () => { if (await askConfirm("Take the message down? Anyone who hasn't seen it yet won't.")) adminDo("api/admin/notice/clear", {}, () => toast("Message taken down")); },
   signOut: () => signOut(),
   deleteAccount: () => openDeleteAccount(),
   deleteAccountConfirm: () => deleteAccount(),
@@ -1625,8 +1648,8 @@ const ACTIONS = {
   fbFilter: (d) => { app.fbFilter = d.f; render(); },
   fbGroup: (d) => { app.fbGroup = d.g; render(); },
   fbCopy: () => copyText(app.fbKind === "problems" ? problemsText() : adminFeedbackText()),
-  problemDelete: (d) => {
-    if (!window.confirm("Delete this problem report? This can't be undone.")) return;
+  problemDelete: async (d) => {
+    if (!(await askConfirm("Delete this problem report? This can't be undone.", { ok: "Delete", danger: true }))) return;
     adminDo("api/admin/problem/delete", { ref: d.ref }, () => {
       if (app.fbAdmin) app.fbAdmin.items = app.fbAdmin.items.filter((i) => i.ref !== d.ref);
       render(); toast("Report deleted");
@@ -1649,22 +1672,22 @@ const ACTIONS = {
   adminAdd: (d) => openAdminAdd(d.id, d.name),
   adminResend: (d) => { const hit = adminFind(d.email); if (hit) copyText(inviteMessage(hit.m.name, hit.m.email)); },
   adminMoveTo: (d) => { const hit = adminFind(d.email), to = app.adminInfo.households.find((h) => h.id === d.id); adminDo("api/admin/move", { email: d.email, household: d.id }, () => toast(`${hit ? hit.m.name : d.email} moved to ${to ? to.name : "the new household"}`)); },
-  adminRemove: (d) => { if (window.confirm(`Remove ${d.name}? They won't be able to sign in any more.`)) adminDo("api/admin/remove", { email: d.email }, () => toast(`${d.name} removed`)); },
-  adminLeave: () => {
+  adminRemove: async (d) => { if (await askConfirm(`Remove ${d.name}? They won't be able to sign in any more.`, { ok: "Remove", danger: true })) adminDo("api/admin/remove", { email: d.email }, () => toast(`${d.name} removed`)); },
+  adminLeave: async () => {
     const own = app.account && app.account.household;
     const msg = own && own.members.length <= 1 ? `Delete your household "${own.name}" and its plans, and make this an admin-only account?` : "Leave your household and make this an admin-only account?";
-    if (window.confirm(msg)) adminDo("api/admin/leave", {}, () => { location.hash = "admin"; location.reload(); });
+    if (await askConfirm(msg, { ok: "Leave", danger: true })) adminDo("api/admin/leave", {}, () => { location.hash = "admin"; location.reload(); });
   },
   acctInvite: () => openInviteForm("member"),
   adminNewHousehold: () => openInviteForm("household"),
   inviteCopy: () => copyText(app.inviteMsg || ""),
   inviteShare: () => { navigator.share({ text: app.inviteMsg }).catch(() => {}); },
   acctRemove: async (d) => {
-    if (!window.confirm(`Remove ${d.name} from your household? They won't be able to sign in any more.`)) return;
+    if (!(await askConfirm(`Remove ${d.name} from your household? They won't be able to sign in any more.`, { ok: "Remove", danger: true }))) return;
     try { await accountCall("api/account/remove", { email: d.email }); await loadAccount(); toast(`${d.name} removed`); } catch (err) { toast(err.message); }
   },
-  adminDeleteHousehold: (d) => {
-    if (window.confirm(`Delete ${d.name}? Everyone in it is signed out and all their plans, lists and settings are deleted for good. Ask them to download a backup first.`)) adminDo("api/admin/delete-household", { id: d.id }, () => toast(`${d.name} deleted`));
+  adminDeleteHousehold: async (d) => {
+    if (await askConfirm(`Delete ${d.name}? Everyone in it is signed out and all their plans, lists and settings are deleted for good. Ask them to download a backup first.`)) adminDo("api/admin/delete-household", { id: d.id }, () => toast(`${d.name} deleted`));
   },
   adminSync: async () => {
     try { const r = await accountCall("api/admin/sync", {}); await loadAccount(); toast(r.signIn.message); } catch (err) { toast(err.message); }
@@ -1750,12 +1773,12 @@ const ACTIONS = {
   babyDismiss: (d) => { const k = kidsAll().find((x) => x.id === d.kid); if (k) updateKid(d.kid, { dismissed: [...new Set([...(k.dismissed || []), d.k])] }); refreshPanel(); },
   kidPortion: (d) => { const k = kidsAll().find((x) => x.id === d.id); if (k) updateKid(d.id, { portion: Math.max(0.05, Math.round(((+k.portion || 0) + +d.d) * 100) / 100) }); refreshPanel(); },
   kidAdd: () => { if (kidsAll().length >= MAX_PEOPLE) return; const id = uid(); saveKids([...kidsAll(), { id, name: "", born: "", due: "", stage: "smooth", portion: 0.25, dismissed: [] }], true); openKid(id); },
-  kidRemove: (d) => {
+  kidRemove: async (d) => {
     const k = kidsAll().find((x) => x.id === d.id);
-    if (window.confirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) { saveKids(kidsAll().filter((x) => x.id !== d.id)); closeSheet(); }
+    if (await askConfirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) { saveKids(kidsAll().filter((x) => x.id !== d.id)); closeSheet(); }
   },
   addPerson: () => openAddPerson(),
-  removePerson: (d) => { const people = clone(settings().people); if (people.length <= 1 || !window.confirm(`Remove ${people[+d.i].name}? Portions and the shopping list will be for one fewer.`)) return; people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); closeSheet(); },
+  removePerson: async (d) => { const people = clone(settings().people); if (people.length <= 1 || !await askConfirm(`Remove ${people[+d.i].name}? Portions and the shopping list will be for one fewer.`)) return; people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); closeSheet(); },
   allergyDone: () => { send({ op: "settings", patch: { allergyAsked: true } }); toast(avoidList().length ? "Saved. Recipes with those are hidden" : "Saved: no allergies"); },
   avoid: (d) => {
     const a = new Set(settings().avoid || []), adding = !a.has(d.k);
@@ -1841,7 +1864,7 @@ function onChange(e) {
   }
 }
 
-function onSubmit(e) {
+async function onSubmit(e) {
   const f = e.target.closest("[data-form]");
   if (!f) return;
   e.preventDefault();
@@ -1854,7 +1877,7 @@ function onSubmit(e) {
   if (f.dataset.form === "termsAsk") {
     const changes = val("changes").split("\n").map((x) => x.trim()).filter(Boolean);
     if (!changes.length) return;
-    if (!window.confirm(`Ask all ${((app.adminInfo || {}).terms || {}).people || ""} people to agree to the updated terms?`)) return;
+    if (!(await askConfirm(`Ask all ${((app.adminInfo || {}).terms || {}).people || ""} people to agree to the updated terms?`, { ok: "Ask everyone" }))) return;
     adminDo("api/admin/terms/ask", { changes }, () => { closeSheet(); toast("Everyone will be asked on their next visit"); });
     return;
   }
@@ -2118,7 +2141,7 @@ async function signOut({ ask = true } = {}) {
   if (ask && load(QUEUE_KEY, []).length) {
     try { await flushQueue(); } catch { /* checked below */ }
     const left = load(QUEUE_KEY, []).length;
-    if (left && !window.confirm(`${left} change${left === 1 ? " hasn't" : "s haven't"} been sent yet (no signal?). Sign out anyway and lose ${left === 1 ? "it" : "them"}?`)) return;
+    if (left && !(await askConfirm(`${left} change${left === 1 ? " hasn't" : "s haven't"} been sent yet (no signal?). Sign out anyway and lose ${left === 1 ? "it" : "them"}?`, { ok: "Sign out", danger: true }))) return;
   }
   [CACHE_KEY, QUEUE_KEY, HOST_KEY].forEach((k) => { try { localStorage.removeItem(k); } catch { /* fine */ } });
   location.href = "/cdn-cgi/access/logout";
@@ -2143,7 +2166,7 @@ function openDeleteAccount() {
 }
 async function deleteAccount() {
   const a = app.account; if (!a || !a.household) return;
-  if (!window.confirm(a.household.members.length <= 1 ? `Really delete your account and all of ${a.household.name}'s data? This can't be undone.` : "Really delete your account? This can't be undone.")) return;
+  if (!(await askConfirm(a.household.members.length <= 1 ? `Really delete your account and all of ${a.household.name}'s data? This can't be undone.` : "Really delete your account? This can't be undone.", { ok: "Delete", danger: true }))) return;
   try {
     await accountCall("api/account/delete", {});
   } catch (err) { return toast(`Couldn't delete: ${err.message}`); }
@@ -2461,7 +2484,7 @@ async function importBackup(file) {
   const state = doc && doc.foodishard ? doc.state : doc;
   if (!state || !state.settings || !Array.isArray(state.settings.people)) return toast("That file isn't a FoodIsHard backup");
   const when = doc.exported ? ` from ${niceDate(new Date(doc.exported))}` : "";
-  if (!confirmReplace(when)) return;
+  if (!(await confirmReplace(when))) return;
   if (app.mode !== "live") {
     app.state = { ...state, rev: (app.state.rev || 0) + 1 }; store(DEMO_KEY, app.state); render(); return toast("Backup restored");
   }
@@ -2473,7 +2496,7 @@ async function importBackup(file) {
   } catch (err) { toast(`Couldn't restore: ${err.message}`); }
 }
 function confirmReplace(when) {
-  return window.confirm(`Restore this backup${when}? It replaces all FoodIsHard data for your household.`);
+  return askConfirm(`Restore this backup${when}? It replaces all FoodIsHard data for your household.`, { ok: "Restore", danger: true });
 }
 
 function onInput(e) {
@@ -2634,9 +2657,9 @@ function choreTap(id, slot) {
   toast(`${who ? `Thanks, ${who}` : "Thank you"}${c.emoji ? ` ${c.emoji}` : ""}`, { undo: () => send({ op: "chore_done", id, key, slot, undo: true }) });
 }
 /** Remove a routine and its history, after a quick check. */
-function removeChore(id, then) {
+async function removeChore(id, then) {
   const c = chores().find((x) => x.id === id); if (!c) return;
-  if (!window.confirm(`Remove "${c.name}" and its history?`)) return;
+  if (!(await askConfirm(`Remove "${c.name}" and its history?`, { ok: "Remove", danger: true }))) return;
   send({ op: "chore_remove", id }); then(); toast(`${c.name} removed`);
 }
 /** A routine's recent ticks, newest first, each with Remove (for a tick that shouldn't be there). */

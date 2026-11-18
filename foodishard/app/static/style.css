@@ -406,3 +406,26 @@ article.day.swap-target { outline: 2px dashed var(--accent); outline-offset: -3p
 article.day.swapping { position: relative; z-index: 3; transition: transform .38s cubic-bezier(.2,.8,.2,1); box-shadow: 0 10px 26px rgba(0,0,0,.16); }
 @keyframes day-wiggle { 0%, 100% { transform: rotate(-.7deg); } 50% { transform: rotate(.7deg); } }
 @media (prefers-reduced-motion: reduce) { article.day.swap-from { animation: none; } article.day.swapping { transition: none; } }
+
+/* the app's own confirmation */
+.ask-wrap { position: fixed; inset: 0; z-index: 120; display: flex; align-items: flex-end; justify-content: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); background: rgba(0,0,0,0); transition: background .18s; }
+.ask-wrap.show { background: rgba(0,0,0,.35); }
+.ask-card { width: 100%; max-width: 440px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px 18px 16px; box-shadow: 0 12px 40px rgba(0,0,0,.25); transform: translateY(24px); opacity: 0; transition: transform .2s ease-out, opacity .2s; }
+.ask-wrap.show .ask-card { transform: none; opacity: 1; }
+.ask-card p { margin: 0 0 16px; font-size: 16px; line-height: 1.45; }
+.ask-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn.danger { background: #b3261e; color: #fff; border-color: #b3261e; }
+@media (prefers-reduced-motion: reduce) { .ask-wrap, .ask-card { transition: none; } }
+
+/* the speech-bubble version: pops out of the button with a little spring */
+.ask-wrap.bubble, .ask-wrap.bubble.show { display: block; padding: 0; background: transparent; }
+.ask-wrap.bubble .ask-card { position: fixed; width: auto; max-width: 260px; padding: 12px 14px; border-radius: 16px; transform: scale(.4); opacity: 0;
+  transition: transform .28s cubic-bezier(.34,1.56,.64,1), opacity .15s; box-shadow: 0 8px 28px rgba(0,0,0,.2); }
+.ask-wrap.bubble .ask-card.up { transform-origin: var(--arrow-x) calc(100% + 8px); }
+.ask-wrap.bubble .ask-card.down { transform-origin: var(--arrow-x) -8px; }
+.ask-wrap.bubble.show .ask-card { transform: none; opacity: 1; }
+.ask-wrap.bubble .ask-card p { margin: 0 0 10px; font-size: 15px; font-weight: 600; white-space: nowrap; }
+.ask-wrap.bubble .ask-btns { gap: 8px; }
+.ask-wrap.bubble .ask-card::after { content: ""; position: absolute; left: calc(var(--arrow-x) - 8px); width: 16px; height: 16px; background: var(--surface); border: 1px solid var(--line); transform: rotate(45deg); }
+.ask-wrap.bubble .ask-card.up::after { bottom: -9px; border-top: 0; border-left: 0; }
+.ask-wrap.bubble .ask-card.down::after { top: -9px; border-bottom: 0; border-right: 0; }
