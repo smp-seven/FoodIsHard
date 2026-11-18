@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.14.13",
+   "notes": [
+    "Budget mode's swaps are tidier, and the saving is explained in the swaps list."
+   ]
+  },
+  {
    "version": "0.14.12",
    "notes": [
     "Budget mode: choose which swaps it makes. Tap Swaps under the switch and untick any you'd rather keep fresh.",

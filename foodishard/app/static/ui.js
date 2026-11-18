@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.12"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.13"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -642,10 +642,7 @@ function viewSettings() {
   const infLine = s.inflation === false ? ""
     : inf.factor ? `Food prices ${inf.factor >= 1 ? "up" : "down"} ${Math.abs((inf.factor - 1) * 100).toFixed(1)}% since ${esc(inf.base || "")} (ONS, latest ${esc(inf.latest || "")}).${inf.error ? " Last check failed." : ""}`
     : inf.error ? "Couldn't reach the ONS yet." : app.mode === "live" ? "ONS food price index, checked weekly" : "Not in the preview";
-  const saving = (() => { const keepB = s.budget, keepSw = app.state.swaps; s.budget = false; app.state.swaps = {};
-    const off = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
-    s.budget = true; const on = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
-    s.budget = keepB; app.state.swaps = keepSw; return off - on; })();
+
   const catalogue = `<datalist id="catalogue">${Object.values(app.ing.items).map((m) => `<option value="${esc(m.n)}">`).join("")}</datalist>`;
 
 
@@ -684,10 +681,12 @@ function viewSettings() {
         <div class="chips wrap">${SHOP_ORDER.map((k) => { const on = shopsOn.includes(k); return `<button class="chip pick ${on ? "on" : ""}" data-act="shopToggle" data-k="${k}" aria-pressed="${on}">${on ? icon("check", 14) : ""}${esc(shopName(k))}</button>`; }).join("")}</div></div>
       <label class="stack" style="padding:14px 16px;gap:6px"><b>Estimate prices at</b><select class="input" data-set="text" data-f="priceShop">${enabledShops().map((k) => `<option value="${k}" ${priceShop() === k ? "selected" : ""}>${esc(shopName(k, false))}</option>`).join("")}</select>
         <span class="small muted">${esc(app.ing.prices_note || "")}</span></label>
-      <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Swaps like frozen veg, garlic paste, bottled lemon${saving > 0.05 ? ` · about ${money(saving)} ${s.budget ? "saved" : "cheaper"} this week` : ""}</span></span>
+      <div class="${s.budget ? "subgroup" : ""}">
+      <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Swaps like frozen veg, garlic paste, bottled lemon</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="budget" ${s.budget ? "checked" : ""}><i></i></span></label>
       ${s.budget ? (() => { const all = budgetSwaps(), on = all.filter(([k]) => !(s.budgetSkip || []).includes(k)).length;
-        return `<button class="rrow" data-act="budgetSwaps" style="padding:12px 16px;border-top:1px solid var(--line-soft)"><span class="grow">Swaps</span><span class="muted">${on} of ${all.length} on</span><span class="muted" aria-hidden="true">›</span></button>`; })() : ""}
+        return `<button class="rrow" data-act="budgetSwaps" style="padding:12px 16px;border-top:1px solid var(--line-soft)"><span class="grow small muted">Using ${on} of ${all.length} swaps</span><span>Select</span><span class="muted" aria-hidden="true">›</span></button>`; })() : ""}
+      </div>
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Track food inflation</b>${infLine ? `<br><span class="small muted">${infLine}</span>` : ""}</span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="inflation" ${s.inflation !== false ? "checked" : ""}><i></i></span></label>
       <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="aisles"><span class="grow"><b>Aisle order</b></span><span aria-hidden="true">›</span></button>
@@ -2179,6 +2178,11 @@ function openDislikes({ keepScroll = false } = {}) {
   app.panel = { type: "dislikes" };
 }
 
+/** How much less this week's shop costs with budget mode (the swaps they've left on) than without. */
+function budgetSaving() { const s = settings(); const keepB = s.budget, keepSw = app.state.swaps; s.budget = false; app.state.swaps = {};
+    const off = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
+    s.budget = true; const on = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
+    s.budget = keepB; app.state.swaps = keepSw; return off - on; }
 /** A search box for a long list in a panel. Tapping it lifts it to the top of the panel, so results show above the keyboard. */
 function filterBox(placeholder) {
   return `<input class="input" id="sheetFilter" type="search" placeholder="${esc(placeholder)}" autocomplete="off" style="margin-bottom:6px"
@@ -2186,12 +2190,13 @@ function filterBox(placeholder) {
 }
 // ---- Budget mode's swaps: each can be turned off (kept fresh) ----
 function openBudgetSwaps({ keepScroll = false } = {}) {
-  const skip = new Set(settings().budgetSkip || []), all = budgetSwaps();
+  const skip = new Set(settings().budgetSkip || []), all = budgetSwaps(), saving = budgetSaving();
   const row = ([k, m, o]) => `<label class="row" data-name="${esc(singular(`${m.n} ${ingMeta(o.k).n}`.toLowerCase()))}" style="padding:10px 2px;gap:12px;border-bottom:1px solid var(--line-soft)">
       <input type="checkbox" class="check-input" data-set="budgetSwap" data-k="${esc(k)}" ${skip.has(k) ? "" : "checked"}>
       <span class="grow">${esc(m.n)} <span class="muted">→</span> ${esc(ingMeta(o.k).n)}</span></label>`;
   openSheet(`<p class="eyebrow">Budget mode</p><h1 class="title" style="font-size:26px">Swaps</h1>
     <p class="muted" style="margin-top:0">Cheaper versions of the same thing. Untick any you'd rather keep fresh. Never used for what a dinner is named after.</p>
+    ${saving > 0.05 ? `<p class="small" style="margin:0 0 12px"><b>About ${money(saving)} off this week's shop.</b> <span class="muted">It adds up over time: jars and frozen bags last for weeks, so less gets thrown away.</span></p>` : `<p class="small muted" style="margin:0 0 12px">The saving builds up over time: jars and frozen bags last for weeks, so less gets thrown away.</p>`}
     ${all.length > 8 ? filterBox("Search swaps") : ""}
     <div id="sheetFilterList">${all.map(row).join("")}</div>
     <button class="btn primary" style="margin-top:16px" data-close>Done</button>`, { keepScroll });
