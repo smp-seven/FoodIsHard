@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.16.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.16.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2375,12 +2375,16 @@ function updateCard() {
     <button class="btn primary" style="align-self:flex-start" data-act="updateNow">Update now</button>
     <span class="small muted">Anything you've ticked is kept.</span></div>`;
 }
-function updateNow() {
+async function updateNow() {
   const u = app.update; if (!u) return;
-  if (!u.worker) { try { sessionStorage.setItem("fihJustUpdated", "1"); } catch { /* fine */ } return hardReset(); }
+  try { sessionStorage.setItem("fihJustUpdated", "1"); } catch { /* fine */ }
   app.updating = true;
-  u.worker.postMessage("skipWaiting");
-  setTimeout(() => location.reload(), 3000); // in case the switch-over message is missed
+  // use whatever's newest now: the version the card found may already have been replaced by a later one
+  let waiting = null;
+  try { const reg = await navigator.serviceWorker.getRegistration(); waiting = reg && (reg.waiting || reg.installing); } catch { /* fine */ }
+  if (!waiting) return hardReset();
+  waiting.postMessage("skipWaiting");
+  setTimeout(hardReset, 3000); // the switch didn't happen: clear the saved copy and load fresh instead
 }
 
 // ---- A message from the admin, shown once to each person (online version) ----

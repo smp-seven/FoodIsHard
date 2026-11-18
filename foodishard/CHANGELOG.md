@@ -432,7 +432,8 @@ Fixes from a review of the new features:
 - Shopping list: the whole left strip of each row (full height) ticks the item, so a slightly missed tap no longer opens it. The Got it button on the hint has a green border.
 - Folding sections ("Not needed this week" and others) show an arrow that turns when opened.
 
-## 0.16.0
+## 0.16.0 – 0.16.1
 - Week: empty days have a "Choose for me" button (picks one dinner for that day, respecting its theme).
 - Shuffle part-way through the current week: days already gone are left alone; empty ones are marked skipped.
 - Aisle order: drag the ≡ handle to reorder (arrow keys work too), instead of up/down buttons.
+- Update now uses the newest downloaded version (the one the card found may have been replaced by a later one), and if the switch hasn't happened within 3 seconds it clears the saved copy and loads fresh instead of reloading the old version.

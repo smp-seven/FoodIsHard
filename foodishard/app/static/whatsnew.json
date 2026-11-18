@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.16.1",
+   "notes": [
+    "Update now is more reliable."
+   ]
+  },
+  {
    "version": "0.16.0",
    "notes": [
     "Empty days have a \"Choose for me\" button.",
