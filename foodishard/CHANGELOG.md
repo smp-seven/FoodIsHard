@@ -409,3 +409,7 @@ Fixes from a review of the new features:
 ## 0.13.7 – 0.13.13
 - A few small tweaks.
 - The 💬 Report a problem button is smaller and fainter until tapped.
+
+## 0.13.14
+- Updates: if a newer version is live but hasn't reached the phone after a minute, Update ready appears anyway and Update now clears the saved copy and reloads (plan, list and settings are on the server; nothing on the phone is lost).
+- An emergency switch for urgent fixes: phones older than `minVersion` in whatsnew.json clear their saved copy and reload when opened.

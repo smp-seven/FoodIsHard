@@ -1,6 +1,13 @@
 {
- "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
+ "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release. minVersion: phones on anything older clear their saved copy and reload when they open (use for urgent fixes).",
+ "minVersion": "0.0.0",
  "versions": [
+  {
+   "version": "0.13.14",
+   "notes": [
+    "Updates are more reliable: if one gets stuck on your phone, Update ready now appears and fixes it."
+   ]
+  },
   {
    "version": "0.13.13",
    "notes": [

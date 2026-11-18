@@ -97,7 +97,8 @@ async function boot() {
         const w = reg.installing;
         if (w) w.addEventListener("statechange", () => { if (w.state === "installed") ready(); });
       });
-      document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) { reg.update().catch(() => {}); checkBehind(reg); } });
+      checkBehind(reg);
     }).catch((err) => console.warn("offline copy unavailable", err));
   }
 }
@@ -134,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.13.13"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.13.14"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2084,9 +2085,39 @@ function openAddPerson() {
 }
 
 // ---- "Update ready" (online version) ----
+// Safety nets, because a phone can get stuck on its saved copy (seen once in Firefox: no update ever arrived).
+// whatsnew.json is never kept in the saved copy, so it always says what's really live:
+//  - "minVersion": anything older clears its saved copy and reloads as soon as it opens (for urgent fixes);
+//  - if a newer version is live but hasn't turned up on this phone after a minute, show Update ready anyway,
+//    and Update now clears the saved copy instead of waiting for it.
+let behindTimer = 0;
+async function checkBehind(reg) {
+  if (behindTimer) return;
+  try {
+    const res = await fetch("whatsnew.json", { cache: "no-store" });
+    if (!res.ok || res.redirected) return;
+    const w = await res.json(), latest = ((w.versions || [])[0] || {}).version;
+    if (w.minVersion && newerThan(w.minVersion, APP_VERSION)) {
+      let last = 0; try { last = +sessionStorage.getItem("fihHardReset") || 0; } catch { /* fine */ }
+      if (Date.now() - last > 300000) { try { sessionStorage.setItem("fihHardReset", Date.now()); sessionStorage.setItem("fihJustUpdated", "1"); } catch { /* fine */ } return hardReset(); }
+    }
+    if (!latest || !newerThan(latest, APP_VERSION)) return;
+    behindTimer = setTimeout(() => {
+      behindTimer = 0;
+      if (reg.waiting || app.update) return; // the normal way got there
+      app.update = { stuck: true, notes: [] }; updateReady(null);
+    }, 60000);
+  } catch { /* offline: try again next time */ }
+}
+async function hardReset() {
+  app.updating = true;
+  try { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch { /* fine */ }
+  try { for (const k of await caches.keys()) await caches.delete(k); } catch { /* fine */ }
+  location.reload();
+}
 const newerThan = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };
 async function updateReady(worker) {
-  app.update = { worker, notes: [] };
+  app.update = { worker, stuck: !worker, notes: [] };
   try {
     const res = await fetch("whatsnew.json", { cache: "no-store" });
     const { versions = [] } = await res.json();
@@ -2107,6 +2138,7 @@ function updateCard() {
 }
 function updateNow() {
   const u = app.update; if (!u) return;
+  if (!u.worker) { try { sessionStorage.setItem("fihJustUpdated", "1"); } catch { /* fine */ } return hardReset(); }
   app.updating = true;
   u.worker.postMessage("skipWaiting");
   setTimeout(() => location.reload(), 3000); // in case the switch-over message is missed
