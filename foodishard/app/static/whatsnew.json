@@ -3,6 +3,14 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.16.0",
+   "notes": [
+    "Empty days have a \"Choose for me\" button.",
+    "Shuffling part-way through the week leaves the days already gone alone, and skips any that were empty.",
+    "Aisle order: drag the aisles into place."
+   ]
+  },
+  {
    "version": "0.15.2",
    "notes": [
     "Settings is tidier: your household is one list (tap someone to invite them to the app), dislikes are picked from a list, theme nights can be switched off, and your account and data are at the bottom.",

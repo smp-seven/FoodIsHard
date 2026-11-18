@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.15.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.16.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -436,7 +436,7 @@ function viewWeek() {
     if (d.status === "leftovers") return `<article class="day off ${swapCls(i)}" data-day="${i}">${dateCol}<div class="row between"><span><b>Leftovers</b><br><span class="small muted">${leftoversFrom(days, d)}</span></span><button class="btn sm" data-act="status" data-i="${i}" data-s="cook">Cook instead</button></div></article>`;
     if (!r) return `<article class="day ${isToday ? "today" : ""} ${swapCls(i)}" data-day="${i}">${dateCol}<div>${theme ? `<div class="fam">${esc(theme.name)}</div>` : ""}
       <button class="btn add-slot" data-act="pick" data-i="${i}">${icon("plus", 16)}Choose a dinner</button>
-      <div class="actions"><button class="btn sm soft" data-act="skip" data-i="${i}">Skip</button></div></div></article>`;
+      <div class="actions"><button class="btn sm soft" data-act="swapDay" data-i="${i}">Choose for me</button><button class="btn sm soft" data-act="skip" data-i="${i}">Skip</button></div></div></article>`;
     const c = recipeCost(r) * dayFactor(d); cost += c;
     const famText = r.emergency ? `<span class="fam quick">${theme && themeMatch(theme, r) ? esc(theme.name) : "Quick"} · ${r.time} min${isToday ? " · tonight" : ""}</span>`
       : `<span class="fam">${esc(theme && themeMatch(theme, r) ? theme.name : family(r.family).name)}${isToday ? " · tonight" : ""}</span>`;
@@ -1334,11 +1334,41 @@ function openDone(left, got) {
 function openAisles({ keepScroll = false } = {}) {
   const order = aisleOrder();
   openSheet(`<h1 class="title" style="font-size:26px">Aisle order</h1>
-    <p class="muted">Put the aisles in the order you reach them.</p>
-    <div class="list">${order.map((id, n) => `<div class="row" style="padding:8px 8px 8px 16px;gap:6px"><span class="grow">${esc(aisleName(id))}</span>
-      <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="-1" aria-label="Move ${esc(aisleName(id))} up" ${n === 0 ? "disabled" : ""}>${icon("up", 18)}</button>
-      <button class="icon-btn sm plain" data-act="aisleMove" data-id="${id}" data-d="1" aria-label="Move ${esc(aisleName(id))} down" ${n === order.length - 1 ? "disabled" : ""}>${icon("down", 18)}</button></div>`).join("")}</div>
+    <p class="muted">Hold ≡ and drag the aisles into the order you reach them.</p>
+    <div class="list" id="aisleList">${order.map((id) => `<div class="row aisle-row" data-id="${id}" style="padding:4px 4px 4px 16px;gap:6px"><span class="grow">${esc(aisleName(id))}</span>
+      <span class="drag-handle" tabindex="0" role="button" aria-label="Move ${esc(aisleName(id))}: drag, or use the arrow keys">${dragIcon()}</span></div>`).join("")}</div>
     <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-close>Done</button>${(settings().aisleOrder || []).length ? `<button class="btn" data-act="aisleReset">Reset to usual</button>` : ""}</div>`, { keepScroll });
+  setupAisleDrag();
+}
+function dragIcon() { return `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`; }
+/** Drag-to-reorder for the aisle list: hold the handle and slide; the others make room. Arrow keys work too. */
+function setupAisleDrag() {
+  const list = $("#aisleList"); if (!list || list.dataset.drag) return; list.dataset.drag = "1";
+  const save = () => { const order = $$(".aisle-row", list).map((r) => r.dataset.id); send({ op: "settings", patch: { aisleOrder: order } }, { rerender: false }); };
+  let row = null, startY = 0, rows = [], h = 0, from = 0, to = 0;
+  list.addEventListener("pointerdown", (e) => {
+    const handle = e.target.closest(".drag-handle"); if (!handle) return;
+    e.preventDefault(); row = handle.closest(".aisle-row"); rows = $$(".aisle-row", list); from = to = rows.indexOf(row);
+    h = row.getBoundingClientRect().height; startY = e.clientY; row.classList.add("dragging"); handle.setPointerCapture(e.pointerId);
+  });
+  list.addEventListener("pointermove", (e) => {
+    if (!row) return;
+    const dy = e.clientY - startY; row.style.transform = `translateY(${dy}px)`;
+    to = Math.max(0, Math.min(rows.length - 1, from + Math.round(dy / h)));
+    rows.forEach((r, i) => { if (r === row) return; const shift = from < to && i > from && i <= to ? -h : from > to && i < from && i >= to ? h : 0; r.style.transform = shift ? `translateY(${shift}px)` : ""; });
+  });
+  const drop = () => {
+    if (!row) return;
+    rows.forEach((r) => { r.style.transform = ""; }); row.classList.remove("dragging");
+    if (to !== from) { const ref = rows[to]; if (to > from) ref.after(row); else ref.before(row); save(); }
+    row = null;
+  };
+  list.addEventListener("pointerup", drop); list.addEventListener("pointercancel", drop);
+  list.addEventListener("keydown", (e) => {
+    const handle = e.target.closest(".drag-handle"); if (!handle || !["ArrowUp", "ArrowDown"].includes(e.key)) return;
+    e.preventDefault(); const r = handle.closest(".aisle-row"), sib = e.key === "ArrowUp" ? r.previousElementSibling : r.nextElementSibling;
+    if (!sib) return; if (e.key === "ArrowUp") sib.before(r); else sib.after(r); handle.focus(); save();
+  });
 }
 function staplesSummary() {
   const on = (settings().staples || []).filter((x) => x.on && (x.name || "").trim()).map((x) => x.name.trim());

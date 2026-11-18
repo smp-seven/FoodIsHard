@@ -431,3 +431,8 @@ Fixes from a review of the new features:
 - Shopping list: items that keep once opened (frozen, dry goods, jars; never tins, fresh or chilled) show "Bought N weeks ago. Still got some?" with a Got it button when you ticked them as bought in the last 6 weeks and that pack was clearly more than those dinners used (at least 30% left). It's only a hint: nothing is assumed or taken off the list.
 - Shopping list: the whole left strip of each row (full height) ticks the item, so a slightly missed tap no longer opens it. The Got it button on the hint has a green border.
 - Folding sections ("Not needed this week" and others) show an arrow that turns when opened.
+
+## 0.16.0
+- Week: empty days have a "Choose for me" button (picks one dinner for that day, respecting its theme).
+- Shuffle part-way through the current week: days already gone are left alone; empty ones are marked skipped.
+- Aisle order: drag the ≡ handle to reorder (arrow keys work too), instead of up/down buttons.

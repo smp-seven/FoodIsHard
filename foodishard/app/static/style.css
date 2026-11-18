@@ -449,3 +449,8 @@ article.day.swapping { position: relative; z-index: 3; transition: transform .38
 details.fold summary { display: flex; align-items: center; gap: 6px; }
 details.fold summary::after { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .2s; margin-left: 2px; }
 details.fold[open] summary::after { transform: rotate(225deg) translate(-1px, -1px); }
+/* drag to reorder (aisle order) */
+.drag-handle { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 44px; color: var(--muted); cursor: grab; touch-action: none; border-radius: 10px; }
+.aisle-row { transition: transform .15s ease; background: var(--surface); }
+.aisle-row.dragging { transition: none; position: relative; z-index: 2; box-shadow: 0 6px 18px rgba(0,0,0,.18); border-radius: 12px; }
+.aisle-row.dragging .drag-handle { cursor: grabbing; }

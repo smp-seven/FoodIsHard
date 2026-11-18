@@ -550,9 +550,12 @@ function pickRecipe(week, i, days, { exclude = new Set(), emergency = false, fam
   return null;
 }
 function suggestWeek(week) {
-  const days = planFor(week);
-  days.forEach((d) => { if (!d.locked && d.status === "cook") d.recipe = null; });
-  days.forEach((d, i) => { if (!d.locked && d.status === "cook") d.recipe = pickRecipe(week, i, days); });
+  const days = planFor(week), today = iso(new Date());
+  // days already gone are left alone: an empty one is marked skipped, one with a dinner keeps it
+  const gone = (i) => iso(addDays(parseISO(week), i)) < today;
+  days.forEach((d, i) => { if (gone(i) && d.status === "cook" && !d.recipe) d.status = "skip"; });
+  days.forEach((d, i) => { if (!d.locked && !gone(i) && d.status === "cook") d.recipe = null; });
+  days.forEach((d, i) => { if (!d.locked && !gone(i) && d.status === "cook") d.recipe = pickRecipe(week, i, days); });
   return { days };
 }
 
