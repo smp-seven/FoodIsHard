@@ -98,7 +98,7 @@
     else if (what === "wash") { p.clean = 100; say = `Squeaky clean (for ${veg(p).what}).`; anim = "wash"; }
     save(p); draw();
   }
-  // Shrunk: a tiny pixel potato sits in the corner (remembered on this phone); tap it to open Spud again
+  // Shrunk: a tiny pixel veg sits in the bottom-right corner (remembered on this phone); tap it to open Spud again
   const PIX = ["..XXXX..", ".XXXXXX.", "XXOXXOXX", "XXXXXXXX", "XXRXXRXX", ".XXMMXX.", "..XXXX.."];
   function setMini(on) {
     const p = load(); if (p) { p.mini = on; save(p); }
@@ -129,14 +129,14 @@
       @keyframes petFade{from{opacity:0}}@keyframes petPop{from{transform:scale(.4);opacity:0}}
       @keyframes petTug{30%{transform:translateY(-8px) scaleY(1.08)}60%{transform:translateY(2px) scaleY(.96)}}@keyframes petBob{50%{transform:translateY(-5px)}}@keyframes petBounce{40%{transform:translateY(-22px) scaleY(1.05)}80%{transform:translateY(0) scaleY(.92)}}
       @keyframes petChomp{50%{transform:scale(1.06,.94)}}@keyframes petWobble{25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
-      #petBox .pet-min{right:auto;left:10px}
-      #petMini{position:fixed;left:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:40;background:none;border:0;padding:4px;cursor:pointer;animation:petBob 2.4s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+      #petBox .pet-close{position:absolute;z-index:1;top:10px;left:12px;background:none;border:0;font:inherit;font-size:14px;color:var(--muted,#888);cursor:pointer;padding:4px}
+      #petMini{position:fixed;right:12px;bottom:calc(var(--nav-h,70px) + 14px + env(safe-area-inset-bottom));z-index:40;background:none;border:0;padding:4px;cursor:pointer;animation:petBob 2.4s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
       @media (prefers-reduced-motion:reduce){.pet-spud,#petBox,#petBox .pet-card{animation:none!important}}</style>`);
   }
   function open() {
     if (document.querySelector("#petBox")) return;
     css();
-    document.body.insertAdjacentHTML("beforeend", `<div id="petBox" role="dialog" aria-label="Pet"><div class="pet-card"><button class="pet-x pet-min" data-pet="min" aria-label="Shrink to the corner">–</button><button class="pet-x" data-pet="close" aria-label="Close">×</button><div class="pet-body"></div></div></div>`);
+    document.body.insertAdjacentHTML("beforeend", `<div id="petBox" role="dialog" aria-label="Pet"><div class="pet-card"><button class="pet-close" data-pet="close">Close</button><button class="pet-x" data-pet="min" aria-label="Shrink to the corner">–</button><div class="pet-body"></div></div></div>`);
     const box = document.querySelector("#petBox");
     box.addEventListener("click", (e) => {
       e.stopPropagation();
