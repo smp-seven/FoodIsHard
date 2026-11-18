@@ -4,25 +4,9 @@
   {
    "version": "0.13.6",
    "notes": [
-    "Updates now happen by themselves when you open the app. The Update button only appears if one arrives while you're using it."
-   ]
-  },
-  {
-   "version": "0.13.5",
-   "notes": [
-    "The \"Another…\" button on a day now checks before changing the dinner too."
-   ]
-  },
-  {
-   "version": "0.13.4",
-   "notes": [
-    "Friendlier \"are you sure?\" questions that look like the rest of the app."
-   ]
-  },
-  {
-   "version": "0.13.3",
-   "notes": [
-    "The Swap button on a day now checks before changing a dinner you'd picked."
+    "Swap and \"Another…\" now check before changing a dinner, so a stray tap won't lose one you'd picked.",
+    "Friendlier \"are you sure?\" questions that look like the rest of the app.",
+    "Updates now happen by themselves when you open the app."
    ]
   },
   {

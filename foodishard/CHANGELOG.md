@@ -1,14 +1,5 @@
 # Changelog
 
-## 0.13.6
-- An update found as the app opens (or after an hour or more away) now applies straight away, before anything's been tapped. The Update ready card is kept for updates that arrive mid-use.
-
-## 0.13.5
-- The "Another…" button (another pasta, another bowl and so on) asks before changing a day's dinner, like Swap.
-
-## 0.13.4
-- "Are you sure?" questions now use the app's own style instead of the browser's popup; Swap asks in a small bubble by the button.
-
 ## 0.1.0
 - First skeleton: week planner, recipe view with baby steps, shared shopping list with export, settings, and 8 sample recipes.
 
@@ -410,5 +401,7 @@ Fixes from a review of the new features:
 ## 0.13.0 – 0.13.1
 - Week: press and hold a day (or ⋯ → "Swap with another day…") and it lifts and wiggles; tap another day and the two dinners slide into each other's places. Swaps two dinners (recipe, leftovers, notes, lock, cook double), with Undo. Who's eating, guests and lunches stay with their date. Refused if a leftovers night would end up before the dinner it comes from.
 
-## 0.13.2 – 0.13.3
-- Week: the Swap button (a random different recipe) asks "Swap <dinner> for a different dinner?" first. Swapping two days stays instant (with Undo).
+## 0.13.2 – 0.13.6
+- Week: the Swap and "Another…" buttons ask "Swap this dinner?" in a small speech bubble by the button before changing a day's dinner. Swapping two days stays instant (with Undo).
+- "Are you sure?" questions everywhere use an app-styled card instead of the browser's own popup (red button for deletes).
+- Updates: an update found as the app opens (or after an hour or more away), before anything's tapped, applies straight away with a short "updated" note. The Update ready card is kept for updates that arrive mid-use.
