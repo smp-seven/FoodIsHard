@@ -3,7 +3,7 @@
  "minVersion": "0.0.0",
  "versions": [
   {
-   "version": "0.14.8",
+   "version": "0.14.9",
    "notes": [
     "Settings is tidier: your household is one list. Tap someone to invite them to the app (their email stays hidden until you tap the eye), tap your household's name to rename it, and tap the portions total to see how it adds up.",
     "Dislikes: pick ingredients from a searchable list instead of typing them.",
