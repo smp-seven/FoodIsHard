@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.4
+- "Are you sure?" questions now use the app's own style instead of the browser's popup; Swap asks in a small bubble by the button.
+
 ## 0.1.0
 - First skeleton: week planner, recipe view with baby steps, shared shopping list with export, settings, and 8 sample recipes.
 
