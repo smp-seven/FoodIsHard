@@ -5,15 +5,10 @@
   {
    "version": "0.16.1",
    "notes": [
-    "Update now is more reliable."
-   ]
-  },
-  {
-   "version": "0.16.0",
-   "notes": [
     "Empty days have a \"Choose for me\" button.",
     "Shuffling part-way through the week leaves the days already gone alone, and skips any that were empty.",
-    "Aisle order: drag the aisles into place."
+    "Aisle order: drag the aisles into place.",
+    "Update now is more reliable."
    ]
   },
   {
