@@ -37,12 +37,16 @@
       ${m === "happy" && !sleeping ? `<circle cx="42" cy="62" r="5" fill="#f08a7a" opacity=".5"/><circle cx="82" cy="62" r="5" fill="#f08a7a" opacity=".5"/>` : ""}
       ${eyes}${mouth}${dirt}</svg></div>`;
   }
-  const egg = (cracks) => `<div class="pet-spud egg ${cracks ? "wobble" : ""}"><svg viewBox="0 0 124 110" width="150" height="133" aria-hidden="true">
-      <ellipse cx="62" cy="104" rx="26" ry="5" fill="rgba(0,0,0,.12)"/>
-      <path d="M62 10c22 0 36 40 36 60s-16 32-36 32-36-12-36-32 14-60 36-60z" fill="#f4ecd8" stroke="#d8c9a6" stroke-width="2"/>
-      <circle cx="50" cy="50" r="5" fill="#b8d8a8"/><circle cx="74" cy="70" r="6" fill="#b8d8a8"/><circle cx="66" cy="34" r="3.5" fill="#b8d8a8"/>
-      ${cracks > 0 ? `<path d="M40 60l8 6 6-8 8 8" stroke="#8a7a5a" stroke-width="2" fill="none"/>` : ""}
-      ${cracks > 1 ? `<path d="M62 66l8-7 6 7 8-6" stroke="#8a7a5a" stroke-width="2" fill="none"/>` : ""}</svg></div>`;
+  // Before Spud: a potato plant in a mound of soil. Each tug pulls it up a little more.
+  const egg = (pulls) => { const up = pulls * 7; return `<div class="pet-spud egg ${pulls ? "tug" : ""}"><svg viewBox="0 0 124 110" width="150" height="133" aria-hidden="true">
+      <g transform="translate(0 ${-up})">
+        <path d="M62 86V44" stroke="#4f8a4f" stroke-width="4" stroke-linecap="round"/>
+        <path d="M62 62c-14-2-22-12-22-22 12 0 20 8 22 22zM62 54c12-2 20-12 20-24-12 2-19 10-20 24zM62 46c-8-6-10-14-6-22 7 4 9 12 6 22z" fill="#6fae63" stroke="#4f8a4f" stroke-width="1.5"/>
+        <circle cx="72" cy="30" r="3.5" fill="#fff"/><circle cx="72" cy="30" r="1.4" fill="#f2c94c"/>
+        ${pulls > 1 ? `<path d="M48 96c0-8 6-12 14-12s14 4 14 12-6 12-14 12-14-4-14-12z" fill="#d9a865" stroke="#b9854a" stroke-width="2"/>` : ""}
+      </g>
+      <path d="M14 104c8-18 28-24 48-24s40 6 48 24z" fill="#7a5a3a"/>
+      <circle cx="36" cy="96" r="2" fill="#5e4329"/><circle cx="84" cy="94" r="2.4" fill="#5e4329"/><circle cx="62" cy="100" r="1.8" fill="#5e4329"/></svg></div>`; };
 
   const bar = (label, v) => `<div class="pet-bar"><span>${label}</span><i><b style="width:${Math.round(v)}%;background:${v > 55 ? "#5b9a6b" : v > 20 ? "#e0a93b" : "#d4573b"}"></b></i></div>`;
   const ageText = (p) => { const d = Math.floor((Date.now() - p.born) / (24 * HOUR)); return d < 1 ? "Brand new" : `${d} day${d === 1 ? "" : "s"} old`; };
@@ -55,7 +59,7 @@
     const box = document.querySelector("#petBox"); if (!box) return;
     const p = tick(load() || { stage: "egg", cracks: 0, at: Date.now() }); save(p);
     let body;
-    if (p.stage === "egg") body = `${egg(p.cracks)}<p class="pet-say">${say || "An egg. It feels warm. Maybe give it a tap?"}</p>`;
+    if (p.stage === "egg") body = `${egg(p.cracks)}<p class="pet-say">${say || "Something's growing here. Give it a pull?"}</p>`;
     else if (p.stage === "gone") body = `<div class="pet-note">Dear you,<br>Nobody fed me for ages so I've gone to stay with my nan. She does roast potatoes. Don't worry about me.<br>— ${p.name} x</div>
       <div class="pet-btns"><button class="btn" data-pet="restart">Find a new egg</button></div>`;
     else {
@@ -71,8 +75,8 @@
     const p = tick(load()); if (!p) return;
     if (what === "egg" && p.stage === "egg") {
       p.cracks++;
-      if (p.cracks >= 3) Object.assign(p, { stage: "pet", name: "Spud", born: Date.now(), food: 70, fun: 70, clean: 90 }), say = "It's a potato! Say hello to Spud.", anim = "pop";
-      else say = p.cracks === 1 ? "Something wriggled…" : "Nearly…";
+      if (p.cracks >= 3) Object.assign(p, { stage: "pet", name: "Spud", born: Date.now(), food: 70, fun: 70, clean: 90 }), say = "Pop! It's a potato! Say hello to Spud.", anim = "pop";
+      else say = p.cracks === 1 ? "It's stuck fast. Pull harder!" : "Nearly… one more!";
     } else if (what === "restart") { save({ stage: "egg", cracks: 0, at: Date.now() }); return draw(); }
     else if (p.stage === "pet" && asleep() && what !== "egg") { say = "Shh, Spud's asleep."; }
     else if (what === "feed") {
@@ -101,7 +105,7 @@
       #petBox .pet-x{position:absolute;z-index:1;top:8px;right:10px;background:none;border:0;font-size:22px;line-height:1;color:inherit;cursor:pointer}
       .pet-spud{display:inline-block;animation:petBob 2.4s ease-in-out infinite;cursor:pointer}
       .pet-spud.zzz{animation-duration:5s}.pet-spud.zzz::after{content:"z z z";position:absolute;margin:-10px 0 0 -10px;font-size:13px;opacity:.6}
-      .pet-spud.wobble{animation:petWobble .5s}.pet-spud.pop{animation:petPop .5s cubic-bezier(.34,1.56,.64,1)}
+      .pet-spud.tug{animation:petTug .45s}.pet-spud.pop{animation:petPop .5s cubic-bezier(.34,1.56,.64,1)}
       .pet-spud.bounce{animation:petBounce .45s 3}.pet-spud.chomp{animation:petChomp .25s 4}.pet-spud.wash{animation:petWobble .4s 2}
       .pet-name{margin:4px 0 0}.pet-say{min-height:2.6em;margin:6px 0 10px;font-size:14px}
       .pet-bar{display:flex;align-items:center;gap:8px;font-size:12px;margin:4px 0}.pet-bar span{width:42px;text-align:left}
@@ -109,7 +113,7 @@
       .pet-btns{display:flex;gap:8px;justify-content:center;margin-top:12px}
       .pet-note{margin-top:18px;font-family:cursive,serif;text-align:left;background:#fffbe8;color:#3b2a1a;border-radius:10px;padding:14px;transform:rotate(-1.5deg);line-height:1.5}
       @keyframes petFade{from{opacity:0}}@keyframes petPop{from{transform:scale(.4);opacity:0}}
-      @keyframes petBob{50%{transform:translateY(-5px)}}@keyframes petBounce{40%{transform:translateY(-22px) scaleY(1.05)}80%{transform:translateY(0) scaleY(.92)}}
+      @keyframes petTug{30%{transform:translateY(-8px) scaleY(1.08)}60%{transform:translateY(2px) scaleY(.96)}}@keyframes petBob{50%{transform:translateY(-5px)}}@keyframes petBounce{40%{transform:translateY(-22px) scaleY(1.05)}80%{transform:translateY(0) scaleY(.92)}}
       @keyframes petChomp{50%{transform:scale(1.06,.94)}}@keyframes petWobble{25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
       #petBox .pet-min{right:auto;left:10px}
       #petMini{position:fixed;left:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:40;background:none;border:0;padding:4px;cursor:pointer;animation:petBob 2.4s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
