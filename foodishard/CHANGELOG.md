@@ -427,6 +427,7 @@ Fixes from a review of the new features:
 - Budget mode: with it on, a "Using X of Y swaps · Select" row, boxed together with the switch, opens the list of like-for-like swaps; untick any to keep that ingredient fresh. This week's saving is shown there.
 - Panels stay above the on-screen keyboard on browsers that don't resize for it, and tapping a panel's search box lifts it to the top so results show.
 
-## 0.15.0 – 0.15.1
+## 0.15.0 – 0.15.2
 - Shopping list: items that keep once opened (frozen, dry goods, jars; never tins, fresh or chilled) show "Bought N weeks ago. Still got some?" with a Got it button when you ticked them as bought in the last 6 weeks and that pack was clearly more than those dinners used (at least 30% left). It's only a hint: nothing is assumed or taken off the list.
 - Shopping list: the whole left strip of each row (full height) ticks the item, so a slightly missed tap no longer opens it. The Got it button on the hint has a green border.
+- Folding sections ("Not needed this week" and others) show an arrow that turns when opened.

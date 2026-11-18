@@ -445,3 +445,7 @@ article.day.swapping { position: relative; z-index: 3; transition: transform .38
 /* shopping list: a wide, full-height tick area down the left of each row, for ticking off on the move */
 .item .tick-zone { align-self: stretch; display: flex; align-items: center; width: 62px; margin: -10px -12px -10px -14px; padding-left: 14px; flex: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .still-got .btn { border: 1.5px solid var(--accent); color: var(--accent); }
+/* folded sections: a chevron shows they open, and turns when they do */
+details.fold summary { display: flex; align-items: center; gap: 6px; }
+details.fold summary::after { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .2s; margin-left: 2px; }
+details.fold[open] summary::after { transform: rotate(225deg) translate(-1px, -1px); }

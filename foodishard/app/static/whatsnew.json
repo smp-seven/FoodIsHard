@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.15.2",
+   "notes": [
+    "Sections that open, like \"Not needed this week\", now have an arrow."
+   ]
+  },
+  {
    "version": "0.15.1",
    "notes": [
     "Easier ticking on the shopping list: the whole left edge of each item ticks it."
