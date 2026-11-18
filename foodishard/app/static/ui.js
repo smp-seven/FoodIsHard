@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.6"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.7"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -660,7 +660,7 @@ function viewSettings() {
         <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
         <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.${app.host === "Cloudflare" ? ` They're stored with your household so the planner can avoid them. Untick any time to remove them.` : ""}</span>
         ${nudges().includes("allergies") ? `<button class="btn sm" style="align-self:flex-start" data-act="allergyDone">No allergies in our household</button>` : ""}</div>
-      <div class="stack" style="padding:14px 16px;gap:8px"><b>Dislikes</b><input class="input" value="${esc(s.dislikes || "")}" placeholder="e.g. mushroom, feta" data-set="text" data-f="dislikes"></div>
+      <button class="rrow" data-act="dislikes" style="padding:14px 16px"><span class="grow"><b>Dislikes</b><br><span class="small muted">${esc(dislikeSummary())}</span></span><span class="muted" aria-hidden="true">›</span></button>
       <div class="stack" style="padding:14px 16px 8px;gap:4px"><b>Theme nights</b></div>
       <div style="padding-bottom:8px">${themeRows}</div>
       <div class="stack" style="padding:14px 16px;gap:10px">
@@ -1709,6 +1709,8 @@ const ACTIONS = {
     toast("Linked");
   },
   memberPanel: (d) => openMemberPanel(d.email),
+  dislikes: () => openDislikes(),
+  dropDislikeWord: (d) => { send({ op: "settings", patch: { dislikes: dislikeWords().filter((w) => w !== d.w).join(", ") } }); openDislikes({ keepScroll: true }); },
   portionInfo: (d, el) => {
     const { adults, kids: little, factor } = household();
     const line = (name, v, txt) => `<div class="row between" style="gap:14px"><span>${esc(name)}</span><span>${txt || niceNumber(v)}</span></div>`;
@@ -1902,6 +1904,7 @@ function onChange(e) {
       if (d.f === "weekStartDay") { app.weekStart = iso(weekStartFor(new Date(), +el.value)); render(); }
       return;
     }
+    case "dislike": { const keys = dislikeKeys(); if (el.checked) keys.add(d.k); else keys.delete(d.k); send({ op: "settings", patch: { dislikeKs: [...keys] } }); return; }
     case "bool": send({ op: "settings", patch: { [d.f]: el.checked } }); if (d.f === "lifeOn" && el.checked) toast("Life tab added"); return;
     case "acctName": case "acctHousehold": {
       const body = d.set === "acctName" ? { name: el.value } : { householdName: el.value };
@@ -2131,6 +2134,43 @@ function openPerson(i, { keepScroll = false } = {}) {
     <div class="row" style="gap:8px;margin-top:18px"><button class="btn primary" data-close>Done</button>${s.people.length > 1 && !(online() && memberFor(p.id) && memberFor(p.id).email === meEmail()) ? `<button class="btn" style="color:var(--warm)" data-act="removePerson" data-i="${i}">${icon("trash", 16)}Remove</button>` : ""}</div>`, { keepScroll });
   app.panel = { type: "person", i };
 }
+// ---- Dislikes: pick ingredients from the full list (search to narrow it). Dinners using them aren't suggested. ----
+function dislikeSummary() {
+  const names = [...dislikeKeys()].map((k) => ingMeta(k).n).concat(dislikeWords());
+  return names.length ? names.join(", ") : "None";
+}
+function dinnersWith(k) { return app.recipes.filter((r) => effectiveIngredients(r).some((i) => i.k === k)).length; }
+/** Older households typed their dislikes: turn each word into the ingredient it clearly means; keep any that don't match. */
+function migrateDislikes() {
+  const words = dislikeWords(); if (!words.length) return;
+  const keys = dislikeKeys(), left = [];
+  for (const w of words) {
+    const want = singular(w), all = Object.entries(app.ing.items);
+    let hits = all.filter(([, m]) => singular(m.n.toLowerCase()) === want); // "mushrooms" → Mushrooms
+    if (!hits.length) hits = all.filter(([, m]) => m.n.toLowerCase().split(/[^a-z]+/).map(singular).includes(want)); // "feta" → Feta cheese
+    if (hits.length === 1) keys.add(hits[0][0]); else left.push(w);
+  }
+  send({ op: "settings", patch: { dislikeKs: [...keys], dislikes: left.join(", ") } });
+}
+function openDislikes({ keepScroll = false } = {}) {
+  if (!keepScroll) migrateDislikes();
+  const keys = dislikeKeys(), words = dislikeWords();
+  const items = Object.entries(app.ing.items).sort((a, b) => a[1].n.localeCompare(b[1].n));
+  const row = ([k, m]) => { const n = dinnersWith(k); return `<label class="row" data-name="${esc(singular(m.n.toLowerCase()))}" style="padding:10px 2px;gap:12px;border-bottom:1px solid var(--line-soft)">
+      <input type="checkbox" class="check-input" data-set="dislike" data-k="${esc(k)}" ${keys.has(k) ? "checked" : ""}>
+      <span class="grow">${esc(m.n)}</span><span class="small muted">${n ? `${n} dinner${n === 1 ? "" : "s"}` : ""}</span></label>`; };
+  const picked = items.filter(([k]) => keys.has(k));
+  openSheet(`<p class="eyebrow">Food</p><h1 class="title" style="font-size:26px">Dislikes</h1>
+    <p class="muted" style="margin-top:0">We won't suggest dinners with these. The number is how many dinners use each one.</p>
+    ${words.length ? `<p class="small" style="margin:0 0 8px">Typed earlier, still avoided: ${words.map((w) => `<button class="chip" data-act="dropDislikeWord" data-w="${esc(w)}">${esc(w)} ✕</button>`).join(" ")}</p>` : ""}
+    ${picked.length ? `<p class="section-label">Your dislikes</p><div>${picked.map(row).join("")}</div>` : ""}
+    <p class="section-label">All ingredients</p>
+    <input class="input" id="dislikeSearch" type="search" placeholder="Search, e.g. mushroom" autocomplete="off" style="margin-bottom:6px">
+    <div id="dislikeList">${items.filter(([k]) => !keys.has(k)).map(row).join("")}</div>
+    <button class="btn primary" style="margin-top:16px" data-close>Done</button>`, { keepScroll });
+  app.panel = { type: "dislikes" };
+}
+
 /** Online: whether this grown-up has the app, and the way to invite or link them. */
 function personAppPart(p, i) {
   if (!online() || !app.account || !app.account.household) return "";
@@ -2672,6 +2712,11 @@ function confirmReplace(when) {
 }
 
 function onInput(e) {
+  if (e.target.id === "dislikeSearch") { // filter the list as you type
+    const q = singular(e.target.value.trim().toLowerCase());
+    $$("#dislikeList [data-name]").forEach((r) => { r.hidden = !!q && !r.dataset.name.includes(q); });
+    return;
+  }
   if (e.target.dataset.input === "afilter" || e.target.dataset.input === "ffilter") {
     const q = e.target.value.trim().toLowerCase(), list = $("#adminList");
     $$("[data-group-list]", list).forEach((sec) => {

@@ -23,6 +23,8 @@ function checkOp(op) {
   if (op.op === "extra_add" && (!op.item || typeof op.item !== "object" || long(op.item.name, 120) || long(op.item.amount, 120) || long(op.item.id, 60))) bad();
   if (op.op === "extra_update" && op.patch && long(op.patch.name, 120)) bad();
   // a household cooks for up to 10 grown-ups and 10 little ones (guests on a day cover bigger gatherings)
+  // dislikes: ingredient keys picked from the list
+  if (op.op === "settings" && op.patch && op.patch.dislikeKs != null && (!Array.isArray(op.patch.dislikeKs) || op.patch.dislikeKs.length > 200 || op.patch.dislikeKs.some((k) => typeof k !== "string" || k.length > 60))) bad();
   if (op.op === "settings" && op.patch && ["people", "children"].some((k) => op.patch[k] != null && (!Array.isArray(op.patch[k]) || op.patch[k].length > MAX_PEOPLE))) bad();
   if (["chore_add", "chore_update"].includes(op.op)) {
     const c = op.op === "chore_add" ? op.item : op.patch;

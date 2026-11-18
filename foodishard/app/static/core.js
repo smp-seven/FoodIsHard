@@ -370,12 +370,14 @@ function effectiveIngredients(r) {
 }
 function avoidList() { return settings().avoid || []; }
 function dislikeWords() { return (settings().dislikes || "").toLowerCase().split(/[,\n]/).map((w) => w.trim()).filter(Boolean); }
+function dislikeKeys() { return new Set(settings().dislikeKs || []); }
 function blockedBy(r) {
-  const avoid = avoidList(), words = dislikeWords(), why = new Set();
+  const avoid = avoidList(), words = dislikeWords(), keys = dislikeKeys(), why = new Set();
   effectiveIngredients(r).forEach((i) => {
     const m = ingMeta(i.k);
     (m.al || []).forEach((a) => { if (avoid.includes(a)) why.add(app.ing.allergens[a] || a); });
-    words.forEach((w) => { if (m.n.toLowerCase().includes(w)) why.add(w); });
+    if (keys.has(i.k)) why.add(m.n.toLowerCase());
+    words.forEach((w) => { if (m.n.toLowerCase().includes(singular(w))) why.add(w); }); // older typed dislikes
   });
   words.forEach((w) => { if (r.name.toLowerCase().includes(w)) why.add(w); });
   return [...why];

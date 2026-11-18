@@ -414,9 +414,10 @@ Fixes from a review of the new features:
 - Updates: if a newer version is live but hasn't reached the phone after a minute, Update ready appears anyway and Update now clears the saved copy and reloads (plan, list and settings are on the server; nothing on the phone is lost).
 - An emergency switch for urgent fixes: phones older than `minVersion` in whatsnew.json clear their saved copy and reload when opened.
 
-## 0.14.0 – 0.14.6
+## 0.14.0 – 0.14.7
 - Settings: "Who's in your household" and "Who you cook for" are now one section headed by the household's name (tap to rename). Everyone with the app is one of the grown-ups. Their panel shows "Account email" as stars until you tap the eye (for showing the app to someone) has "Invite to the app" or "Remove from the app". "Add a grown-up" can invite them at the same time.
 - A new household's first account takes over "Adult 1" with their name; inviting into "Adult 2" gives it the invited name. Existing accounts are matched by name; any that can't be are asked about once ("Who is this?").
 - Removing a grown-up who has the app also removes their access (after asking). You can't remove yourself there (Delete my account does that).
 - Renaming the grown-up who is you also updates the name on your ticks and notes.
 - The portions total sits at the bottom of the household list; tap it for a breakdown in a small bubble. The admin dashboard link (admins only) is at the top of Settings.
+- Dislikes: a searchable list of every ingredient, each showing how many dinners use it; ticked ones are never suggested. Previously typed dislikes are converted where they clearly match an ingredient (plurals and partial names forgiven); any that don't stay avoided and can be removed.
