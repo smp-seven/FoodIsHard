@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.5
+- The "Another…" button (another pasta, another bowl and so on) asks before changing a day's dinner, like Swap.
+
 ## 0.13.4
 - "Are you sure?" questions now use the app's own style instead of the browser's popup; Swap asks in a small bubble by the button.
 

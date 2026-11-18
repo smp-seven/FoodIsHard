@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.13.5",
+   "notes": [
+    "The \"Another…\" button on a day now checks before changing the dinner too."
+   ]
+  },
+  {
    "version": "0.13.4",
    "notes": [
     "Friendlier \"are you sure?\" questions that look like the rest of the app."

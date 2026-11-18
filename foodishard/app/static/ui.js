@@ -116,7 +116,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.13.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.13.5"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1552,8 +1552,9 @@ const ACTIONS = {
     toast(d.t ? `${DOW_LONG[+d.i]}: ${themeById(d.t).name}` : `${DOW_LONG[+d.i]}: no theme`);
   },
   put: (d) => { dayUpdate(+d.i, { recipe: d.id, status: "cook", note: null }); closeSheet(); toast(`${app.byId[d.id].name} added`); lockTip(+d.i); },
-  another: (d) => {
+  another: async (d) => {
     if (lockedDay(+d.i)) return;
+    if (!(await askConfirm("Swap this dinner?", { ok: "Yes", cancel: "No", anchor: $(`[data-act="another"][data-i="${+d.i}"]`) }))) return;
     const i = +d.i, days = planFor(app.weekStart), cur = app.byId[days[i].recipe];
     const next = pickRecipe(app.weekStart, i, days, { exclude: new Set([cur.id]), fam: cur.family, emergency: !!cur.emergency });
     if (!next || next === cur.id) return toast(`No other ${family(cur.family).name.toLowerCase()} yet`);
