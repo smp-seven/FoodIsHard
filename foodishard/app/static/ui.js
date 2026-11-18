@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1707,6 +1707,7 @@ const ACTIONS = {
     toast("Linked");
   },
   memberPanel: (d) => openMemberPanel(d.email),
+  toggleEmails: () => { app.showEmails = !app.showEmails; if (app.panel && app.panel.type === "member") openMemberPanel(app.panel.email); else refreshPanel(); },
   memberAddPerson: async (d) => {
     const m = acctMembers().find((x) => x.email === d.email); if (!m || settings().people.length >= MAX_PEOPLE) return;
     const people = clone(settings().people), id = uid(); people.push({ id, name: m.name, portion: 1, goal: 40 });
@@ -2088,10 +2089,10 @@ function householdTitle() {
 function whoYouCookFor() {
   const s = settings(), { factor } = household(), kidsHere = kidsOn() ? kidsAll() : [], paused = !kidsOn() && kidsAll().length;
   const me = meEmail(), others = online() ? unlinkedMembers() : [];
-  const emailLine = (p) => { const m = online() && memberFor(p.id); return m ? `<br><span class="small muted">${esc(m.email)}${m.email === me ? " · you" : ""}</span>` : ""; };
+  const emailLine = (p) => { const m = online() && memberFor(p.id); return m ? `<br><span class="small muted">${m.email === me ? "You · uses the app" : "Uses the app"}</span>` : ""; };
   const adults = s.people.map((p, i) => `<button class="rrow" data-act="person" data-i="${i}" style="padding:12px 16px"><span class="grow"><b>${esc(p.name)}</b><br><span class="small muted">${esc(sizeLabel(+p.portion || 1))} · about ${Math.round(typicalDinnerKcal() * (+p.portion || 1) / 10) * 10} kcal</span>${emailLine(p)}</span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   const little = kidsHere.map((k) => `<button class="rrow kid-stripe ${kidBornDate(k) ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="grow"><b>${esc(k.name || "Little one")}</b><br><span class="small muted">${kidBornDate(k) ? esc(monthsText(kidAge(k))) : "add when they were born"} · ${esc((STAGES[k.stage]?.name || "").split(" &")[0])} · ${esc(portionShort(k.portion))} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
-  const ask = others.map((m) => `<button class="rrow nudge-field" data-act="memberPanel" data-email="${esc(m.email)}" style="padding:12px 16px"><span class="grow"><b>${esc(m.name)}${m.email === me ? " (you)" : ""} uses the app</b><br><span class="small muted">${esc(m.email)} · tap to say which grown-up this is</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
+  const ask = others.map((m) => `<button class="rrow nudge-field" data-act="memberPanel" data-email="${esc(m.email)}" style="padding:12px 16px"><span class="grow"><b>${esc(m.name)}${m.email === me ? " (you)" : ""} uses the app</b><br><span class="small muted">Tap to say which grown-up this is</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   return `${householdTitle()}
     <div class="list">
       <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner, signed in or not</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
@@ -2127,11 +2128,20 @@ function personAppPart(p, i) {
   if (!online() || !app.account || !app.account.household) return "";
   const m = memberFor(p.id), me = meEmail();
   if (m) return `<p class="section-label">Uses the app</p>
-    <div class="row" style="gap:8px"><span class="grow">${esc(m.email)}<br><span class="small muted">${m.email === me ? "That's you" : m.lastSeen ? `Last used ${esc(lastSeenText(m.lastSeen))}` : "Hasn't signed in yet"}</span></span>
+    <div class="row" style="gap:8px"><span class="grow">${emailToggle(m.email)}<br><span class="small muted">${m.email === me ? "That's you" : m.lastSeen ? `Last used ${esc(lastSeenText(m.lastSeen))}` : "Hasn't signed in yet"}</span></span>
       ${m.email !== me ? `<button class="btn sm" style="color:var(--warm)" data-act="acctRemove" data-email="${esc(m.email)}" data-name="${esc(p.name)}">Remove from the app</button>` : ""}</div>`;
   return `<p class="section-label">Uses the app</p>
     <p class="small muted" style="margin:0 0 8px">${placeholder(p) ? "Not set up yet." : `${esc(p.name)} doesn't have the app. They don't need it to be cooked for.`}</p>
     <button class="btn sm" data-act="personInvite" data-i="${i}">${icon("plus", 16)}${placeholder(p) ? "Invite someone to the app" : `Invite ${esc(p.name)} to the app`}</button>`;
+}
+/** An email, hidden until you tap the eye (handy when showing the app to someone). */
+function emailToggle(email) {
+  const shown = app.showEmails;
+  return `<span class="row" style="gap:6px;display:inline-flex;align-items:center"><span class="${shown ? "" : "muted"}">${shown ? esc(email) : "Email hidden"}</span>
+    <button class="icon-btn plain eye-btn" data-act="toggleEmails" aria-pressed="${shown ? "true" : "false"}" aria-label="${shown ? "Hide email" : "Show email"}">${eyeIcon(shown)}</button></span>`;
+}
+function eyeIcon(open) {
+  return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>${open ? "" : `<path d="M4 4l16 16"/>`}</svg>`;
 }
 function lastSeenText(t) {
   const days = Math.floor((Date.now() / 1000 - t) / 86400);
@@ -2142,7 +2152,7 @@ function openMemberPanel(email) {
   const m = acctMembers().find((x) => x.email === email); if (!m) return closeSheet();
   const spare = unlinkedPeople(), mine = m.email === meEmail();
   openSheet(`<p class="eyebrow">Uses the app</p><h1 class="title" style="font-size:26px">${esc(m.name)}${mine ? " (you)" : ""}</h1>
-    <p class="muted" style="margin-top:0">${esc(m.email)}</p>
+    <p style="margin-top:0">${emailToggle(m.email)}</p>
     ${spare.length ? `<p class="section-label">Which grown-up is this?</p><div class="row" style="gap:6px;flex-wrap:wrap">${spare.map((p) => `<button class="btn sm" data-act="linkMember" data-email="${esc(m.email)}" data-person="${esc(p.id)}">${esc(p.name)}</button>`).join("")}</div>` : ""}
     ${settings().people.length < MAX_PEOPLE ? `<p class="section-label">${spare.length ? "Or" : "Add them"}</p><button class="btn sm" data-act="memberAddPerson" data-email="${esc(m.email)}">${icon("plus", 16)}Add ${esc(m.name)} as a new grown-up</button>` : ""}
     <div class="row" style="gap:8px;margin-top:12px"><button class="btn primary" data-close>Done</button>${mine ? "" : `<button class="btn" style="color:var(--warm)" data-act="acctRemove" data-email="${esc(m.email)}" data-name="${esc(m.name)}">${icon("trash", 16)}Remove from the app</button>`}</div>`);
