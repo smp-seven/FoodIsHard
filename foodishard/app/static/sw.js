@@ -4,7 +4,7 @@
 // you press "Update now" in Settings (or the app is fully closed and reopened). Household data isn't
 // cached here: the app already keeps the latest plan and list on the phone, and queues
 // ticks until it's back online.
-const VERSION = "foodishard-0.13.7";
+const VERSION = "foodishard-0.13.8";
 const SHELL = [
   "./", "index.html", "style.css", "ops.js", "core.js", "ui.js", "pet.js",
   "data/recipes.json", "data/ingredients.json", "data/defaults.json", "data/lunches.json",

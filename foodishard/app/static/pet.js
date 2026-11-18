@@ -81,9 +81,21 @@
     else if (what === "wash") { p.clean = 100; say = "Squeaky clean (for a potato)."; anim = "wash"; }
     save(p); draw();
   }
-  function open() {
-    if (document.querySelector("#petBox")) return;
-    if (!document.querySelector("#petCss")) document.head.insertAdjacentHTML("beforeend", `<style id="petCss">
+  // Shrunk: a tiny pixel potato sits in the corner (remembered on this phone); tap it to open Spud again
+  const PIX = ["..XXXX..", ".XXXXXX.", "XXOXXOXX", "XXXXXXXX", "XXRXXRXX", ".XXMMXX.", "..XXXX.."];
+  function setMini(on) {
+    const p = load(); if (p) { p.mini = on; save(p); }
+    const old = document.querySelector("#petMini"); if (old) old.remove();
+    if (!on) return;
+    css();
+    const col = { X: "#d9a865", O: "#3b2a1a", R: "#f08a7a", M: "#3b2a1a" };
+    const px = PIX.flatMap((row, y) => [...row].map((c, x) => c === "." ? "" : `<rect x="${x}" y="${y}" width="1" height="1" fill="${col[c]}"/>`)).join("");
+    document.body.insertAdjacentHTML("beforeend", `<button id="petMini" aria-label="Spud"><svg viewBox="0 0 8 7" width="32" height="28" shape-rendering="crispEdges">${px}</svg></button>`);
+    document.querySelector("#petMini").addEventListener("click", (e) => { e.stopPropagation(); e.currentTarget.remove(); open(); });
+  }
+  function css() {
+    if (document.querySelector("#petCss")) return;
+    document.head.insertAdjacentHTML("beforeend", `<style id="petCss">
       #petBox{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);animation:petFade .2s}
       #petBox .pet-card{position:relative;width:min(320px,90vw);background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:22px;padding:18px 18px 16px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:petPop .3s cubic-bezier(.34,1.56,.64,1)}
       #petBox .pet-x{position:absolute;z-index:1;top:8px;right:10px;background:none;border:0;font-size:22px;line-height:1;color:inherit;cursor:pointer}
@@ -99,19 +111,27 @@
       @keyframes petFade{from{opacity:0}}@keyframes petPop{from{transform:scale(.4);opacity:0}}
       @keyframes petBob{50%{transform:translateY(-5px)}}@keyframes petBounce{40%{transform:translateY(-22px) scaleY(1.05)}80%{transform:translateY(0) scaleY(.92)}}
       @keyframes petChomp{50%{transform:scale(1.06,.94)}}@keyframes petWobble{25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+      #petBox .pet-min{right:auto;left:10px}
+      #petMini{position:fixed;left:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:40;background:none;border:0;padding:4px;cursor:pointer;animation:petBob 2.4s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
       @media (prefers-reduced-motion:reduce){.pet-spud,#petBox,#petBox .pet-card{animation:none!important}}</style>`);
-    document.body.insertAdjacentHTML("beforeend", `<div id="petBox" role="dialog" aria-label="Spud"><div class="pet-card"><button class="pet-x" data-pet="close" aria-label="Close">×</button><div class="pet-body"></div></div></div>`);
+  }
+  function open() {
+    if (document.querySelector("#petBox")) return;
+    css();
+    document.body.insertAdjacentHTML("beforeend", `<div id="petBox" role="dialog" aria-label="Spud"><div class="pet-card"><button class="pet-x pet-min" data-pet="min" aria-label="Shrink to the corner">–</button><button class="pet-x" data-pet="close" aria-label="Close">×</button><div class="pet-body"></div></div></div>`);
     const box = document.querySelector("#petBox");
     box.addEventListener("click", (e) => {
       e.stopPropagation();
       const b = e.target.closest("[data-pet]");
-      if (e.target === box || (b && b.dataset.pet === "close")) return box.remove();
+      if (b && b.dataset.pet === "close") { setMini(false); return box.remove(); }
+      if (b && b.dataset.pet === "min") { box.remove(); return setMini(true); }
       if (b) return act(b.dataset.pet);
       if (e.target.closest(".pet-spud.egg")) return act("egg");
       if (e.target.closest(".pet-spud")) { say = ["Hello!", "Hehe, that tickles.", "I'm a potato.", "Is it dinner yet?"][Math.floor(Math.random() * 4)]; anim = "bounce"; draw(); }
     });
     draw();
   }
+  if ((load() || {}).mini) setMini(true); // still in the corner from last time
 
   // The way in: tap the version number at the bottom of Settings seven times, quickly.
   let taps = [];
