@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.14.14",
+   "notes": [
+    "A small wording tweak in budget mode."
+   ]
+  },
+  {
    "version": "0.14.13",
    "notes": [
     "Budget mode's swaps are tidier, and the saving is explained in the swaps list."

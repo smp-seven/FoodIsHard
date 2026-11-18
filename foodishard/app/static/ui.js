@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.13"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.14"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2196,7 +2196,7 @@ function openBudgetSwaps({ keepScroll = false } = {}) {
       <span class="grow">${esc(m.n)} <span class="muted">→</span> ${esc(ingMeta(o.k).n)}</span></label>`;
   openSheet(`<p class="eyebrow">Budget mode</p><h1 class="title" style="font-size:26px">Swaps</h1>
     <p class="muted" style="margin-top:0">Cheaper versions of the same thing. Untick any you'd rather keep fresh. Never used for what a dinner is named after.</p>
-    ${saving > 0.05 ? `<p class="small" style="margin:0 0 12px"><b>About ${money(saving)} off this week's shop.</b> <span class="muted">It adds up over time: jars and frozen bags last for weeks, so less gets thrown away.</span></p>` : `<p class="small muted" style="margin:0 0 12px">The saving builds up over time: jars and frozen bags last for weeks, so less gets thrown away.</p>`}
+    ${saving > 0.05 ? `<p class="small" style="margin:0 0 12px"><b>About ${money(saving)} off this week's shop.</b></p>` : ""}
     ${all.length > 8 ? filterBox("Search swaps") : ""}
     <div id="sheetFilterList">${all.map(row).join("")}</div>
     <button class="btn primary" style="margin-top:16px" data-close>Done</button>`, { keepScroll });
