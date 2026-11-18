@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -1698,7 +1698,7 @@ const ACTIONS = {
     if (await askConfirm(msg, { ok: "Leave", danger: true })) adminDo("api/admin/leave", {}, () => { location.hash = "admin"; location.reload(); });
   },
   acctInvite: () => openInviteForm("member"),
-  personInvite: (d) => { const p = settings().people[+d.i]; if (p) openInviteForm("member", { name: p.name, person: p.id }); },
+  personInvite: (d) => { const p = settings().people[+d.i]; if (p) openInviteForm("member", { name: placeholder(p) ? "" : p.name, person: p.id }); },
   linkMember: async (d) => {
     if (!(await linkMember(d.email, d.person))) return;
     const i = settings().people.findIndex((p) => p.id === d.person);
@@ -1814,7 +1814,13 @@ const ACTIONS = {
     if (await askConfirm(`Remove ${k && k.name ? k.name : "this child"}? Their portions and notes come out of the recipes.`)) { saveKids(kidsAll().filter((x) => x.id !== d.id)); closeSheet(); }
   },
   addPerson: () => openAddPerson(),
-  removePerson: async (d) => { const people = clone(settings().people); if (people.length <= 1 || !await askConfirm(`Remove ${people[+d.i].name}? Portions and the shopping list will be for one fewer.`)) return; people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); closeSheet(); },
+  removePerson: async (d) => {
+    const people = clone(settings().people), p = people[+d.i], m = online() && memberFor(p && p.id);
+    if (!p || people.length <= 1 || (m && m.email === meEmail())) return;
+    if (!await askConfirm(`Remove ${p.name}? Portions and the shopping list will be for one fewer.${m ? ` They'll also lose access to the app.` : ""}`, { ok: "Remove", danger: true })) return;
+    if (m) { try { await accountCall("api/account/remove", { email: m.email }); } catch (err) { return toast(err.message); } }
+    people.splice(+d.i, 1); send({ op: "settings", patch: { people } }); closeSheet(); if (m) loadAccount();
+  },
   allergyDone: () => { send({ op: "settings", patch: { allergyAsked: true } }); toast(avoidList().length ? "Saved. Recipes with those are hidden" : "Saved: no allergies"); },
   avoid: (d) => {
     const a = new Set(settings().avoid || []), adding = !a.has(d.k);
@@ -1932,7 +1938,16 @@ async function onSubmit(e) {
     send({ op: "feedback", recipe: "_problem", rating: "problem", tags: [], note: `${text.slice(0, 300)}\n— ${reportDetails()}`.slice(0, 500) });
     closeSheet(); toast("Sent. Thanks for letting us know"); return;
   }
-  if (f.dataset.form === "addPerson") { const name = val("name").trim(); if (!name || settings().people.length >= MAX_PEOPLE) return; const people = clone(settings().people); people.push({ id: uid(), name, portion: 1, goal: 40 }); send({ op: "settings", patch: { people } }); closeSheet(); toast(`${name} added`); return; }
+  if (f.dataset.form === "addPerson") {
+    const name = val("name").trim(), email = val("email").trim(); if (!name || settings().people.length >= MAX_PEOPLE) return;
+    const people = clone(settings().people), id = uid(); people.push({ id, name, portion: 1, goal: 40 });
+    if (!email) { send({ op: "settings", patch: { people } }); closeSheet(); toast(`${name} added`); return; }
+    const btn = f.querySelector("button"); if (btn) { btn.disabled = true; btn.textContent = "Adding…"; }
+    accountCall("api/account/invite", { name, email, person: id }).then(async (res) => { // only add them once the invite worked
+      send({ op: "settings", patch: { people } }); await loadAccount(); showInviteResult(name, email.toLowerCase(), res.signIn);
+    }).catch((err) => { toast(err.message); if (btn) { btn.disabled = false; btn.textContent = "Add"; } });
+    return;
+  }
   if (f.dataset.form === "adminNotice") { adminDo("api/admin/notice", { text: val("text") }, () => toast("Sent")); return; }
   if (f.dataset.form === "adminRename") { adminDo("api/admin/rename-household", { id: f.dataset.id, name: val("name").trim() }, () => toast("Renamed")); return; }
   if (f.dataset.form === "invite" || f.dataset.form === "newHousehold") { submitInvite(f.dataset.form === "newHousehold" ? "household" : "member", f); return; }
@@ -2040,13 +2055,21 @@ const meEmail = () => (app.account && app.account.me && app.account.me.email) ||
 function memberFor(personId) { return personId ? acctMembers().find((m) => m.person === personId) : null; }
 function unlinkedMembers() { const ids = new Set(settings().people.map((p) => p.id)); return acctMembers().filter((m) => !m.person || !ids.has(m.person)); }
 function unlinkedPeople() { const linked = new Set(acctMembers().map((m) => m.person)); return settings().people.filter((p) => !linked.has(p.id)); }
-/** Existing households: link accounts to grown-ups with the same name (only when it's a clear match). */
+// Everyone with the app is one of the grown-ups. Matching an account to its grown-up, on opening Settings:
+// the same name; or (a new household) the first placeholder "Adult 1/2…", renamed to them; otherwise
+// Settings asks once "Who is this?".
+const placeholder = (p) => /^Adult \d+$/.test(p.name.trim());
 async function autoLink() {
   if (app.autoLinked || !online() || !app.account || !app.account.household) return;
   app.autoLinked = true;
   for (const m of unlinkedMembers()) {
-    const hits = unlinkedPeople().filter((p) => p.name.trim().toLowerCase() === m.name.trim().toLowerCase());
-    if (hits.length === 1) try { app.account = { ...app.account, ...(await accountCall("api/account/link", { email: m.email, person: hits[0].id })) }; } catch { /* leave it unlinked */ }
+    const free = unlinkedPeople(), hits = free.filter((p) => p.name.trim().toLowerCase() === m.name.trim().toLowerCase());
+    let target = hits.length === 1 ? hits[0] : null;
+    if (!target && (target = free.find(placeholder))) {
+      const people = clone(settings().people); people.find((p) => p.id === target.id).name = m.name;
+      send({ op: "settings", patch: { people } }, { rerender: false });
+    }
+    if (target) try { app.account = { ...app.account, ...(await accountCall("api/account/link", { email: m.email, person: target.id })) }; } catch { /* asked about instead */ }
   }
 }
 async function linkMember(email, person) {
@@ -2068,18 +2091,17 @@ function whoYouCookFor() {
   const emailLine = (p) => { const m = online() && memberFor(p.id); return m ? `<br><span class="small muted">${esc(m.email)}${m.email === me ? " · you" : ""}</span>` : ""; };
   const adults = s.people.map((p, i) => `<button class="rrow" data-act="person" data-i="${i}" style="padding:12px 16px"><span class="grow"><b>${esc(p.name)}</b><br><span class="small muted">${esc(sizeLabel(+p.portion || 1))} · about ${Math.round(typicalDinnerKcal() * (+p.portion || 1) / 10) * 10} kcal</span>${emailLine(p)}</span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   const little = kidsHere.map((k) => `<button class="rrow kid-stripe ${kidBornDate(k) ? "" : "nudge-field"}" data-act="kidPanel" data-id="${esc(k.id)}" style="padding:12px 16px;${kidStyle(k)}"><span class="grow"><b>${esc(k.name || "Little one")}</b><br><span class="small muted">${kidBornDate(k) ? esc(monthsText(kidAge(k))) : "add when they were born"} · ${esc((STAGES[k.stage]?.name || "").split(" &")[0])} · ${esc(portionShort(k.portion))} portion</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
-  const also = others.map((m) => `<button class="rrow" data-act="memberPanel" data-email="${esc(m.email)}" style="padding:12px 16px"><span class="grow"><b>${esc(m.name)}</b>${m.email === me ? ` <span class="small muted">(you)</span>` : ""}<br><span class="small muted">${esc(m.email)}</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
+  const ask = others.map((m) => `<button class="rrow nudge-field" data-act="memberPanel" data-email="${esc(m.email)}" style="padding:12px 16px"><span class="grow"><b>${esc(m.name)}${m.email === me ? " (you)" : ""} uses the app</b><br><span class="small muted">${esc(m.email)} · tap to say which grown-up this is</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   return `${householdTitle()}
     <div class="list">
       <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner, signed in or not</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
-      ${adults}
+      ${ask}${adults}
       <div style="padding:4px 16px 12px">${settings().people.length < MAX_PEOPLE ? `<button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button>` : `<span class="small muted">Up to ${MAX_PEOPLE} grown-ups. Use guests on a day for bigger gatherings.</span>`}</div>
       <label class="row between" style="padding:13px 16px;border-top:1px solid var(--line-soft);gap:12px"><span><b>Cooking for little ones</b><br><span class="small muted">${paused ? `${esc(kidNames(kidsAll()))} ${kidsAll().length > 1 ? "are" : "is"} saved but left out for now` : "Their own portions, stages and safety notes in every recipe"}</span></span>
         <span class="switch"><input type="checkbox" data-set="kidsOn" ${kidsOn() ? "checked" : ""} aria-label="Cooking for little ones"><i></i></span></label>
       ${little}
       ${kidsOn() ? `<div style="padding:4px 16px 12px">${kidsAll().length < MAX_PEOPLE ? `<button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button>` : `<span class="small muted">Up to ${MAX_PEOPLE} little ones.</span>`}</div>` : ""}
-      ${online() && app.account && app.account.household ? `<div style="padding:12px 16px 4px;border-top:1px solid var(--line-soft)"><span class="small muted">${others.length ? "Also uses the app (not eating here, or not matched to anyone above)" : "Tap a grown-up to invite them to the app."}</span></div>
-      ${also}<div style="padding:4px 16px 12px"><button class="btn sm ghost" data-act="acctInvite">${icon("plus", 16)}Invite someone else to the app</button></div>` : ""}
+
     </div>`;
 }
 /** A grown-up's panel: name, named size (with what it means), optional protein goal. */
@@ -2097,7 +2119,7 @@ function openPerson(i, { keepScroll = false } = {}) {
     <p class="section-label">Protein goal at dinner <span class="muted" style="text-transform:none;letter-spacing:0">(optional)</span></p>
     <div class="row" style="justify-content:flex-end"><div class="stepper"><button data-act="goal" data-i="${i}" data-d="-5" aria-label="Less">−</button><span>${p.goal || 40} g</span><button data-act="goal" data-i="${i}" data-d="5" aria-label="More">+</button></div></div>
     ${personAppPart(p, i)}
-    <div class="row" style="gap:8px;margin-top:18px"><button class="btn primary" data-close>Done</button>${s.people.length > 1 ? `<button class="btn" style="color:var(--warm)" data-act="removePerson" data-i="${i}">${icon("trash", 16)}Remove</button>` : ""}</div>`, { keepScroll });
+    <div class="row" style="gap:8px;margin-top:18px"><button class="btn primary" data-close>Done</button>${s.people.length > 1 && !(online() && memberFor(p.id) && memberFor(p.id).email === meEmail()) ? `<button class="btn" style="color:var(--warm)" data-act="removePerson" data-i="${i}">${icon("trash", 16)}Remove</button>` : ""}</div>`, { keepScroll });
   app.panel = { type: "person", i };
 }
 /** Online: whether this grown-up has the app, and the way to invite or link them. */
@@ -2107,11 +2129,9 @@ function personAppPart(p, i) {
   if (m) return `<p class="section-label">Uses the app</p>
     <div class="row" style="gap:8px"><span class="grow">${esc(m.email)}<br><span class="small muted">${m.email === me ? "That's you" : m.lastSeen ? `Last used ${esc(lastSeenText(m.lastSeen))}` : "Hasn't signed in yet"}</span></span>
       ${m.email !== me ? `<button class="btn sm" style="color:var(--warm)" data-act="acctRemove" data-email="${esc(m.email)}" data-name="${esc(p.name)}">Remove from the app</button>` : ""}</div>`;
-  const spare = unlinkedMembers();
   return `<p class="section-label">Uses the app</p>
-    <p class="small muted" style="margin:0 0 8px">${esc(p.name)} doesn't have the app. They don't need it to be cooked for.</p>
-    <button class="btn sm" data-act="personInvite" data-i="${i}">${icon("plus", 16)}Invite ${esc(p.name)} to the app</button>
-    ${spare.length ? `<p class="small muted" style="margin:12px 0 6px">Or they're already in, as:</p><div class="row" style="gap:6px;flex-wrap:wrap">${spare.map((x) => `<button class="btn sm ghost" data-act="linkMember" data-email="${esc(x.email)}" data-person="${esc(p.id)}">${esc(x.name)} · ${esc(x.email)}</button>`).join("")}</div>` : ""}`;
+    <p class="small muted" style="margin:0 0 8px">${placeholder(p) ? "Not set up yet." : `${esc(p.name)} doesn't have the app. They don't need it to be cooked for.`}</p>
+    <button class="btn sm" data-act="personInvite" data-i="${i}">${icon("plus", 16)}${placeholder(p) ? "Invite someone to the app" : `Invite ${esc(p.name)} to the app`}</button>`;
 }
 function lastSeenText(t) {
   const days = Math.floor((Date.now() / 1000 - t) / 86400);
@@ -2124,8 +2144,7 @@ function openMemberPanel(email) {
   openSheet(`<p class="eyebrow">Uses the app</p><h1 class="title" style="font-size:26px">${esc(m.name)}${mine ? " (you)" : ""}</h1>
     <p class="muted" style="margin-top:0">${esc(m.email)}</p>
     ${spare.length ? `<p class="section-label">Which grown-up is this?</p><div class="row" style="gap:6px;flex-wrap:wrap">${spare.map((p) => `<button class="btn sm" data-act="linkMember" data-email="${esc(m.email)}" data-person="${esc(p.id)}">${esc(p.name)}</button>`).join("")}</div>` : ""}
-    ${settings().people.length < MAX_PEOPLE ? `<p class="section-label">Or</p><button class="btn sm" data-act="memberAddPerson" data-email="${esc(m.email)}">${icon("plus", 16)}Add ${esc(m.name)} as a grown-up we cook for</button>` : ""}
-    <p class="small muted" style="margin-top:14px">If ${mine ? "you don't" : `${esc(m.name)} doesn't`} eat here, leave this as it is.</p>
+    ${settings().people.length < MAX_PEOPLE ? `<p class="section-label">${spare.length ? "Or" : "Add them"}</p><button class="btn sm" data-act="memberAddPerson" data-email="${esc(m.email)}">${icon("plus", 16)}Add ${esc(m.name)} as a new grown-up</button>` : ""}
     <div class="row" style="gap:8px;margin-top:12px"><button class="btn primary" data-close>Done</button>${mine ? "" : `<button class="btn" style="color:var(--warm)" data-act="acctRemove" data-email="${esc(m.email)}" data-name="${esc(m.name)}">${icon("trash", 16)}Remove from the app</button>`}</div>`);
   app.panel = { type: "member", email };
 }
@@ -2174,10 +2193,11 @@ function refreshPanel() {
 }
 function openAddPerson() {
   const names = new Set(settings().people.map((p) => p.name.toLowerCase()));
-  const members = (online() ? unlinkedMembers() : []).map((m) => m.name).filter((n) => n && !names.has(n.toLowerCase()));
+  const members = [];
   openSheet(`<p class="eyebrow">Who you cook for</p><h1 class="title" style="font-size:26px">Add a grown-up</h1>
     ${members.length ? `<p class="small muted" style="margin-bottom:6px">From your household:</p><div class="chips wrap" style="margin-bottom:12px">${members.map((n) => `<button class="chip" data-act="addPersonNamed" data-n="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
     <form data-form="addPerson" class="stack"><label><span class="small muted">Name</span><input class="input" name="name" required autocomplete="off" placeholder="e.g. Grandad"></label>
+      ${online() && app.account && app.account.household ? `<label><span class="small muted">Their email, if they'll use the app too (optional)</span><input class="input" name="email" type="email" autocomplete="off" inputmode="email"></label>` : ""}
       <button class="btn lg primary">Add</button></form>`);
 }
 
@@ -2383,6 +2403,8 @@ async function submitInvite(kind, f) {
   const btn = f.querySelector("button"); if (btn) { btn.disabled = true; btn.textContent = "Adding…"; }
   try {
     const res = await accountCall(kind === "household" ? "api/admin/household" : "api/account/invite", body);
+    const ph = body.person && settings().people.find((p) => p.id === body.person && placeholder(p));
+    if (ph) send({ op: "settings", patch: { people: settings().people.map((p) => (p.id === ph.id ? { ...p, name: body.name } : p)) } }); // "Adult 2" becomes their name
     await loadAccount();
     showInviteResult(body.name, body.email.toLowerCase(), res.signIn);
   } catch (err) {
