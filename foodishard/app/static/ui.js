@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.5"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -2109,7 +2109,7 @@ function whoYouCookFor() {
         <span class="switch"><input type="checkbox" data-set="kidsOn" ${kidsOn() ? "checked" : ""} aria-label="Cooking for little ones"><i></i></span></label>
       ${little}
       ${kidsOn() ? `<div style="padding:4px 16px 12px">${kidsAll().length < MAX_PEOPLE ? `<button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button>` : `<span class="small muted">Up to ${MAX_PEOPLE} little ones.</span>`}</div>` : ""}
-      <button class="rrow" data-act="portionInfo" style="padding:12px 16px;background:var(--sunk)"><span class="grow"><b>${niceNumber(factor)} portions a night</b></span><span class="muted" aria-hidden="true">ⓘ</span></button>
+      <button class="rrow" data-act="portionInfo" style="padding:12px 16px;background:var(--sunk)"><span class="grow" style="text-align:right">${niceNumber(factor)} portions a night</span><span class="muted" aria-hidden="true">ⓘ</span></button>
 
     </div>`;
 }
