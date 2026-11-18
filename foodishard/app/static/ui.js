@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.11"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.12"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -686,6 +686,8 @@ function viewSettings() {
         <span class="small muted">${esc(app.ing.prices_note || "")}</span></label>
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Budget mode</b><br><span class="small muted">Swaps like frozen veg, garlic paste, bottled lemon${saving > 0.05 ? ` · about ${money(saving)} ${s.budget ? "saved" : "cheaper"} this week` : ""}</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="budget" ${s.budget ? "checked" : ""}><i></i></span></label>
+      ${s.budget ? (() => { const all = budgetSwaps(), on = all.filter(([k]) => !(s.budgetSkip || []).includes(k)).length;
+        return `<button class="rrow" data-act="budgetSwaps" style="padding:12px 16px;border-top:1px solid var(--line-soft)"><span class="grow">Swaps</span><span class="muted">${on} of ${all.length} on</span><span class="muted" aria-hidden="true">›</span></button>`; })() : ""}
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Track food inflation</b>${infLine ? `<br><span class="small muted">${infLine}</span>` : ""}</span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="inflation" ${s.inflation !== false ? "checked" : ""}><i></i></span></label>
       <button class="row" style="padding:13px 16px;width:100%;border:0;background:none;text-align:left" data-act="aisles"><span class="grow"><b>Aisle order</b></span><span aria-hidden="true">›</span></button>
@@ -1714,6 +1716,7 @@ const ACTIONS = {
   memberPanel: (d) => openMemberPanel(d.email),
   accountData: () => openAccountData(),
   dislikes: () => openDislikes(),
+  budgetSwaps: () => openBudgetSwaps(),
   dropDislikeWord: (d) => { send({ op: "settings", patch: { dislikes: dislikeWords().filter((w) => w !== d.w).join(", ") } }); openDislikes({ keepScroll: true }); },
   portionInfo: (d, el) => {
     const { adults, kids: little, factor } = household();
@@ -1908,6 +1911,7 @@ function onChange(e) {
       if (d.f === "weekStartDay") { app.weekStart = iso(weekStartFor(new Date(), +el.value)); render(); }
       return;
     }
+    case "budgetSwap": { const skip = new Set(settings().budgetSkip || []); if (el.checked) skip.delete(d.k); else skip.add(d.k); send({ op: "settings", patch: { budgetSkip: [...skip] } }); return; }
     case "dislike": { const keys = dislikeKeys(); if (el.checked) keys.add(d.k); else keys.delete(d.k); send({ op: "settings", patch: { dislikeKs: [...keys] } }); return; }
     case "bool": send({ op: "settings", patch: { [d.f]: el.checked } }); if (d.f === "lifeOn" && el.checked) toast("Life tab added"); return;
     case "acctName": case "acctHousehold": {
@@ -2169,10 +2173,29 @@ function openDislikes({ keepScroll = false } = {}) {
     ${words.length ? `<p class="small" style="margin:0 0 8px">Typed earlier, still avoided: ${words.map((w) => `<button class="chip" data-act="dropDislikeWord" data-w="${esc(w)}">${esc(w)} ✕</button>`).join(" ")}</p>` : ""}
     ${picked.length ? `<p class="section-label">Your dislikes</p><div>${picked.map(row).join("")}</div>` : ""}
     <p class="section-label">All ingredients</p>
-    <input class="input" id="dislikeSearch" type="search" placeholder="Search, e.g. mushroom" autocomplete="off" style="margin-bottom:6px">
-    <div id="dislikeList">${items.filter(([k]) => !keys.has(k)).map(row).join("")}</div>
+    ${filterBox("Search, e.g. mushroom")}
+    <div id="sheetFilterList">${items.filter(([k]) => !keys.has(k)).map(row).join("")}</div>
     <button class="btn primary" style="margin-top:16px" data-close>Done</button>`, { keepScroll });
   app.panel = { type: "dislikes" };
+}
+
+/** A search box for a long list in a panel. Tapping it lifts it to the top of the panel, so results show above the keyboard. */
+function filterBox(placeholder) {
+  return `<input class="input" id="sheetFilter" type="search" placeholder="${esc(placeholder)}" autocomplete="off" style="margin-bottom:6px"
+    onfocus="setTimeout(() => this.scrollIntoView({ block: 'start', behavior: 'smooth' }), 250)">`;
+}
+// ---- Budget mode's swaps: each can be turned off (kept fresh) ----
+function openBudgetSwaps({ keepScroll = false } = {}) {
+  const skip = new Set(settings().budgetSkip || []), all = budgetSwaps();
+  const row = ([k, m, o]) => `<label class="row" data-name="${esc(singular(`${m.n} ${ingMeta(o.k).n}`.toLowerCase()))}" style="padding:10px 2px;gap:12px;border-bottom:1px solid var(--line-soft)">
+      <input type="checkbox" class="check-input" data-set="budgetSwap" data-k="${esc(k)}" ${skip.has(k) ? "" : "checked"}>
+      <span class="grow">${esc(m.n)} <span class="muted">→</span> ${esc(ingMeta(o.k).n)}</span></label>`;
+  openSheet(`<p class="eyebrow">Budget mode</p><h1 class="title" style="font-size:26px">Swaps</h1>
+    <p class="muted" style="margin-top:0">Cheaper versions of the same thing. Untick any you'd rather keep fresh. Never used for what a dinner is named after.</p>
+    ${all.length > 8 ? filterBox("Search swaps") : ""}
+    <div id="sheetFilterList">${all.map(row).join("")}</div>
+    <button class="btn primary" style="margin-top:16px" data-close>Done</button>`, { keepScroll });
+  app.panel = { type: "budgetSwaps" };
 }
 
 /** Online: whether this grown-up has the app, and the way to invite or link them. */
@@ -2726,9 +2749,9 @@ function confirmReplace(when) {
 }
 
 function onInput(e) {
-  if (e.target.id === "dislikeSearch") { // filter the list as you type
+  if (e.target.id === "sheetFilter") { // filter a panel's list as you type
     const q = singular(e.target.value.trim().toLowerCase());
-    $$("#dislikeList [data-name]").forEach((r) => { r.hidden = !!q && !r.dataset.name.includes(q); });
+    $$("#sheetFilterList [data-name]").forEach((r) => { r.hidden = !!q && !r.dataset.name.includes(q); });
     return;
   }
   if (e.target.dataset.input === "afilter" || e.target.dataset.input === "ffilter") {
@@ -2995,3 +3018,15 @@ boot().catch((err) => {
   console.error(err);
   $("#view").innerHTML = `<div class="empty"><p class="h2">Something went wrong loading</p><p>${esc(err.message)}</p></div>`;
 });
+
+// Some phone browsers don't shrink the page when the keyboard opens, so a panel's bottom (and what you're
+// searching for) ends up behind it. Track the visible area and keep panels above the keyboard.
+(function keyboardAware() {
+  const vv = window.visualViewport; if (!vv) return;
+  const set = () => {
+    const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+    document.documentElement.style.setProperty("--kb", `${Math.round(kb)}px`);
+    document.documentElement.style.setProperty("--vvh", `${Math.round(vv.height)}px`);
+  };
+  vv.addEventListener("resize", set); vv.addEventListener("scroll", set); set();
+})();

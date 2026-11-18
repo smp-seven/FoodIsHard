@@ -3,6 +3,13 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.14.12",
+   "notes": [
+    "Budget mode: choose which swaps it makes. Tap Swaps under the switch and untick any you'd rather keep fresh.",
+    "Search boxes in panels stay above the keyboard."
+   ]
+  },
+  {
    "version": "0.14.11",
    "notes": [
     "Your account and data is now at the bottom of Settings."

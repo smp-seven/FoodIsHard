@@ -436,3 +436,5 @@ article.day.swapping { position: relative; z-index: 3; transition: transform .38
 .hh-title[disabled] { cursor: default; }
 .hh-title .hh-edit { font-family: var(--sans, inherit); font-size: 15px; color: var(--muted); }
 .ask-wrap.bubble .ask-info { font-size: 14px; min-width: 170px; display: grid; gap: 4px; }
+/* panels sit above the on-screen keyboard (see keyboardAware in ui.js) */
+.sheet-panel { bottom: var(--kb, 0px); max-height: min(92vh, calc(var(--vvh, 100vh) - 12px)); }

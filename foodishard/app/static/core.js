@@ -351,11 +351,16 @@ function resolveIng(k, r = null) {
   const chosen = local !== undefined ? local : global;
   let alt = null;
   if (chosen !== undefined) alt = options.find((o) => o.k === chosen) || null;
-  else if (settings().budget && !isHeadline(k, r)) {
+  else if (settings().budget && !isHeadline(k, r) && !(settings().budgetSkip || []).includes(k)) { // unless they've turned this swap off
     const avoid = avoidList(), clashes = (o) => [...(ingMeta(o.k).al || []), ...(ingMeta(o.k).mc || [])].some((a) => avoid.includes(a));
     alt = options.find((o) => o.auto && !clashes(o)) || null; // never swap in something the household avoids
   }
   return alt ? { k: alt.k, r: alt.r, from: k, local: local !== undefined } : { k, r: 1, from: null };
+}
+/** Budget mode's like-for-like swaps, one per ingredient: [key, ingredient, swap]. */
+function budgetSwaps() {
+  return Object.entries(app.ing.items).map(([k, m]) => [k, m, (m.sw || []).find((o) => o.auto && o.budget)]).filter(([, , o]) => o)
+    .sort((a, b) => a[1].n.localeCompare(b[1].n));
 }
 /** Swaps that change what the dish is (shown on the week card), e.g. "with firm tofu". */
 function headlineSwaps(r) {
