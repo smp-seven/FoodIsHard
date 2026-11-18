@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.3"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.4"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -651,8 +651,8 @@ function viewSettings() {
 
   return `${header("Settings", "Your household", `<button class="icon-btn" data-act="go" data-to="${app.prevTab || "tonight"}" aria-label="Back">${icon("left", 18)}</button>`)}
     ${updateCard()}
-    ${whoYouCookFor()}
     ${accountSection()}
+    ${whoYouCookFor()}
 
     <p class="section-label">Food</p>
     <div class="list">
@@ -1254,13 +1254,15 @@ function swapTap(e) {
 }
 /** The app's own "are you sure?", in place of the browser's grey box (which looks like a security warning). A small card
     over a dimmed page; resolves true for the main button, false for Cancel, tapping outside or Escape. */
-function askConfirm(message, { ok = "OK", cancel = "Cancel", danger = false, anchor = null } = {}) {
+/** A little speech bubble of information that pops out of what you tapped; tap anywhere to close it. */
+function infoBubble(anchor, html) { return askConfirm("", { anchor, html }); }
+function askConfirm(message, { ok = "OK", cancel = "Cancel", danger = false, anchor = null, html = "" } = {}) {
   return new Promise((resolve) => {
     const old = $("#askConfirm"); if (old) old.remove();
     // anchor: a quick yes/no in a speech bubble that pops out of the button you tapped; otherwise a card from the bottom
     document.body.insertAdjacentHTML("beforeend", `<div id="askConfirm" class="ask-wrap ${anchor ? "bubble" : ""}" role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card">
-      <p id="askMsg">${esc(message)}</p>
-      <div class="ask-btns"><button class="btn ${anchor ? "sm" : ""}" data-ask="0">${esc(cancel)}</button><button class="btn ${anchor ? "sm" : ""} ${danger ? "danger" : "primary"}" data-ask="1">${esc(ok)}</button></div></div></div>`);
+      ${html ? `<div id="askMsg" class="ask-info">${html}</div>` : `<p id="askMsg">${esc(message)}</p>`}
+      ${html ? "" : `<div class="ask-btns"><button class="btn ${anchor ? "sm" : ""}" data-ask="0">${esc(cancel)}</button><button class="btn ${anchor ? "sm" : ""} ${danger ? "danger" : "primary"}" data-ask="1">${esc(ok)}</button></div>`}</div></div>`);
     const wrap = $("#askConfirm");
     if (anchor) { // sit just above the button (or below if there's no room), arrow pointing at it
       const r = anchor.getBoundingClientRect(), card = wrap.querySelector(".ask-card"), w = card.offsetWidth, h = card.offsetHeight;
@@ -1271,8 +1273,8 @@ function askConfirm(message, { ok = "OK", cancel = "Cancel", danger = false, anc
     const done = (v) => { document.removeEventListener("keydown", key, true); wrap.remove(); resolve(v); };
     const key = (e) => { if (e.key === "Escape") { e.stopPropagation(); done(false); } };
     document.addEventListener("keydown", key, true);
-    wrap.addEventListener("click", (e) => { e.stopPropagation(); const b = e.target.closest("[data-ask]"); if (b) done(b.dataset.ask === "1"); else if (e.target === wrap) done(false); });
-    requestAnimationFrame(() => { wrap.classList.add("show"); wrap.querySelector('[data-ask="1"]').focus(); });
+    wrap.addEventListener("click", (e) => { e.stopPropagation(); const b = e.target.closest("[data-ask]"); if (b) done(b.dataset.ask === "1"); else if (e.target === wrap || html) done(false); });
+    requestAnimationFrame(() => { wrap.classList.add("show"); const b = wrap.querySelector('[data-ask="1"]'); if (b) b.focus(); });
   });
 }
 function openMove(keys) {
@@ -1707,6 +1709,12 @@ const ACTIONS = {
     toast("Linked");
   },
   memberPanel: (d) => openMemberPanel(d.email),
+  portionInfo: (d, el) => {
+    const { adults, kids: little, factor } = household();
+    const line = (name, v, txt) => `<div class="row between" style="gap:14px"><span>${esc(name)}</span><span>${txt || niceNumber(v)}</span></div>`;
+    infoBubble(el || $('[data-act="portionInfo"]'), `${adults.map((p) => line(p.name, +p.portion || 0)).join("")}${little.map((k) => line(k.name || "Little one", +k.portion || 0, portionShort(+k.portion || 0))).join("")}
+      <div class="row between" style="gap:14px;border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><b>Each night</b><b>${niceNumber(factor)}</b></div>`);
+  },
   toggleEmails: () => { app.showEmails = !app.showEmails; if (app.panel && app.panel.type === "member") openMemberPanel(app.panel.email); else refreshPanel(); },
   memberAddPerson: async (d) => {
     const m = acctMembers().find((x) => x.email === d.email); if (!m || settings().people.length >= MAX_PEOPLE) return;
@@ -2095,13 +2103,13 @@ function whoYouCookFor() {
   const ask = others.map((m) => `<button class="rrow nudge-field" data-act="memberPanel" data-email="${esc(m.email)}" style="padding:12px 16px"><span class="grow"><b>${esc(m.name)}${m.email === me ? " (you)" : ""} uses the app</b><br><span class="small muted">Tap to say which grown-up this is</span></span><span class="muted" aria-hidden="true">›</span></button>`).join("");
   return `${householdTitle()}
     <div class="list">
-      <div class="row between" style="padding:12px 16px;gap:12px;background:var(--sunk)"><span class="small muted">Everyone who eats dinner, signed in or not</span><b style="white-space:nowrap">${niceNumber(factor)} portions a night</b></div>
       ${ask}${adults}
       <div style="padding:4px 16px 12px">${settings().people.length < MAX_PEOPLE ? `<button class="btn sm" data-act="addPerson">${icon("plus", 16)}Add a grown-up</button>` : `<span class="small muted">Up to ${MAX_PEOPLE} grown-ups. Use guests on a day for bigger gatherings.</span>`}</div>
       <label class="row between" style="padding:13px 16px;border-top:1px solid var(--line-soft);gap:12px"><span><b>Cooking for little ones</b><br><span class="small muted">${paused ? `${esc(kidNames(kidsAll()))} ${kidsAll().length > 1 ? "are" : "is"} saved but left out for now` : "Their own portions, stages and safety notes in every recipe"}</span></span>
         <span class="switch"><input type="checkbox" data-set="kidsOn" ${kidsOn() ? "checked" : ""} aria-label="Cooking for little ones"><i></i></span></label>
       ${little}
       ${kidsOn() ? `<div style="padding:4px 16px 12px">${kidsAll().length < MAX_PEOPLE ? `<button class="btn sm" data-act="kidAdd">${icon("plus", 16)}Add a little one</button>` : `<span class="small muted">Up to ${MAX_PEOPLE} little ones.</span>`}</div>` : ""}
+      <button class="rrow" data-act="portionInfo" style="padding:12px 16px;background:var(--sunk)"><span class="grow"><b>${niceNumber(factor)} portions a night</b></span><span class="muted" aria-hidden="true">ⓘ</span></button>
 
     </div>`;
 }

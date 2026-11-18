@@ -435,3 +435,4 @@ article.day.swapping { position: relative; z-index: 3; transition: transform .38
 .hh-title { display: flex; align-items: baseline; gap: 8px; width: 100%; margin: 18px 0 10px; padding: 0 4px; background: none; border: 0; text-align: left; color: var(--ink); font-family: var(--serif); font-weight: 600; font-size: 24px; line-height: 1.15; cursor: pointer; }
 .hh-title[disabled] { cursor: default; }
 .hh-title .hh-edit { font-family: var(--sans, inherit); font-size: 15px; color: var(--muted); }
+.ask-wrap.bubble .ask-info { font-size: 14px; min-width: 170px; display: grid; gap: 4px; }
