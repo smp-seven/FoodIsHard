@@ -6,6 +6,16 @@
   const save = (p) => { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* fine */ } };
   const clamp = (n) => Math.max(0, Math.min(100, n));
   const RATE = { food: 4, fun: 3, clean: 2 }; // points lost per hour
+  // Who might come up when you pull: body shape, colours, and whether there are leaves on top
+  const VEG = {
+    potato: { name: "Spud", what: "a potato", fill: "#d9a865", line: "#b9854a", body: "M30 40c4-22 30-30 50-24s28 22 24 42-14 38-40 40-40-14-38-30 0-18 4-28z" },
+    carrot: { name: "Cara", what: "a carrot", fill: "#ef8a2c", line: "#c96a14", leafy: true, body: "M30 30Q62 16 94 30Q90 60 66 102Q62 108 58 102Q34 60 30 30z" },
+    beetroot: { name: "Beetrice", what: "a beetroot", fill: "#a3324f", line: "#7a2238", leafy: true, body: "M62 24c22 0 36 16 36 38s-16 34-32 36l-4 10-4-10c-16-2-32-14-32-36s14-38 36-38z" },
+    parsnip: { name: "Nip", what: "a parsnip", fill: "#efe0bb", line: "#c9b17e", leafy: true, body: "M32 30Q62 18 92 30Q88 62 65 104Q62 108 59 104Q36 62 32 30z" },
+    radish: { name: "Rad", what: "a radish", fill: "#e0465a", line: "#b02d40", leafy: true, body: "M62 26c20 0 34 14 34 32s-14 30-28 34l-6 14-6-14c-14-4-28-16-28-34s14-32 34-32z" },
+  };
+  const veg = (p) => VEG[(p && p.kind) || "potato"] || VEG.potato;
+  const LEAVES = `<path d="M62 30c-2-10-10-18-20-20 2 10 10 18 20 20zM62 30c0-12 2-20 6-26 4 8 2 18-6 26zM62 30c4-10 12-16 22-16-4 10-12 16-22 16z" fill="#6fae63" stroke="#4f8a4f" stroke-width="1.5"/>`;
 
   function tick(p) { // catch up on the time away
     const now = Date.now(), hrs = (now - p.at) / HOUR;
@@ -22,7 +32,7 @@
   const mood = (p) => { const m = Math.min(p.food, p.fun, p.clean); return m > 55 ? "happy" : m > 20 ? "ok" : "sad"; };
 
   function spud(p, anim) {
-    const sleeping = asleep(), m = mood(p);
+    const sleeping = asleep(), m = mood(p), v = veg(p);
     const eyes = sleeping ? `<path d="M44 52q6 4 12 0M68 52q6 4 12 0" stroke="#3b2a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`
       : `<circle cx="50" cy="52" r="5" fill="#3b2a1a"/><circle cx="74" cy="52" r="5" fill="#3b2a1a"/><circle cx="52" cy="50" r="1.6" fill="#fff"/><circle cx="76" cy="50" r="1.6" fill="#fff"/>`;
     const mouth = sleeping ? `<circle cx="62" cy="68" r="3" fill="#3b2a1a"/>`
@@ -32,18 +42,17 @@
     const dirt = p.clean < 40 ? `<circle cx="38" cy="74" r="3" fill="#7a5a3a" opacity=".6"/><circle cx="84" cy="40" r="2.5" fill="#7a5a3a" opacity=".6"/><circle cx="80" cy="80" r="2" fill="#7a5a3a" opacity=".6"/>` : "";
     return `<div class="pet-spud ${anim || ""} ${sleeping ? "zzz" : ""}"><svg viewBox="0 0 124 110" width="150" height="133" aria-hidden="true">
       <ellipse cx="62" cy="104" rx="34" ry="5" fill="rgba(0,0,0,.12)"/>
-      <path d="M30 40c4-22 30-30 50-24s28 22 24 42-14 38-40 40-40-14-38-30 0-18 4-28z" fill="#d9a865" stroke="#b9854a" stroke-width="2"/>
-      <circle cx="44" cy="34" r="2" fill="#b9854a"/><circle cx="90" cy="66" r="2" fill="#b9854a"/><circle cx="70" cy="88" r="1.6" fill="#b9854a"/>
+      ${v.leafy ? LEAVES : ""}<path d="${v.body}" fill="${v.fill}" stroke="${v.line}" stroke-width="2"/>
+      ${p.kind && p.kind !== "potato" ? `<path d="M44 80q6 2 10 0M70 84q5 2 9 0" stroke="${v.line}" stroke-width="1.5" fill="none" opacity=".7"/>` : `<circle cx="44" cy="34" r="2" fill="${v.line}"/><circle cx="90" cy="66" r="2" fill="${v.line}"/><circle cx="70" cy="88" r="1.6" fill="${v.line}"/>`}
       ${m === "happy" && !sleeping ? `<circle cx="42" cy="62" r="5" fill="#f08a7a" opacity=".5"/><circle cx="82" cy="62" r="5" fill="#f08a7a" opacity=".5"/>` : ""}
       ${eyes}${mouth}${dirt}</svg></div>`;
   }
-  // Before Spud: a potato plant in a mound of soil. Each tug pulls it up a little more.
-  const egg = (pulls) => { const up = pulls * 7; return `<div class="pet-spud egg ${pulls ? "tug" : ""}"><svg viewBox="0 0 124 110" width="150" height="133" aria-hidden="true">
+  // Before the pet: a plant in a mound of soil. Each tug pulls it up a little more.
+  const egg = (pulls, kind) => { const up = pulls * 7, v = VEG[kind] || VEG.potato; return `<div class="pet-spud egg ${pulls ? "tug" : ""}"><svg viewBox="0 0 124 110" width="150" height="133" aria-hidden="true">
       <g transform="translate(0 ${-up})">
         <path d="M62 86V44" stroke="#4f8a4f" stroke-width="4" stroke-linecap="round"/>
         <path d="M62 62c-14-2-22-12-22-22 12 0 20 8 22 22zM62 54c12-2 20-12 20-24-12 2-19 10-20 24zM62 46c-8-6-10-14-6-22 7 4 9 12 6 22z" fill="#6fae63" stroke="#4f8a4f" stroke-width="1.5"/>
-        <circle cx="72" cy="30" r="3.5" fill="#fff"/><circle cx="72" cy="30" r="1.4" fill="#f2c94c"/>
-        ${pulls > 1 ? `<path d="M48 96c0-8 6-12 14-12s14 4 14 12-6 12-14 12-14-4-14-12z" fill="#d9a865" stroke="#b9854a" stroke-width="2"/>` : ""}
+        ${pulls > 1 ? `<path d="M48 96c0-8 6-12 14-12s14 4 14 12-6 12-14 12-14-4-14-12z" fill="${v.fill}" stroke="${v.line}" stroke-width="2"/>` : ""}
       </g>
       <path d="M14 104c8-18 28-24 48-24s40 6 48 24z" fill="#7a5a3a"/>
       <circle cx="36" cy="96" r="2" fill="#5e4329"/><circle cx="84" cy="94" r="2.4" fill="#5e4329"/><circle cx="62" cy="100" r="1.8" fill="#5e4329"/></svg></div>`; };
@@ -59,8 +68,8 @@
     const box = document.querySelector("#petBox"); if (!box) return;
     const p = tick(load() || { stage: "egg", cracks: 0, at: Date.now() }); save(p);
     let body;
-    if (p.stage === "egg") body = `${egg(p.cracks)}<p class="pet-say">${say || "Something's growing here. Give it a pull?"}</p>`;
-    else if (p.stage === "gone") body = `<div class="pet-note">Dear you,<br>Nobody fed me for ages so I've gone to stay with my nan. She does roast potatoes. Don't worry about me.<br>— ${p.name} x</div>
+    if (p.stage === "egg") body = `${egg(p.cracks, p.kind)}<p class="pet-say">${say || "Something's growing here. Give it a pull?"}</p>`;
+    else if (p.stage === "gone") body = `<div class="pet-note">Dear you,<br>Nobody fed me for ages so I've gone to stay with my nan. She does a lovely roast. Don't worry about me.<br>— ${p.name} x</div>
       <div class="pet-btns"><button class="btn" data-pet="restart">Find a new egg</button></div>`;
     else {
       const sleeping = asleep();
@@ -76,16 +85,17 @@
     const p = tick(load()); if (!p) return;
     if (what === "egg" && p.stage === "egg") {
       p.cracks++;
-      if (p.cracks >= 3) Object.assign(p, { stage: "pet", name: "Spud", born: Date.now(), food: 70, fun: 70, clean: 90 }), say = "Pop! It's a potato! Say hello to Spud.", anim = "pop";
+      if (!p.kind) { const ks = Object.keys(VEG); p.kind = ks[Math.floor(Math.random() * ks.length)]; } // decided on the first pull
+      if (p.cracks >= 3) { const v = veg(p); Object.assign(p, { stage: "pet", name: v.name, born: Date.now(), food: 70, fun: 70, clean: 90 }); say = `Pop! It's ${v.what}! Say hello to ${v.name}.`; anim = "pop"; }
       else say = p.cracks === 1 ? "It's stuck fast. Pull harder!" : "Nearly… one more!";
     } else if (what === "restart") { replant = false; save({ stage: "egg", cracks: 0, mini: p.mini, at: Date.now() }); return draw(); }
     else if (what === "keep") { replant = false; say = "Phew."; }
-    else if (what === "replant") { replant = true; say = "Put Spud back in the ground and start again?"; }
-    else if (p.stage === "pet" && asleep() && what !== "egg") { say = "Shh, Spud's asleep."; }
+    else if (what === "replant") { replant = true; say = `Put ${p.name} back in the ground and start again?`; }
+    else if (p.stage === "pet" && asleep() && what !== "egg") { say = `Shh, ${p.name}'s asleep.`; }
     else if (what === "feed") {
-      if (p.food > 90) say = "Spud's stuffed. No more, thanks."; else { const t = tonight(); p.food = clamp(p.food + 30); say = t ? `Spud had a little bit of ${t}. Nom.` : "Nom nom."; anim = "chomp"; }
+      if (p.food > 90) say = `${p.name}'s stuffed. No more, thanks.`; else { const t = tonight(); p.food = clamp(p.food + 30); say = t ? `${p.name} had a little bit of ${t}. Nom.` : "Nom nom."; anim = "chomp"; }
     } else if (what === "play") { p.fun = clamp(p.fun + 25); p.food = clamp(p.food - 5); p.clean = clamp(p.clean - 5); say = "Wheee!"; anim = "bounce"; }
-    else if (what === "wash") { p.clean = 100; say = "Squeaky clean (for a potato)."; anim = "wash"; }
+    else if (what === "wash") { p.clean = 100; say = `Squeaky clean (for ${veg(p).what}).`; anim = "wash"; }
     save(p); draw();
   }
   // Shrunk: a tiny pixel potato sits in the corner (remembered on this phone); tap it to open Spud again
@@ -95,9 +105,10 @@
     const old = document.querySelector("#petMini"); if (old) old.remove();
     if (!on) return;
     css();
-    const col = { X: "#d9a865", O: "#3b2a1a", R: "#f08a7a", M: "#3b2a1a" };
-    const px = PIX.flatMap((row, y) => [...row].map((c, x) => c === "." ? "" : `<rect x="${x}" y="${y}" width="1" height="1" fill="${col[c]}"/>`)).join("");
-    document.body.insertAdjacentHTML("beforeend", `<button id="petMini" aria-label="Spud"><svg viewBox="0 0 8 7" width="32" height="28" shape-rendering="crispEdges">${px}</svg></button>`);
+    const v = veg(p), rows = v.leafy ? [".G.G.G..", ...PIX.slice(1)] : PIX;
+    const col = { X: v.fill, O: "#3b2a1a", R: "#f08a7a", M: "#3b2a1a", G: "#4f8a4f" };
+    const px = rows.flatMap((row, y) => [...row].map((c, x) => c === "." ? "" : `<rect x="${x}" y="${y}" width="1" height="1" fill="${col[c]}"/>`)).join("");
+    document.body.insertAdjacentHTML("beforeend", `<button id="petMini" aria-label="${p ? p.name : "Pet"}"><svg viewBox="0 0 8 7" width="32" height="28" shape-rendering="crispEdges">${px}</svg></button>`);
     document.querySelector("#petMini").addEventListener("click", (e) => { e.stopPropagation(); e.currentTarget.remove(); open(); });
   }
   function css() {
@@ -125,7 +136,7 @@
   function open() {
     if (document.querySelector("#petBox")) return;
     css();
-    document.body.insertAdjacentHTML("beforeend", `<div id="petBox" role="dialog" aria-label="Spud"><div class="pet-card"><button class="pet-x pet-min" data-pet="min" aria-label="Shrink to the corner">–</button><button class="pet-x" data-pet="close" aria-label="Close">×</button><div class="pet-body"></div></div></div>`);
+    document.body.insertAdjacentHTML("beforeend", `<div id="petBox" role="dialog" aria-label="Pet"><div class="pet-card"><button class="pet-x pet-min" data-pet="min" aria-label="Shrink to the corner">–</button><button class="pet-x" data-pet="close" aria-label="Close">×</button><div class="pet-body"></div></div></div>`);
     const box = document.querySelector("#petBox");
     box.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -134,7 +145,7 @@
       if (b && b.dataset.pet === "min") { box.remove(); return setMini(true); }
       if (b) return act(b.dataset.pet);
       if (e.target.closest(".pet-spud.egg")) return act("egg");
-      if (e.target.closest(".pet-spud") && !replant) { say = ["Hello!", "Hehe, that tickles.", "I'm a potato.", "Is it dinner yet?"][Math.floor(Math.random() * 4)]; anim = "bounce"; draw(); }
+      if (e.target.closest(".pet-spud") && !replant) { say = ["Hello!", "Hehe, that tickles.", `I'm ${veg(load()).what}.`, "Is it dinner yet?"][Math.floor(Math.random() * 4)]; anim = "bounce"; draw(); }
     });
     // press and hold Spud for 1.5 seconds to put him back in the ground
     let holdT = 0;
