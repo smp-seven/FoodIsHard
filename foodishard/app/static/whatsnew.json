@@ -2,6 +2,12 @@
  "_note": "Plain-English notes shown in the online app's 'Update ready' card. Newest first. Add an entry with every release.",
  "versions": [
   {
+   "version": "0.13.7",
+   "notes": [
+    "A few small tweaks."
+   ]
+  },
+  {
    "version": "0.13.6",
    "notes": [
     "Swap and \"Another…\" now check before changing a dinner, so a stray tap won't lose one you'd picked.",
