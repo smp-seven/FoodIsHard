@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.14.11",
+   "notes": [
+    "Your account and data is now at the bottom of Settings."
+   ]
+  },
+  {
    "version": "0.14.10",
    "notes": [
     "Settings: dinner times have their own Schedule section, and backups, sign out and delete account are together under Account & data."

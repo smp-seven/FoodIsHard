@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.10"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.14.11"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -697,12 +697,13 @@ function viewSettings() {
       <span class="switch"><input type="checkbox" data-set="bool" data-f="lifeOn" ${s.lifeOn ? "checked" : ""}><i></i></span></label></div>
 
     ${catalogue}
-    <div class="list" style="margin-top:18px"><button class="rrow" data-act="accountData" style="padding:13px 16px"><span class="grow"><b>Account &amp; data</b><br><span class="small muted">Backups${app.host === "Cloudflare" ? ", sign out, delete account" : ""}</span></span><span class="muted" aria-hidden="true">›</span></button></div>
     ${app.host === "Cloudflare" ? `<p class="section-label">Help</p>
     <div class="list"><button class="rrow" data-act="report"><span class="grow"><b>Report a problem</b></span><span class="muted">›</span></button></div>` : `<p class="section-label">Recipe feedback</p>
     <div class="list"><div class="row" style="padding:13px 16px"><span class="grow"><b>Copy your feedback</b><br><span class="small muted">Paste it to Claude</span></span><button class="btn sm" data-act="copyFeedback">${icon("copy", 16)}Copy</button></div></div>`}
     <p class="section-label">About</p>
     <div class="list"><button class="rrow" data-act="about"><span class="grow"><b>About FoodIsHard, your data and safety</b><br><span class="small muted">Includes notes on allergies and babies</span></span><span class="muted">›</span></button></div>
+    <p class="section-label">Your account and data</p>
+    <div class="list"><button class="rrow" data-act="accountData" style="padding:13px 16px"><span class="grow"><b>Manage</b><br><span class="small muted">Backups${app.host === "Cloudflare" ? ", sign out, delete account" : ""}</span></span><span class="muted" aria-hidden="true">›</span></button></div>
     <p class="small muted" style="text-align:center;margin-top:24px">${app.mode === "live" ? `Synced through ${esc(app.host || "Home Assistant")}${app.user ? ` · signed in as ${esc(app.user)}` : ""}` : app.mode === "preview" ? "Previewing as a new household: nothing is saved" : "Preview: saved on this device only"} · <span class="fih-ver">FoodIsHard ${APP_VERSION}</span></p>`;
 }
 
