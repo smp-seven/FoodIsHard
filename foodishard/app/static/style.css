@@ -440,3 +440,5 @@ article.day.swapping { position: relative; z-index: 3; transition: transform .38
 .sheet-panel { bottom: var(--kb, 0px); max-height: min(92vh, calc(var(--vvh, 100vh) - 12px)); }
 /* a setting and its sub-option, boxed together (e.g. budget mode and its swaps) */
 .subgroup { margin: 8px 10px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.still-got { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; font-size: 13px; color: var(--muted); }
+.still-got .btn { padding: 3px 12px; }

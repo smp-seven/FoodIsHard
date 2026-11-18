@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.14.14"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.15.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -563,6 +563,7 @@ function itemRow(i) {
   if (i.covers) sub.push(`covers the ${esc(i.covers)}`);
   if (i.done && i.checkedBy) sub.push(`✓ ${esc(i.checkedBy)}`);
   const key = esc(i.key);
+  const ago = i.boughtAgo ? `<span class="still-got">Bought ${i.boughtAgo === 1 ? "last week" : `${i.boughtAgo} weeks ago`}. Still got some? <button class="btn sm" data-act="flag" data-key="${key}" data-f="have" data-v="1">Got it</button></span>` : "";
   const selected = app.selecting.has(i.key);
   const lead = i.have ? `<button class="btn sm" data-act="flag" data-key="${key}" data-f="have" data-v="0">Need it</button>`
     : `<input type="checkbox" class="check-input" data-act="tick" data-key="${key}" ${i.done ? "checked" : ""} aria-label="Got ${esc(i.name)}">`;
@@ -573,6 +574,7 @@ function itemRow(i) {
     <div class="grow">
       <button class="body" data-act="itemOpen" data-key="${key}"><span class="iname">${esc(i.name)}</span> ${i.qtyText ? `<span class="iq">${esc(i.qtyText)}</span>` : ""}
         ${chips.length || sub.length ? `<span class="sub">${chips.join("")}${sub.length ? `<span>${sub.join(" · ")}</span>` : ""}</span>` : ""}</button>
+      ${ago}
       <div class="item-meta">${stepper}${i.cost != null ? `<span class="price">${money(i.cost)}</span>` : ""}
         <button class="shop-tag ${esc(i.shop)}" data-act="moveOne" data-key="${key}" aria-label="Shop: ${esc(shopName(i.shop, false))}. Tap to change">${esc(shopName(i.shop))}</button></div>
     </div>

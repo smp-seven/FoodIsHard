@@ -679,7 +679,7 @@ function factorFor(id) {
 }
 /** Where today sits in the plan. */
 function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date()) - (settings().weekStartDay || 0) + 7) % 7 }; }
-function buildList(week) {
+function buildList(week, opts = {}) { // opts.past: an earlier week, worked out only to look back at
   const items = new Map();
   planFor(week).forEach((d) => {
     if (d.status !== "cook" || !d.recipe) return;
@@ -754,6 +754,7 @@ function buildList(week) {
       const bp = basePrice(it.k); it.cost = bp ? bp.p * shopMult(costShop) : null;
       it.active = it.pantry === "low" || it.pantry === "out" || it.need || it.done;
     } else it.active = !it.have;
+    if (!opts.past) it.boughtAgo = stillGot(week, it);
     out.push(it);
   });
   return out;
@@ -791,6 +792,28 @@ function useUpBonus(r, ctx) {
   const days = ctx.days.map((d, j) => (j === ctx.i ? { ...d, status: "cook", recipe: r.id } : d));
   const change = wasteOf(days) - ctx.base;
   return change <= -0.25 ? 4 : change <= 0.15 ? 2 : change >= 0.6 ? 0.5 : 1;
+}
+// ---- "Bought 2 weeks ago, still got some?" -----------------------------------------------------
+// Only for things that keep once opened (frozen bags, jars and dry goods: not tins, fresh or chilled),
+// and only when the pack you ticked as bought was clearly more than that week's dinners used.
+// Just a hint by the item: nothing is assumed or taken off the list.
+const KEEPS_AISLES = new Set(["frozen", "dry", "world"]);
+let stillGotMemo = { at: null, lists: {} };
+function keepsLong(k) { const m = ingMeta(k); return !!(m && m.pk && KEEPS_AISLES.has(m.a) && !GOES_OFF.has(k) && m.ko == null); }
+function stillGot(week, it) {
+  if (!it.k || it.cupboard || it.staple || it.extra || it.have || it.done || !keepsLong(it.k)) return null;
+  if (stillGotMemo.at !== app.state) stillGotMemo = { at: app.state, lists: {} }; // past weeks' lists, worked out once per change
+  const [pq, pu] = ingMeta(it.k).pk;
+  for (let n = 1; n <= 6; n++) {
+    const w = iso(addDays(parseISO(week), -7 * n)), c = ((app.state.checks || {})[w] || {})[it.key];
+    if (!c || !c.done) continue;
+    const list = stillGotMemo.lists[w] || (stillGotMemo.lists[w] = buildList(w, { past: true }));
+    const was = list.find((x) => x.key === it.key), e = was ? Object.entries(was.qty || {}) : [];
+    if (e.length !== 1 || (e[0][0] || "") !== (pu || "")) return null;
+    const used = e[0][1], left = packsFor(used, pq) * pq - used;
+    return left / pq >= 0.3 ? n : null; // the most recent time they bought it decides
+  }
+  return null;
 }
 function leftoverText(k, q, u) {
   const m = ingMeta(k);

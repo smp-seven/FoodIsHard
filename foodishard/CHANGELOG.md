@@ -426,3 +426,6 @@ Fixes from a review of the new features:
 - Backups, sign out and delete account are together in one panel ("Your account and data" → Manage, at the bottom of Settings).
 - Budget mode: with it on, a "Using X of Y swaps · Select" row, boxed together with the switch, opens the list of like-for-like swaps; untick any to keep that ingredient fresh. This week's saving is shown there.
 - Panels stay above the on-screen keyboard on browsers that don't resize for it, and tapping a panel's search box lifts it to the top so results show.
+
+## 0.15.0
+- Shopping list: items that keep once opened (frozen, dry goods, jars; never tins, fresh or chilled) show "Bought N weeks ago. Still got some?" with a Got it button when you ticked them as bought in the last 6 weeks and that pack was clearly more than those dinners used (at least 30% left). It's only a hint: nothing is assumed or taken off the list.

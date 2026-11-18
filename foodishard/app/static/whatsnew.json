@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.15.0",
+   "notes": [
+    "New: the shopping list reminds you about big packs you bought recently, like frozen veg, pasta or a jar of paste (\"Bought 2 weeks ago. Still got some?\"), so you don't end up with two."
+   ]
+  },
+  {
    "version": "0.14.14",
    "notes": [
     "A small wording tweak in budget mode."
