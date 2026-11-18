@@ -54,7 +54,7 @@
     try { const days = planFor(app.weekStart), i = (new Date().getDay() + 6) % 7, r = days[i] && app.byId[days[i].recipe]; return r ? r.name.toLowerCase() : ""; } catch { return ""; }
   }
 
-  let say = "", anim = "";
+  let say = "", anim = "", replant = false;
   function draw() {
     const box = document.querySelector("#petBox"); if (!box) return;
     const p = tick(load() || { stage: "egg", cracks: 0, at: Date.now() }); save(p);
@@ -67,7 +67,8 @@
       body = `${spud(p, anim)}<p class="pet-name"><b>${p.name}</b> · <span class="muted">${ageText(p)}</span></p>
         <p class="pet-say">${say || (sleeping ? "Zzz… (it's bedtime)" : mood(p) === "happy" ? "Living its best life." : mood(p) === "ok" ? "Doing alright." : "Looking a bit sorry for itself.")}</p>
         ${bar("Fed", p.food)}${bar("Fun", p.fun)}${bar("Clean", p.clean)}
-        <div class="pet-btns"><button class="btn sm" data-pet="feed">Feed</button><button class="btn sm" data-pet="play">Play</button><button class="btn sm" data-pet="wash">Wash</button></div>`;
+        ${replant ? `<div class="pet-btns"><button class="btn sm" data-pet="keep">No, keep him</button><button class="btn sm primary" data-pet="restart">Yes, replant</button></div>`
+          : `<div class="pet-btns"><button class="btn sm" data-pet="feed">Feed</button><button class="btn sm" data-pet="play">Play</button><button class="btn sm" data-pet="wash">Wash</button></div>`}`;
     }
     box.querySelector(".pet-body").innerHTML = body; anim = ""; say = "";
   }
@@ -77,7 +78,9 @@
       p.cracks++;
       if (p.cracks >= 3) Object.assign(p, { stage: "pet", name: "Spud", born: Date.now(), food: 70, fun: 70, clean: 90 }), say = "Pop! It's a potato! Say hello to Spud.", anim = "pop";
       else say = p.cracks === 1 ? "It's stuck fast. Pull harder!" : "Nearly… one more!";
-    } else if (what === "restart") { save({ stage: "egg", cracks: 0, at: Date.now() }); return draw(); }
+    } else if (what === "restart") { replant = false; save({ stage: "egg", cracks: 0, mini: p.mini, at: Date.now() }); return draw(); }
+    else if (what === "keep") { replant = false; say = "Phew."; }
+    else if (what === "replant") { replant = true; say = "Put Spud back in the ground and start again?"; }
     else if (p.stage === "pet" && asleep() && what !== "egg") { say = "Shh, Spud's asleep."; }
     else if (what === "feed") {
       if (p.food > 90) say = "Spud's stuffed. No more, thanks."; else { const t = tonight(); p.food = clamp(p.food + 30); say = t ? `Spud had a little bit of ${t}. Nom.` : "Nom nom."; anim = "chomp"; }
@@ -103,7 +106,7 @@
       #petBox{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);animation:petFade .2s}
       #petBox .pet-card{position:relative;width:min(320px,90vw);background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:22px;padding:18px 18px 16px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:petPop .3s cubic-bezier(.34,1.56,.64,1)}
       #petBox .pet-x{position:absolute;z-index:1;top:8px;right:10px;background:none;border:0;font-size:22px;line-height:1;color:inherit;cursor:pointer}
-      .pet-spud{display:inline-block;animation:petBob 2.4s ease-in-out infinite;cursor:pointer}
+      .pet-spud{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;display:inline-block;animation:petBob 2.4s ease-in-out infinite;cursor:pointer}
       .pet-spud.zzz{animation-duration:5s}.pet-spud.zzz::after{content:"z z z";position:absolute;margin:-10px 0 0 -10px;font-size:13px;opacity:.6}
       .pet-spud.tug{animation:petTug .45s}.pet-spud.pop{animation:petPop .5s cubic-bezier(.34,1.56,.64,1)}
       .pet-spud.bounce{animation:petBounce .45s 3}.pet-spud.chomp{animation:petChomp .25s 4}.pet-spud.wash{animation:petWobble .4s 2}
@@ -131,8 +134,12 @@
       if (b && b.dataset.pet === "min") { box.remove(); return setMini(true); }
       if (b) return act(b.dataset.pet);
       if (e.target.closest(".pet-spud.egg")) return act("egg");
-      if (e.target.closest(".pet-spud")) { say = ["Hello!", "Hehe, that tickles.", "I'm a potato.", "Is it dinner yet?"][Math.floor(Math.random() * 4)]; anim = "bounce"; draw(); }
+      if (e.target.closest(".pet-spud") && !replant) { say = ["Hello!", "Hehe, that tickles.", "I'm a potato.", "Is it dinner yet?"][Math.floor(Math.random() * 4)]; anim = "bounce"; draw(); }
     });
+    // press and hold Spud for 1.5 seconds to put him back in the ground
+    let holdT = 0;
+    box.addEventListener("pointerdown", (e) => { if (e.target.closest(".pet-spud:not(.egg)")) holdT = setTimeout(() => { holdT = 0; act("replant"); }, 1500); });
+    for (const ev of ["pointerup", "pointerleave", "pointercancel"]) box.addEventListener(ev, () => { clearTimeout(holdT); holdT = 0; });
     draw();
   }
   if ((load() || {}).mini) setMini(true); // still in the corner from last time

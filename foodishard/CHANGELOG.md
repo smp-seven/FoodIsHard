@@ -406,5 +406,5 @@ Fixes from a review of the new features:
 - "Are you sure?" questions everywhere use an app-styled card instead of the browser's own popup (red button for deletes).
 - Updates: an update found as the app opens (or after an hour or more away), before anything's tapped, applies straight away with a short "updated" note. The Update ready card is kept for updates that arrive mid-use.
 
-## 0.13.7 – 0.13.9
+## 0.13.7 – 0.13.10
 - A few small tweaks.
