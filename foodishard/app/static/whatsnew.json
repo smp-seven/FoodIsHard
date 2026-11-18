@@ -3,9 +3,9 @@
  "minVersion": "0.0.0",
  "versions": [
   {
-   "version": "0.14.2",
+   "version": "0.14.3",
    "notes": [
-    "Settings is tidier: your household is one list, showing who uses the app. Tap someone to invite them (emails stay hidden until you tap the eye), and tap your household's name to rename it."
+    "Settings is tidier: your household is one list. Tap someone to invite them to the app (their email stays hidden until you tap the eye), and tap your household's name to rename it."
    ]
   },
   {
