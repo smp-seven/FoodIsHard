@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.17.2",
+   "notes": [
+    "Small fixes to the dairy-free recipes."
+   ]
+  },
+  {
    "version": "0.17.1",
    "notes": [
     "Dairy-free recipes now have their own wording, names and little-ones' notes, and ten more dinners can be made dairy-free."

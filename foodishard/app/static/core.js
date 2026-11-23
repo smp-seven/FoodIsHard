@@ -392,8 +392,8 @@ function adaptRecipes() {
 }
 function withText(r, a) {
   const fix = (t) => (a.text || []).reduce((out, [from, to]) => out.split(from).join(to), t || "");
-  return { ...r, name: a.name || r.name, blurb: a.blurb || fix(r.blurb), adapted: "milk",
-    steps: r.steps.map((st) => ({ ...st, t: fix(st.t) })),
+  return { ...r, name: a.name || r.name, blurb: a.blurb || fix(r.blurb), adapted: "milk", time: a.time || r.time,
+    steps: r.steps.map((st) => ({ ...st, t: fix(st.t) })).filter((st) => st.t.trim()), // a step rewritten to nothing is dropped
     baby: Object.fromEntries(Object.entries(r.baby || {}).map(([k, v]) => [k, fix(v)])) };
 }
 const shortName = (k) => ingMeta(k).n.split(" (")[0].split(" / ")[0];

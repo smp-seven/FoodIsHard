@@ -140,8 +140,8 @@ for r in recipes["recipes"]:
             return t
         final = [nm.get("name", r["name"]), nm.get("blurb") or fix(r.get("blurb", ""))] + [fix(t) for t in texts[:-1]]
         for t in final:
-            clean = re.sub(r"dairy-free yoghurt|their usual milk", "", t, flags=re.I)
-            hit = re.search(r"\b(cheese|cheesy|cheddar|yoghurt|yogurt|butter|milk|paneer|ricotta|feta|halloumi|mozzarella|naan|creamy|cream|ghee|dairy)\b", clean, re.I)
+            clean = re.sub(r"dairy-free yoghurt|their usual breast milk or formula", "", t, flags=re.I)
+            hit = re.search(r"\b(cheese|cheesy|cheddar|yoghurt|yogurt|butter|milk|paneer|ricotta|feta|halloumi|mozzarella|naan|creamy|cream|ghee|dairy|toastie|toasties)\b", clean, re.I)
             if hit:
                 err(r, f"nomilk: {hit.group(0)!r} is still in: {t[:70]!r}")
         for k_ in milky:

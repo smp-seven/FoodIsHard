@@ -129,6 +129,10 @@
      [
       ", plus a spoon of full-fat plain yoghurt.",
       "."
+     ],
+     [
+      "loosen with their usual milk",
+      "loosen with a little water, or their usual breast milk or formula"
      ]
     ]
    }
@@ -675,7 +679,8 @@
       "paneer chopped small",
       "tofu chopped small"
      ]
-    ]
+    ],
+    "time": 40
    }
   },
   {
@@ -930,7 +935,7 @@
      ],
      [
       "Slice the halloumi about 1 cm thick. Season the tray with salt, add the halloumi",
-      "Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes. Season the tray with salt, add the tofu"
+      "Toss the tofu with a little oil and a pinch of smoked paprika. Season the tray with salt, add the tofu"
      ],
      [
       "until the halloumi is golden",
@@ -951,6 +956,10 @@
      [
       " and full-fat plain yoghurt. No halloumi: it's very salty.",
       "."
+     ],
+     [
+      "and pat them dry with kitchen paper.",
+      "and pat them dry with kitchen paper. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes."
      ]
     ]
    }
@@ -1813,7 +1822,7 @@
     "text": [
      [
       " Serve with the yoghurt.",
-      ""
+      " Serve the curry with the chapatis."
      ],
      [
       "Blend with a little full-fat plain yoghurt until smooth.",
@@ -1977,7 +1986,8 @@
       "paneer cut small",
       "tofu cut small"
      ]
-    ]
+    ],
+    "time": 40
    }
   },
   {
@@ -2730,8 +2740,8 @@
       "before the tofu and chilli"
      ],
      [
-      "Cut the halloumi into fingers.",
-      "Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers."
+      "Cut the halloumi into fingers. Add it to the air fryer",
+      "Add the tofu to the air fryer"
      ],
      [
       "until the halloumi is golden",
@@ -2752,8 +2762,13 @@
      [
       ", with full-fat plain yoghurt",
       ""
+     ],
+     [
+      "Cut the lime into wedges.",
+      "Cut the lime into wedges. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers."
      ]
-    ]
+    ],
+    "time": 35
    }
   },
   {
@@ -2966,7 +2981,7 @@
      "baby": true
     },
     {
-     "t": "Season the rest with salt. Make a dip for each egg with the back of a spoon and crack the eggs in. Cover and cook on a low heat for 6 to 8 minutes until the whites are set."
+     "t": "Season the rest with salt. Make a hollow for each egg with the back of a spoon and crack the eggs in. Cover and cook on a low heat for 6 to 8 minutes until the whites are set."
     },
     {
      "t": "Meanwhile, toast the tortillas in a dry frying pan for 1 minute a side. Serve the eggs and sauce on the tortillas, topped with the cheese, avocado, a squeeze of lime and the chilli flakes."
@@ -3712,7 +3727,7 @@
      ],
      [
       "Mash the potato with butter and their usual milk.",
-      "Mash the potato with their usual milk."
+      "Mash the potato with a little water, or their usual breast milk or formula."
      ],
      [
       "Potato, beans and cheese, cut small.",
@@ -3836,6 +3851,14 @@
      [
       "For the toasties, butter the outside of the bread and sandwich the cheese between. Cook in a dry frying pan over a medium heat for 2 to 3 minutes a side until golden and melted.",
       "Toast the bread to dunk in the soup."
+     ],
+     [
+      "plus a little toastie cut into strips",
+      "plus a little toast cut into strips"
+     ],
+     [
+      "with toastie pieces",
+      "with toast pieces"
      ]
     ]
    }
@@ -4234,7 +4257,7 @@
      ],
      [
       "Blend with a spoon of ricotta.",
-      "Blend with a little of their usual milk."
+      "Blend with a little water, or their usual breast milk or formula."
      ],
      [
       "As yours before the stock, with a little ricotta.",
@@ -4246,7 +4269,7 @@
   {
    "id": "egg-veg-biryani",
    "name": "Egg & veg biryani",
-   "blurb": "Fragrant spiced rice with jammy eggs and raita. One pot.",
+   "blurb": "Fragrant spiced rice with boiled eggs and raita. One pot.",
    "time": 35,
    "hands": 10,
    "family": "rice",
@@ -5094,11 +5117,11 @@
      ],
      [
       "Scatter the feta over the top[[, leaving the baby's corner bare]].",
-      "Let it settle for a minute before cutting."
+      ""
      ],
      [
       "Blend the feta-free piece with a little milk.",
-      "Blend their piece with a little of their usual milk."
+      "Blend their piece with a little water, or their usual breast milk or formula."
      ],
      [
       "Fingers of the feta-free piece",
@@ -5201,11 +5224,15 @@
      ],
      [
       "Slice the halloumi about 1 cm thick. Heat a dry frying pan over a medium-high heat and fry it for 1 to 2 minutes a side until golden.",
-      "Heat a dry frying pan over a medium-high heat."
+      ""
      ],
      [
       "falafel and halloumi, then add the yoghurt and a squeeze of lemon",
       "falafel, an extra spoon of houmous and a squeeze of lemon"
+     ],
+     [
+      "Warm the tortillas in the same pan",
+      "Warm the tortillas in a dry frying pan"
      ]
     ]
    }
