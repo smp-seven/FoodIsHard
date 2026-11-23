@@ -136,7 +136,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.17.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.18.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -607,7 +607,7 @@ function viewRecipes() {
     const p = prefsFor(r.id), blocked = blockedBy(r);
     return `<button class="rrow ${p.ban || blocked.length ? "off" : ""}" data-act="recipe" data-id="${r.id}"><span class="grow"><b>${esc(r.name)}</b><br>
       <span class="small muted">${r.time} min (${r.hands || r.time} hands-on) · ${money(recipeCost(r))} a portion · ${Math.round(nutritionPerPortion(r).kcal).toLocaleString("en-GB")} kcal</span>
-      ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : allergyChanges(r).length ? `<br><span class="small muted">Adapted for your allergies</span>` : ""}</span>
+      ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : allergyChanges(r).length ? `<br><span class="small muted">${veganOnly() ? "Made vegan" : "Adapted for your allergies"}</span>` : ""}</span>
       ${cookedIt(r.id) ? `<span class="pill accent" title="Cooked it">✓</span>` : ""}${p.fav ? `<span style="color:var(--warm)" aria-label="Favourite">♥</span>` : ""}${r.time <= 15 ? `<span class="pill warm">Quick</span>` : ""}</button>`;
   };
   const flat = q || f !== "all";
@@ -657,6 +657,8 @@ function viewSettings() {
 
     <p class="section-label">Food</p>
     <div class="list">
+      <label class="row" style="padding:13px 16px"><span class="grow"><b>Vegan</b><br><span class="small muted">No meat, fish, dairy or eggs. Dinners are made vegan where they can be.</span></span>
+        <span class="switch"><input type="checkbox" data-set="bool" data-f="vegan" ${s.vegan ? "checked" : ""} aria-label="Vegan"><i></i></span></label>
       <div class="stack ${nudges().includes("allergies") ? "nudge-field" : ""}" style="padding:14px 16px;gap:8px"><b>Allergies: never include</b>
         <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
         <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.${app.host === "Cloudflare" ? ` They're stored with your household so the planner can avoid them. Untick any time to remove them.` : ""}</span>
@@ -895,7 +897,7 @@ function openRecipe(id, { pickDay = null, keepScroll = false, day = null } = {})
     if ((m.f || []).includes("welfare")) chips.push(`<span class="pill accent">Free-range</span>`);
     checkLabelFor(i.k).forEach((a) => chips.push(`<span class="pill warm">Check: ${esc(a.toLowerCase())}</span>`));
     const canSwap = (ingMeta(i.orig).sw || []).length;
-    return `<li><span>${esc(m.n)} ${chips.join(" ")}${i.allergyFrom ? `<br><span class="small muted">instead of ${esc(shortName(i.allergyFrom).toLowerCase())}, for your allergies</span>` : i.from ? `<br><span class="small muted">instead of ${esc(ingMeta(i.from).n.toLowerCase())}</span>` : ""}
+    return `<li><span>${esc(m.n)} ${chips.join(" ")}${i.allergyFrom ? `<br><span class="small muted">instead of ${esc(shortName(i.allergyFrom).toLowerCase())}, ${veganOnly() ? "to make it vegan" : "for your allergies"}</span>` : i.from ? `<br><span class="small muted">instead of ${esc(ingMeta(i.from).n.toLowerCase())}</span>` : ""}
       ${canSwap ? `<br><button class="btn sm" style="margin-top:6px" data-act="swapIng" data-k="${esc(i.orig)}" data-reopen="${id}">Swap</button>` : ""}</span>
       <span class="muted" style="white-space:nowrap">${esc(fmtQty(i.q * factor, i.u))}</span></li>`;
   }).join("");
@@ -2221,8 +2223,13 @@ function budgetSaving() { const s = settings(); const keepB = s.budget, keepSw =
 function allergyNote(r, { short = false } = {}) {
   const ch = allergyChanges(r); if (!ch.length) return "";
   const list = ch.join("; ");
-  const little = kids().length && avoidList().includes("milk");
-  return `<p class="allergy-note"><b>Adapted for your allergies:</b> ${esc(list.charAt(0).toUpperCase() + list.slice(1))}.${short ? "" : ` The steps are written for this version. Always check labels: UK labels show milk in <b>bold</b> in the ingredients, whatever form it's in.`}${little ? `<br><span class="small">If a little one has the milk allergy, follow your doctor's or dietitian's advice on milk alternatives.</span>` : ""}</p>`;
+  const little = kids().length && avoidList().includes("milk"), vegan = veganOnly();
+  const head = vegan ? "Made vegan:" : "Adapted for your allergies:";
+  const more = short ? "" : vegan ? " The steps are written for this version. Some breads, wraps and stock cubes contain milk or egg, so check the label."
+    : ` The steps are written for this version. Always check labels: UK labels show milk in <b>bold</b> in the ingredients, whatever form it's in.`;
+  const kid = !little ? "" : vegan ? "For little ones on a vegan diet, ask your health visitor about vitamins and getting enough of the right nutrients."
+    : "If a little one has the milk allergy, follow your doctor's or dietitian's advice on milk alternatives.";
+  return `<p class="allergy-note"><b>${head}</b> ${esc(list.charAt(0).toUpperCase() + list.slice(1))}.${more}${kid ? `<br><span class="small">${kid}</span>` : ""}</p>`;
 }
 /** A search box for a long list in a panel. Tapping it lifts it to the top of the panel, so results show above the keyboard. */
 function filterBox(placeholder) {

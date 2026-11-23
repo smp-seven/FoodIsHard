@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.18.0",
+   "notes": [
+    "New: a Vegan switch in Settings. Dinners are made vegan where they can be, and the rest are left out."
+   ]
+  },
+  {
    "version": "0.17.2",
    "notes": [
     "Small fixes to the dairy-free recipes."

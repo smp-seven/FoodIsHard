@@ -412,7 +412,11 @@ function effectiveIngredients(r) {
     return [{ ...i, k: res.k, q: i.q == null ? null : i.q * res.r, u, from: res.from, orig: i.k }];
   });
 }
-function avoidList() { return settings().avoid || []; }
+// Vegan is a choice, not an allergy: it filters and adapts like milk and egg allergies, but is worded differently.
+function veganOn() { return !!settings().vegan; }
+function avoidList() { const a = settings().avoid || []; return veganOn() ? [...new Set([...a, "milk", "egg"])] : a; }
+/** True when a recipe's dairy-free changes are there because of the vegan switch, not a milk allergy. */
+function veganOnly() { return veganOn() && !(settings().avoid || []).includes("milk"); }
 function dislikeWords() { return (settings().dislikes || "").toLowerCase().split(/[,\n]/).map((w) => w.trim()).filter(Boolean); }
 function dislikeKeys() { return new Set(settings().dislikeKs || []); }
 function blockedBy(r) {

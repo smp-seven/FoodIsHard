@@ -450,3 +450,6 @@ Fixes from a review of the new features:
 - Second review: the soup's little-ones' notes say toast, not "toastie" (which reads as cheese). Little-ones' notes say "a little water, or their usual breast milk or formula" instead of "their usual milk". Tofu is pressed during "Get ready" (traybake, fajitas), and on the traybake it's tossed in oil and paprika. The frittata and falafel wraps lose a step that no longer did anything. Aloo gobi says to serve with the chapatis. Tofu dishes' times include pressing. Rice pouches say to check the label for milk.
 - The checker also refuses "toastie" and "their usual milk" in dairy-free text.
 - For everyone: huevos rancheros "make a hollow" for each egg; the biryani's eggs are described as boiled.
+
+## 0.18.0
+- Settings → Food: a Vegan switch. It filters and adapts recipes as milk and egg allergies would (29 of 45 dinners today), without ticking those allergies. Changes made only because of it are worded "Made vegan" instead of "Adapted for your allergies", with a lighter label reminder and, with little ones, a pointer to the health visitor about vitamins and nutrients. A real milk allergy still uses the allergy wording.
