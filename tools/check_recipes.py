@@ -77,23 +77,24 @@ for r in recipes["recipes"]:
             warn(r, f"cupboard item {k} measured in {u!r}")
         if not m.get("c") and "nu" not in m:
             err(r, f"{k} has no nutrition data")
-        # allergy versions: alt: { allergen: "omit" | key | {k, q, u} }
+        # allergy versions: alt: { allergen: "omit" | key | {k, q, u} | [options in order of preference] }
         allergens = json.loads((DATA / "ingredients.json").read_text())["allergens"]
-        for a, v in (ing.get("alt") or {}).items():
+        for a, opts in (ing.get("alt") or {}).items():
             if a not in allergens:
                 err(r, f"{k} alt: unknown allergen {a!r}")
             elif a not in (m.get("al") or []):
                 err(r, f"{k} alt for {a!r}, but {k} doesn't contain {a}")
-            if v == "omit":
-                continue
-            tk = v.get("k") if isinstance(v, dict) else v
-            t = items.get(tk)
-            if not t:
-                err(r, f"{k} alt: unknown ingredient {tk!r}")
-            elif a in (t.get("al") or []):
-                err(r, f"{k} alt: the swap {tk} still contains {a}")
-            elif isinstance(v, dict) and v.get("u", "") not in UNITS:
-                err(r, f"{k} alt: unknown unit {v.get('u')!r}")
+            for v in (opts if isinstance(opts, list) else [opts]):
+                if v == "omit":
+                    continue
+                tk = v.get("k") if isinstance(v, dict) else v
+                t = items.get(tk)
+                if not t:
+                    err(r, f"{k} alt: unknown ingredient {tk!r}")
+                elif a in (t.get("al") or []):
+                    err(r, f"{k} alt: the swap {tk} still contains {a}")
+                elif isinstance(v, dict) and v.get("u", "") not in UNITS:
+                    err(r, f"{k} alt: unknown unit {v.get('u')!r}")
         if ing.get("q") is not None and "nu" in m:
             g = ing["q"] if u in ("g", "ml") else ing["q"] * m.get("g", 0)
             protein += g / 100 * m["nu"][1]
@@ -125,6 +126,29 @@ for r in recipes["recipes"]:
                 err(r, f"[[...]] is for baby-only text, but this doesn't mention the baby: {aside[:50]!r}")
     if r.get("grainsMixed") and not any(i.get("k") in ("rice", "rice_pouch", "arborio", "couscous") for i in r.get("ingredients", [])):
         err(r, "grainsMixed is set but there's no rice or couscous in it")
+    # dairy-free version: every rewrite must match, and no dairy may be left in the words or the ingredients
+    nm = r.get("nomilk")
+    milky = [i["k"] for i in r.get("ingredients", []) if "milk" in (items.get(i["k"], {}).get("al") or []) and not i.get("optional")]
+    if nm:
+        texts = [s_["t"] for s_ in r.get("steps", [])] + list((r.get("baby") or {}).values()) + [r.get("blurb", "")]
+        for pair in nm.get("text", []):
+            if not any(pair[0] in t for t in texts):
+                err(r, f"nomilk: can't find {pair[0][:50]!r}")
+        def fix(t):
+            for a_, b_ in nm.get("text", []):
+                t = t.replace(a_, b_)
+            return t
+        final = [nm.get("name", r["name"]), nm.get("blurb") or fix(r.get("blurb", ""))] + [fix(t) for t in texts[:-1]]
+        for t in final:
+            clean = re.sub(r"dairy-free yoghurt|their usual milk", "", t, flags=re.I)
+            hit = re.search(r"\b(cheese|cheesy|cheddar|yoghurt|yogurt|butter|milk|paneer|ricotta|feta|halloumi|mozzarella|naan|creamy|cream|ghee|dairy)\b", clean, re.I)
+            if hit:
+                err(r, f"nomilk: {hit.group(0)!r} is still in: {t[:70]!r}")
+        for k_ in milky:
+            if "milk" not in (next(i for i in r["ingredients"] if i["k"] == k_).get("alt") or {}):
+                err(r, f"nomilk: {k_} contains milk but has no dairy-free swap or 'omit'")
+    elif any("milk" in (i.get("alt") or {}) for i in r.get("ingredients", [])):
+        err(r, "has dairy-free swaps but no 'nomilk' wording for the steps")
     for stage in STAGES:
         if not r.get("baby", {}).get(stage):
             err(r, f"missing baby note for stage '{stage}'")

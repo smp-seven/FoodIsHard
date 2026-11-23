@@ -557,7 +557,7 @@
    "ko": 3
   },
   "chapati": {
-   "n": "Chapatis (or naan)",
+   "n": "Chapatis",
    "a": "bakery",
    "s": "tesco",
    "pk": [
@@ -615,7 +615,10 @@
     3.5,
     1.0
    ],
-   "g": 60
+   "g": 60,
+   "mc": [
+    "milk"
+   ]
   },
   "sourdough": {
    "n": "Crusty bread / sourdough",
@@ -648,7 +651,10 @@
     3,
     1.2
    ],
-   "g": 40
+   "g": 40,
+   "mc": [
+    "milk"
+   ]
   },
   "bread": {
    "n": "Sliced bread (wholemeal)",
@@ -672,7 +678,10 @@
     6.5,
     1.0
    ],
-   "g": 36
+   "g": 36,
+   "mc": [
+    "milk"
+   ]
   },
   "tortillas": {
    "n": "Tortilla wraps",
@@ -696,7 +705,10 @@
     3,
     1.1
    ],
-   "g": 60
+   "g": 60,
+   "mc": [
+    "milk"
+   ]
   },
   "eggs": {
    "n": "Eggs",
@@ -1464,7 +1476,8 @@
    ],
    "c": true,
    "mc": [
-    "celery"
+    "celery",
+    "milk"
    ],
    "note": "Kallo low-salt, or a baby stock cube",
    "rack": "cupboard",
@@ -2703,33 +2716,8 @@
     0
    ]
   },
-  "oat_drink": {
-   "n": "Oat drink (unsweetened)",
-   "a": "dairy",
-   "p": 0.99,
-   "pk": [
-    1000,
-    "ml"
-   ],
-   "al": [
-    "gluten"
-   ],
-   "ko": 5,
-   "kt": "Keep in the fridge once opened and use within 5 days. Check the label: some oat drinks are made gluten-free.",
-   "g": 1,
-   "nu": [
-    45,
-    0.3,
-    6.6,
-    3.3,
-    1.5,
-    0.2,
-    0.8,
-    0.1
-   ]
-  },
   "df_yoghurt": {
-   "n": "Dairy-free yoghurt alternative (coconut-based)",
+   "n": "Plain unsweetened coconut yoghurt alternative",
    "a": "dairy",
    "p": 1.6,
    "pk": [
@@ -2750,6 +2738,56 @@
     8.2,
     7.5,
     0.5,
+    0.1
+   ]
+  },
+  "soya_yoghurt": {
+   "n": "Plain unsweetened soya yoghurt alternative",
+   "a": "dairy",
+   "p": 1.35,
+   "pk": [
+    500,
+    "g"
+   ],
+   "al": [
+    "soya"
+   ],
+   "ko": 5,
+   "g": 1,
+   "kt": "Keep in the fridge once opened and use within 5 days.",
+   "nu": [
+    50,
+    4.0,
+    2.1,
+    2.1,
+    2.5,
+    0.4,
+    0.8,
+    0.1
+   ]
+  },
+  "oat_yoghurt": {
+   "n": "Plain unsweetened oat-based yoghurt alternative",
+   "a": "dairy",
+   "p": 1.6,
+   "pk": [
+    400,
+    "g"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "ko": 5,
+   "g": 1,
+   "kt": "Keep in the fridge once opened and use within 5 days. Some are made gluten-free: check the label.",
+   "nu": [
+    70,
+    1.0,
+    8.0,
+    3.0,
+    3.5,
+    0.3,
+    1.0,
     0.1
    ]
   }

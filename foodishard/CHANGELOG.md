@@ -438,7 +438,12 @@ Fixes from a review of the new features:
 - Aisle order: drag the ≡ handle to reorder (arrow keys work too), instead of up/down buttons.
 - Update now uses the newest downloaded version (the one the card found may have been replaced by a later one), and if the switch hasn't happened within 3 seconds it clears the saved copy and loads fresh instead of reloading the old version.
 
-## 0.17.0
+## 0.17.0 – 0.17.1
 - Allergy versions of recipes. A recipe's ingredient can say what to do when the household avoids an allergen it contains (`alt`): leave it out, or swap it. Started with milk: 21 recipes adapt (toppings left off; oat drink for milk, a coconut-based dairy-free yoghurt for yoghurt in sauces, marinades, raita and slaw, oil for butter, flatbreads for naan, firm tofu for paneer). Recipes named after their dairy (halloumi, feta, ricotta, mozzarella, "cheesy", "creamy") stay out. With milk avoided, 27 of 45 dinners are available, up from 6.
 - Swaps are checked against all the household's allergies like any other ingredient. Adapted recipes show "Adapted for your allergies" with each change, on the recipe, in the recipe list and in cooking mode, with a reminder to check labels.
 - New ingredients: oat drink, dairy-free yoghurt alternative. The recipe checker validates allergy tags (real allergen, the ingredient contains it, and the swap doesn't).
+- After an independent review: with milk avoided, adapted recipes use their own dairy-free name, blurb, steps and little-ones' notes everywhere, including cooking mode (e.g. "Tofu & pea curry", with "drain and press the tofu"). The baby notes no longer suggest yoghurt, cheese or ricotta.
+- The recipe checker refuses any dairy-free recipe where a rewrite doesn't match, a dairy word is left in its name, blurb, steps or baby notes, or a dairy ingredient has no swap.
+- Swaps can list options in order of preference, with the first that clears all the household's allergies used. Yoghurt alternatives are plain and unsweetened: soya, then oat, then coconut. Milk with coconut keeps these recipes; milk with soya uses oat.
+- Ten more recipes adapt: shakshuka, frittata and roasted pepper pasta without the feta; beans on toast with an egg; falafel wraps; jacket potato with beans; tomato soup with toast; and tofu in the halloumi fajitas, traybake and couscous. With milk avoided, 37 of 45 dinners are available.
+- Cottage pie mash uses oil and the potato cooking water (oat drink removed). The risotto gets its own finish. Enchiladas are covered with foil. Chapatis are no longer "(or naan)". Stock cubes, sliced and crusty bread, flatbreads and wraps say to check the label for milk. The note explains that UK labels show milk in bold, and adds a doctor's or dietitian's advice line for little ones.

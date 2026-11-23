@@ -369,11 +369,32 @@ function headlineSwaps(r) {
 // Allergy versions: a recipe ingredient can say what to do when the household avoids an allergen it contains,
 // e.g. alt: { milk: "omit" } for yoghurt on top, or { milk: "df_yoghurt" } / { milk: { k: "oil", q: 1, u: "tbsp" } } for a swap.
 // The swap's own allergens are then checked like any other ingredient's.
+// A list gives options in order of preference: the first that clears all the household's allergies is used.
 function allergyAlt(i) {
   if (!i.alt) return null;
   const avoid = avoidList(), al = ingMeta(i.k).al || [];
-  for (const a of Object.keys(i.alt)) if (avoid.includes(a) && al.includes(a)) return i.alt[a];
+  for (const a of Object.keys(i.alt)) if (avoid.includes(a) && al.includes(a)) {
+    const opts = Array.isArray(i.alt[a]) ? i.alt[a] : [i.alt[a]];
+    return opts.find((o) => o === "omit" || !(ingMeta(o.k || o).al || []).some((x) => avoid.includes(x))) || opts[0];
+  }
   return null;
+}
+// With milk avoided, recipes that have a dairy-free version ("nomilk") use its name, blurb and rewritten
+// steps and baby notes everywhere (including cooking mode). The originals are kept in app.recipesRaw.
+let adaptedFor = null;
+function adaptRecipes() {
+  if (!app.recipesRaw) app.recipesRaw = app.recipes;
+  const key = avoidList().includes("milk") ? "milk" : "";
+  if (adaptedFor === key) return;
+  adaptedFor = key;
+  app.recipes = app.recipesRaw.map((r) => (key && r.nomilk ? withText(r, r.nomilk) : r));
+  app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
+}
+function withText(r, a) {
+  const fix = (t) => (a.text || []).reduce((out, [from, to]) => out.split(from).join(to), t || "");
+  return { ...r, name: a.name || r.name, blurb: a.blurb || fix(r.blurb), adapted: "milk",
+    steps: r.steps.map((st) => ({ ...st, t: fix(st.t) })),
+    baby: Object.fromEntries(Object.entries(r.baby || {}).map(([k, v]) => [k, fix(v)])) };
 }
 const shortName = (k) => ingMeta(k).n.split(" (")[0].split(" / ")[0];
 /** What's been changed in this recipe for the household's allergies, in words ("leave out the cheddar"). */

@@ -10,6 +10,7 @@ async function boot() {
   app.lunchData = lunches || { use: {}, lunches: [], keepDays: 3 }; // quick leftover lunches (templates)
   app.defaults = defaults; // a fresh household's starting point (also used by "See it as a new household")
   app.recipes = rec.recipes; app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
+  app.recipesRaw = null; adaptedFor = null;
   app.families = rec.families; app.famById = Object.fromEntries(app.families.map((f) => [f.id, f]));
   app.themes = rec.themes || []; app.themeById = Object.fromEntries(app.themes.map((t) => [t.id, t]));
   app.ing = ing;
@@ -135,7 +136,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.17.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.17.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -144,6 +145,7 @@ window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e
 // Render
 // ---------------------------------------------------------------------------
 function render() {
+  if (app.recipes) adaptRecipes(); // dairy-free wording when milk is avoided
   if (app.mode === "admin" || app.tab === "admin" || app.tab === "feedback") {
     $$(".nav button").forEach((b) => b.classList.remove("on"));
     const view = $("#view"); view.innerHTML = app.tab === "feedback" ? viewAdminFeedback() : viewAdmin(); hydrateIcons(view);
@@ -2219,7 +2221,8 @@ function budgetSaving() { const s = settings(); const keepB = s.budget, keepSw =
 function allergyNote(r, { short = false } = {}) {
   const ch = allergyChanges(r); if (!ch.length) return "";
   const list = ch.join("; ");
-  return `<p class="allergy-note"><b>Adapted for your allergies:</b> ${esc(list.charAt(0).toUpperCase() + list.slice(1))}.${short ? "" : ` The steps still mention the original, so follow this instead. Always check labels: "may contain" warnings vary by brand.`}</p>`;
+  const little = kids().length && avoidList().includes("milk");
+  return `<p class="allergy-note"><b>Adapted for your allergies:</b> ${esc(list.charAt(0).toUpperCase() + list.slice(1))}.${short ? "" : ` The steps are written for this version. Always check labels: UK labels show milk in <b>bold</b> in the ingredients, whatever form it's in.`}${little ? `<br><span class="small">If a little one has the milk allergy, follow your doctor's or dietitian's advice on milk alternatives.</span>` : ""}</p>`;
 }
 /** A search box for a long list in a panel. Tapping it lifts it to the top of the panel, so results show above the keyboard. */
 function filterBox(placeholder) {

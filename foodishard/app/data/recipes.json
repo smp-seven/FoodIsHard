@@ -114,7 +114,24 @@
     "chopped": "As yours before the chilli and salt, with small pieces of chapati."
    },
    "tags": [],
-   "freeze": "The dhal"
+   "freeze": "The dhal",
+   "nomilk": {
+    "blurb": "Cheap, warming and properly filling with chapatis.",
+    "text": [
+     [
+      " Serve the dhal with the yoghurt and chapatis.",
+      " Serve the dhal with the chapatis."
+     ],
+     [
+      " Serve with a little full-fat plain yoghurt.",
+      ""
+     ],
+     [
+      ", plus a spoon of full-fat plain yoghurt.",
+      "."
+     ]
+    ]
+   }
   },
   {
    "id": "bean-chilli",
@@ -238,7 +255,32 @@
    "tags": [
     "onepot"
    ],
-   "freeze": "The chilli (not the rice)"
+   "freeze": "The chilli (not the rice)",
+   "nomilk": {
+    "blurb": "Smoky beans and sweet potato with rice.",
+    "text": [
+     [
+      " Grate the cheddar.",
+      ""
+     ],
+     [
+      " with the cheddar and a spoon of yoghurt.",
+      "."
+     ],
+     [
+      " with a little full-fat plain yoghurt",
+      ""
+     ],
+     [
+      " and a pinch of cheese",
+      ""
+     ],
+     [
+      ", with a little cheese",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "tofu-peanut-noodles",
@@ -439,7 +481,23 @@
    "tags": [
     "comfort"
    ],
-   "freeze": "The sauce (not the pasta)"
+   "freeze": "The sauce (not the pasta)",
+   "nomilk": {
+    "text": [
+     [
+      " Grate the cheese.",
+      ""
+     ],
+     [
+      ", and scatter the cheese over",
+      ""
+     ],
+     [
+      ", with a little grated cheese",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "mattar-paneer",
@@ -486,7 +544,11 @@
      "q": 50,
      "u": "g",
      "alt": {
-      "milk": "df_yoghurt"
+      "milk": [
+       "soya_yoghurt",
+       "oat_yoghurt",
+       "df_yoghurt"
+      ]
      }
     },
     {
@@ -568,7 +630,53 @@
     "finger": "Paneer fingers, squashed peas, and rice they can grab in clumps.",
     "chopped": "As yours before the chilli and salt, paneer chopped small."
    },
-   "tags": []
+   "tags": [],
+   "nomilk": {
+    "name": "Tofu & pea curry",
+    "blurb": "Mild tomato curry with golden tofu and peas.",
+    "text": [
+     [
+      "cut the paneer into 2 cm cubes",
+      "drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes"
+     ],
+     [
+      "Fry the paneer",
+      "Fry the tofu"
+     ],
+     [
+      "Turn the paneer pan",
+      "Turn the tofu pan"
+     ],
+     [
+      "Add the peas and paneer",
+      "Add the peas and tofu"
+     ],
+     [
+      " Stir a spoon of full-fat plain yoghurt into the baby's portion if you like.",
+      ""
+     ],
+     [
+      "before the yoghurt, garam masala",
+      "before the dairy-free yoghurt, garam masala"
+     ],
+     [
+      "Stir the yoghurt into the rest",
+      "Stir the dairy-free yoghurt into the rest"
+     ],
+     [
+      "a little paneer",
+      "a little tofu"
+     ],
+     [
+      "Paneer fingers",
+      "Tofu fingers"
+     ],
+     [
+      "paneer chopped small",
+      "tofu chopped small"
+     ]
+    ]
+   }
   },
   {
    "id": "shakshuka",
@@ -608,7 +716,10 @@
     {
      "k": "feta",
      "q": 30,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "sourdough",
@@ -670,7 +781,28 @@
    },
    "tags": [
     "onepot"
-   ]
+   ],
+   "nomilk": {
+    "name": "Chickpea shakshuka",
+    "text": [
+     [
+      "before any salt, chilli or feta goes in",
+      "before any salt or chilli goes in"
+     ],
+     [
+      " Crumble the feta over the top and serve.",
+      " Serve."
+     ],
+     [
+      " No feta: it's salty.",
+      ""
+     ],
+     [
+      ", no feta",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "chickpea-traybake",
@@ -689,7 +821,14 @@
     {
      "k": "halloumi",
      "q": 50,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": {
+       "k": "tofu",
+       "q": 100,
+       "u": "g"
+      }
+     }
     },
     {
      "k": "red_onion",
@@ -711,7 +850,14 @@
     {
      "k": "greek_yoghurt",
      "q": 100,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": [
+       "soya_yoghurt",
+       "oat_yoghurt",
+       "df_yoghurt"
+      ]
+     }
     },
     {
      "k": "tahini",
@@ -773,7 +919,41 @@
    },
    "tags": [
     "oven"
-   ]
+   ],
+   "nomilk": {
+    "name": "Smoky chickpea & tofu traybake",
+    "blurb": "One tray of roast veg, chickpeas and tofu with a tahini dressing.",
+    "text": [
+     [
+      "before the salt and halloumi",
+      "before the salt and tofu"
+     ],
+     [
+      "Slice the halloumi about 1 cm thick. Season the tray with salt, add the halloumi",
+      "Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes. Season the tray with salt, add the tofu"
+     ],
+     [
+      "until the halloumi is golden",
+      "until the tofu is golden"
+     ],
+     [
+      "into the yoghurt",
+      "into the dairy-free yoghurt"
+     ],
+     [
+      "tahini yoghurt",
+      "tahini dressing"
+     ],
+     [
+      "Mash the roast veg and chickpeas with full-fat plain yoghurt.",
+      "Mash the roast veg and chickpeas until smooth."
+     ],
+     [
+      " and full-fat plain yoghurt. No halloumi: it's very salty.",
+      "."
+     ]
+    ]
+   }
   },
   {
    "id": "cottage-pie",
@@ -820,7 +1000,7 @@
      "q": 30,
      "u": "ml",
      "alt": {
-      "milk": "oat_drink"
+      "milk": "omit"
      }
     },
     {
@@ -907,7 +1087,27 @@
     "oven",
     "comfort"
    ],
-   "freeze": "The whole pie, or the filling on its own"
+   "freeze": "The whole pie, or the filling on its own",
+   "nomilk": {
+    "text": [
+     [
+      " Grate the cheddar.",
+      ""
+     ],
+     [
+      "Drain the potatoes and mash them with the milk and butter until smooth.",
+      "Scoop out a mugful of the cooking water, then drain the potatoes and mash them with the oil and a splash of the cooking water until smooth."
+     ],
+     [
+      " and scatter with the cheddar",
+      ""
+     ],
+     [
+      ", with a little cheese",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "pesto-quorn-pasta",
@@ -1064,7 +1264,10 @@
     {
      "k": "cheddar",
      "q": 25,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "eggs",
@@ -1073,7 +1276,10 @@
     {
      "k": "butter",
      "q": 5,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "oil",
@@ -1106,7 +1312,32 @@
    },
    "tags": [
     "comfort"
-   ]
+   ],
+   "nomilk": {
+    "name": "Beans on toast with an egg",
+    "text": [
+     [
+      "Get ready: grate the cheddar.",
+      "Get ready: open the beans and get the bread out."
+     ],
+     [
+      "Toast the bread and butter it.",
+      "Toast the bread."
+     ],
+     [
+      ", scatter the cheese over",
+      ""
+     ],
+     [
+      " Go easy on the cheese.",
+      ""
+     ],
+     [
+      ", with a little cheese",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "chickpea-spinach-curry",
@@ -1205,7 +1436,23 @@
     "chopped": "As yours, before the chilli and salt."
    },
    "tags": [],
-   "freeze": "The curry, before the yoghurt (not the rice)"
+   "freeze": "The curry, before the yoghurt (not the rice)",
+   "nomilk": {
+    "text": [
+     [
+      " and a spoon of yoghurt",
+      ""
+     ],
+     [
+      "Blend with a spoon of full-fat plain yoghurt until smooth.",
+      "Blend until smooth."
+     ],
+     [
+      ", plus full-fat plain yoghurt",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "bean-quesadillas",
@@ -1315,7 +1562,11 @@
      "q": 100,
      "u": "g",
      "alt": {
-      "milk": "df_yoghurt"
+      "milk": [
+       "soya_yoghurt",
+       "oat_yoghurt",
+       "df_yoghurt"
+      ]
      }
     },
     {
@@ -1397,7 +1648,41 @@
     "finger": "Squash the chickpeas with a fork so they're soft and flat. Strips of naan to dip.",
     "chopped": "As yours before the chilli and salt, chickpeas squashed, with naan pieces."
    },
-   "freeze": "The curry, before the yoghurt"
+   "freeze": "The curry, before the yoghurt",
+   "nomilk": {
+    "name": "Chana masala with flatbreads",
+    "blurb": "A proper tomatoey chickpea curry with a cool garlic dip.",
+    "text": [
+     [
+      "for the yoghurt",
+      "for the dip"
+     ],
+     [
+      "Mix the grated garlic into the yoghurt",
+      "Mix the grated garlic into the dairy-free yoghurt"
+     ],
+     [
+      "Warm the naan in a dry frying pan or the toaster.",
+      "Warm the flatbreads in a dry frying pan or the toaster."
+     ],
+     [
+      "with the garlic yoghurt, coriander and naan",
+      "with the garlic dip, coriander and flatbreads"
+     ],
+     [
+      "Blend with a spoon of full-fat plain yoghurt until smooth.",
+      "Blend until smooth."
+     ],
+     [
+      "Strips of naan to dip.",
+      "Strips of flatbread to dip."
+     ],
+     [
+      "with naan pieces",
+      "with flatbread pieces"
+     ]
+    ]
+   }
   },
   {
    "id": "aloo-gobi-chickpea",
@@ -1523,7 +1808,19 @@
     "finger": "Soft potato and cauliflower pieces and squashed chickpeas, with chapati fingers.",
     "chopped": "As yours before the chilli and salt, cut small."
    },
-   "freeze": "The curry, before the yoghurt"
+   "freeze": "The curry, before the yoghurt",
+   "nomilk": {
+    "text": [
+     [
+      " Serve with the yoghurt.",
+      ""
+     ],
+     [
+      "Blend with a little full-fat plain yoghurt until smooth.",
+      "Blend until smooth."
+     ]
+    ]
+   }
   },
   {
    "id": "saag-paneer",
@@ -1568,7 +1865,11 @@
      "q": 80,
      "u": "g",
      "alt": {
-      "milk": "df_yoghurt"
+      "milk": [
+       "soya_yoghurt",
+       "oat_yoghurt",
+       "df_yoghurt"
+      ]
      }
     },
     {
@@ -1639,6 +1940,44 @@
     "smooth": "The blended spinach is perfect as it is, loosened with a little full-fat plain yoghurt.",
     "finger": "Paneer cut into fingers, plus spinach sauce to dip chapati into.",
     "chopped": "As yours before the chilli and salt, paneer cut small."
+   },
+   "nomilk": {
+    "name": "Saag tofu",
+    "blurb": "Golden tofu in a silky spiced spinach sauce. The blender does the work.",
+    "text": [
+     [
+      "cut the paneer into 2 cm cubes",
+      "drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes"
+     ],
+     [
+      "Fry the paneer",
+      "Fry the tofu"
+     ],
+     [
+      "with the paneer,",
+      "with the tofu,"
+     ],
+     [
+      "stir in half the yoghurt",
+      "stir in half the dairy-free yoghurt"
+     ],
+     [
+      "Serve with the rest of the yoghurt.",
+      "Serve with the rest of the dairy-free yoghurt."
+     ],
+     [
+      ", loosened with a little full-fat plain yoghurt",
+      ""
+     ],
+     [
+      "Paneer cut into fingers",
+      "Tofu cut into fingers"
+     ],
+     [
+      "paneer cut small",
+      "tofu cut small"
+     ]
+    ]
    }
   },
   {
@@ -1817,7 +2156,19 @@
     "finger": "Pasta shapes in the plain sauce, chickpeas squashed.",
     "chopped": "Plain sauce and pasta, chickpeas squashed."
    },
-   "freeze": "The sauce (not the pasta)"
+   "freeze": "The sauce (not the pasta)",
+   "nomilk": {
+    "text": [
+     [
+      " Grate the cheese.",
+      ""
+     ],
+     [
+      " Finish with the cheese.",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "roast-pepper-feta-pasta",
@@ -1849,7 +2200,10 @@
     {
      "k": "feta",
      "q": 30,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "spinach",
@@ -1908,7 +2262,25 @@
     "finger": "Pasta shapes coated in the sauce.",
     "chopped": "As yours before the feta, chopped small."
    },
-   "freeze": "The blended sauce, before the feta"
+   "freeze": "The blended sauce, before the feta",
+   "nomilk": {
+    "name": "Roasted pepper pasta",
+    "blurb": "A silky blended sauce of red peppers and white beans.",
+    "text": [
+     [
+      "before the feta and chilli",
+      "before the chilli"
+     ],
+     [
+      ", crumble the feta over the top",
+      ""
+     ],
+     [
+      "As yours before the feta, chopped small.",
+      "As yours before the chilli, chopped small."
+     ]
+    ]
+   }
   },
   {
    "id": "creamy-bean-gnocchi",
@@ -2093,6 +2465,27 @@
     "smooth": "Blend the sweet potato and beans with a little full-fat plain yoghurt.",
     "finger": "Sweet potato cubes, squashed beans and strips of tortilla.",
     "chopped": "Sweet potato, beans and grated cheese, cut small."
+   },
+   "nomilk": {
+    "blurb": "Air-fried sweet potato, smoky beans and salsa, all rolled up.",
+    "text": [
+     [
+      " Grate the cheddar.",
+      ""
+     ],
+     [
+      "sweet potato, cheese, salsa and yoghurt",
+      "sweet potato and salsa"
+     ],
+     [
+      " with a little full-fat plain yoghurt",
+      ""
+     ],
+     [
+      "Sweet potato, beans and grated cheese, cut small.",
+      "Sweet potato and beans, cut small."
+     ]
+    ]
    }
   },
   {
@@ -2204,6 +2597,31 @@
     "smooth": "Blend the filling with the passata.",
     "finger": "A tortilla rolled round some filling, baked with a little cheese, cut into strips.",
     "chopped": "Cut up from a mini baked one."
+   },
+   "nomilk": {
+    "blurb": "Rolled, sauced and baked. Ten minutes of work.",
+    "text": [
+     [
+      " Grate the cheddar.",
+      ""
+     ],
+     [
+      " and a little cheese for the baby",
+      ""
+     ],
+     [
+      "Pour over the passata and scatter with the cheese.",
+      "Pour over the passata so the tortilla edges are covered, then cover the dish with foil."
+     ],
+     [
+      "Bake for 20 minutes until bubbling, with the baby's dish alongside for the last 10. Serve with the yoghurt.",
+      "Bake for 20 minutes, taking the foil off for the last 5, with the baby's dish alongside for the last 10."
+     ],
+     [
+      ", baked with a little cheese,",
+      ", baked in a little passata,"
+     ]
+    ]
    }
   },
   {
@@ -2221,7 +2639,14 @@
     {
      "k": "halloumi",
      "q": 75,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": {
+       "k": "tofu",
+       "q": 120,
+       "u": "g"
+      }
+     }
     },
     {
      "k": "red_pepper",
@@ -2238,7 +2663,10 @@
     {
      "k": "greek_yoghurt",
      "q": 50,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "salsa",
@@ -2292,6 +2720,40 @@
     "smooth": "Blend the peppers with full-fat plain yoghurt.",
     "finger": "Soft pepper strips and tortilla strips spread with full-fat plain yoghurt.",
     "chopped": "Peppers and tortilla cut small, with full-fat plain yoghurt."
+   },
+   "nomilk": {
+    "name": "Air-fryer tofu fajitas",
+    "blurb": "Charred peppers and crispy tofu with salsa.",
+    "text": [
+     [
+      "before the halloumi and chilli",
+      "before the tofu and chilli"
+     ],
+     [
+      "Cut the halloumi into fingers.",
+      "Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers."
+     ],
+     [
+      "until the halloumi is golden",
+      "until the tofu is golden"
+     ],
+     [
+      " with the salsa and yoghurt",
+      " with the salsa"
+     ],
+     [
+      "Blend the peppers with full-fat plain yoghurt.",
+      "Blend the peppers until smooth."
+     ],
+     [
+      " spread with full-fat plain yoghurt",
+      ""
+     ],
+     [
+      ", with full-fat plain yoghurt",
+      ""
+     ]
+    ]
    }
   },
   {
@@ -2333,7 +2795,11 @@
      "q": 60,
      "u": "g",
      "alt": {
-      "milk": "df_yoghurt"
+      "milk": [
+       "soya_yoghurt",
+       "oat_yoghurt",
+       "df_yoghurt"
+      ]
      }
     },
     {
@@ -2391,6 +2857,22 @@
     "smooth": "Blend the tofu with full-fat plain yoghurt.",
     "finger": "Soft pieces of tofu (pick the least crispy), grated carrot and tortilla strips.",
     "chopped": "Tofu and tortilla cut small, a little grated carrot."
+   },
+   "nomilk": {
+    "text": [
+     [
+      "with half the yoghurt",
+      "with half the dairy-free yoghurt"
+     ],
+     [
+      "and the rest of the yoghurt",
+      "and the rest of the dairy-free yoghurt"
+     ],
+     [
+      "Blend the tofu with full-fat plain yoghurt.",
+      "Blend the tofu until smooth with a little water."
+     ]
+    ]
    }
   },
   {
@@ -2494,6 +2976,18 @@
     "smooth": "Blend the sauce with mashed avocado.",
     "finger": "Toasted tortilla strips to dip, avocado fingers, and egg cooked until the yolk is completely firm.",
     "chopped": "Sauce, a fully set egg and avocado, chopped."
+   },
+   "nomilk": {
+    "text": [
+     [
+      " Grate the cheddar.",
+      ""
+     ],
+     [
+      "topped with the cheese, avocado",
+      "topped with the avocado"
+     ]
+    ]
    }
   },
   {
@@ -2816,7 +3310,11 @@
      "q": 100,
      "u": "g",
      "alt": {
-      "milk": "df_yoghurt"
+      "milk": [
+       "soya_yoghurt",
+       "oat_yoghurt",
+       "df_yoghurt"
+      ]
      }
     },
     {
@@ -2902,6 +3400,40 @@
     "smooth": "Blend the veg with full-fat plain yoghurt.",
     "finger": "Paneer fingers, soft cauliflower and naan strips, with full-fat plain yoghurt to dip.",
     "chopped": "As yours, cut small."
+   },
+   "nomilk": {
+    "name": "Tandoori tofu traybake",
+    "blurb": "Spiced tofu and veg roasted hot, with cucumber raita.",
+    "text": [
+     [
+      "Cut the paneer into 2 cm cubes",
+      "Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes"
+     ],
+     [
+      "mix half the yoghurt",
+      "mix half the dairy-free yoghurt"
+     ],
+     [
+      "Add the paneer and veg",
+      "Add the tofu and veg"
+     ],
+     [
+      "into the rest of the yoghurt",
+      "into the rest of the dairy-free yoghurt"
+     ],
+     [
+      "Warm the naan in the oven for 2 minutes. Serve the traybake with the raita and naan.",
+      "Warm the flatbreads in the oven for 2 minutes. Serve the traybake with the raita and flatbreads."
+     ],
+     [
+      "Blend the veg with full-fat plain yoghurt.",
+      "Blend the veg until smooth."
+     ],
+     [
+      "Paneer fingers, soft cauliflower and naan strips, with full-fat plain yoghurt to dip.",
+      "Tofu fingers, soft cauliflower and flatbread strips."
+     ]
+    ]
    }
   },
   {
@@ -3104,12 +3636,18 @@
     {
      "k": "cheddar",
      "q": 35,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "cottage_cheese",
      "q": 80,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "salad_leaves",
@@ -3119,7 +3657,14 @@
     {
      "k": "butter",
      "q": 5,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": {
+       "k": "oil",
+       "q": 1,
+       "u": "tsp"
+      }
+     }
     },
     {
      "k": "pepper"
@@ -3148,7 +3693,33 @@
     "finger": "Potato wedges once cool, and a few beans squashed.",
     "chopped": "Potato, beans and cheese, cut small."
    },
-   "emergency": true
+   "emergency": true,
+   "nomilk": {
+    "name": "Microwave jacket potato & beans",
+    "blurb": "A jacket potato in 15 minutes, with beans.",
+    "text": [
+     [
+      " Grate the cheddar.",
+      ""
+     ],
+     [
+      "potato flesh, a few beans and a little cheese.",
+      "potato flesh and a few beans."
+     ],
+     [
+      "Split the potato, add the butter, then pile on the beans, cheese and cottage cheese.",
+      "Split the potato, drizzle in a little oil, then pile on the beans."
+     ],
+     [
+      "Mash the potato with butter and their usual milk.",
+      "Mash the potato with their usual milk."
+     ],
+     [
+      "Potato, beans and cheese, cut small.",
+      "Potato and beans, cut small."
+     ]
+    ]
+   }
   },
   {
    "id": "tomato-lentil-soup",
@@ -3193,12 +3764,18 @@
     {
      "k": "cheddar",
      "q": 30,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "butter",
      "q": 5,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "oil",
@@ -3247,7 +3824,21 @@
     "finger": "Thick soup to dip toast fingers into, plus a little toastie cut into strips.",
     "chopped": "Soup thickened a little, with toastie pieces."
    },
-   "freeze": "The soup (not the toasties)"
+   "freeze": "The soup (not the toasties)",
+   "nomilk": {
+    "name": "Tomato & red lentil soup with toast",
+    "blurb": "Thick, smooth soup with toast to dunk in it.",
+    "text": [
+     [
+      " Grate the cheddar.",
+      ""
+     ],
+     [
+      "For the toasties, butter the outside of the bread and sandwich the cheese between. Cook in a dry frying pan over a medium heat for 2 to 3 minutes a side until golden and melted.",
+      "Toast the bread to dunk in the soup."
+     ]
+    ]
+   }
   },
   {
    "id": "minestrone",
@@ -3354,7 +3945,27 @@
     "finger": "Drain some of the bits out: pasta, beans and soft veg, with a little cheese.",
     "chopped": "As yours before the stock, cut small."
    },
-   "freeze": "The soup (the pasta goes softer)"
+   "freeze": "The soup (the pasta goes softer)",
+   "nomilk": {
+    "text": [
+     [
+      " Grate the cheese.",
+      ""
+     ],
+     [
+      "serve with the cheese and bread",
+      "serve with the bread"
+     ],
+     [
+      "Blend with a spoon of grated cheese.",
+      "Blend until smooth."
+     ],
+     [
+      ", with a little cheese",
+      ""
+     ]
+    ]
+   }
   },
   {
    "id": "chickpea-apricot-stew",
@@ -3477,7 +4088,19 @@
     "finger": "Sweet potato pieces, squashed chickpeas and couscous pressed into small balls.",
     "chopped": "As yours, cut small."
    },
-   "freeze": "The stew (not the couscous)"
+   "freeze": "The stew (not the couscous)",
+   "nomilk": {
+    "text": [
+     [
+      " with the yoghurt, a squeeze",
+      " with a squeeze"
+     ],
+     [
+      "Blend with a little full-fat plain yoghurt.",
+      "Blend until smooth."
+     ]
+    ]
+   }
   },
   {
    "id": "baked-pea-risotto",
@@ -3589,7 +4212,36 @@
     "finger": "Squeeze into small soft balls, with peas squashed.",
     "chopped": "As yours before the stock, with a little ricotta."
    },
-   "grainsMixed": true
+   "grainsMixed": true,
+   "nomilk": {
+    "blurb": "Risotto without the stirring. It goes in the oven.",
+    "text": [
+     [
+      " Grate the cheese and zest the lemon.",
+      " Zest the lemon."
+     ],
+     [
+      "melt the butter over a medium heat",
+      "heat the oil over a medium heat"
+     ],
+     [
+      "before the stock and cheese",
+      "before the stock"
+     ],
+     [
+      "stir it through the rest with most of the cheese, until creamy. Top with the ricotta, the rest of the cheese, the lemon zest and black pepper.",
+      "stir it through the rest with an extra splash of boiling water until loose and glossy. Finish with the lemon zest and plenty of black pepper."
+     ],
+     [
+      "Blend with a spoon of ricotta.",
+      "Blend with a little of their usual milk."
+     ],
+     [
+      "As yours before the stock, with a little ricotta.",
+      "As yours before the stock."
+     ]
+    ]
+   }
   },
   {
    "id": "egg-veg-biryani",
@@ -3635,7 +4287,11 @@
      "q": 100,
      "u": "g",
      "alt": {
-      "milk": "df_yoghurt"
+      "milk": [
+       "soya_yoghurt",
+       "oat_yoghurt",
+       "df_yoghurt"
+      ]
      }
     },
     {
@@ -3705,7 +4361,19 @@
     "finger": "Squashed rice balls, soft veg and egg quarters (fully set).",
     "chopped": "As yours before the chilli and salt, with chopped egg."
    },
-   "grainsMixed": true
+   "grainsMixed": true,
+   "nomilk": {
+    "text": [
+     [
+      "into the yoghurt",
+      "into the dairy-free yoghurt"
+     ],
+     [
+      " with a little full-fat plain yoghurt and egg",
+      " with a little egg"
+     ]
+    ]
+   }
   },
   {
    "id": "greek-chickpea-bowls",
@@ -3806,7 +4474,20 @@
     "finger": "Couscous pressed into balls, squashed chickpeas, and peeled cucumber sticks.",
     "chopped": "Couscous, squashed chickpeas and chopped cucumber."
    },
-   "grainsMixed": true
+   "grainsMixed": true,
+   "nomilk": {
+    "blurb": "Crispy chickpeas, crunchy salad and houmous on lemony couscous.",
+    "text": [
+     [
+      "before the feta and olives",
+      "before the olives"
+     ],
+     [
+      ", with the feta crumbled over, the olives",
+      ", with the olives"
+     ]
+    ]
+   }
   },
   {
    "id": "halloumi-chickpea-couscous",
@@ -3831,7 +4512,14 @@
     {
      "k": "halloumi",
      "q": 50,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": {
+       "k": "tofu",
+       "q": 100,
+       "u": "g"
+      }
+     }
     },
     {
      "k": "cherry_tomatoes",
@@ -3888,7 +4576,25 @@
     "chopped": "As yours before the halloumi, chopped."
    },
    "emergency": true,
-   "grainsMixed": true
+   "grainsMixed": true,
+   "nomilk": {
+    "name": "15-minute tofu & chickpea couscous",
+    "blurb": "Golden tofu, warm chickpeas and tomatoes on lemony couscous.",
+    "text": [
+     [
+      "before the halloumi",
+      "before the tofu"
+     ],
+     [
+      "Slice the halloumi about 1 cm thick. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the halloumi for 1 to 2 minutes a side until golden.",
+      "Drain the tofu, press it firmly between sheets of kitchen paper and pat dry, then cut it into 2 cm cubes. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the tofu for about 5 minutes, turning, until golden."
+     ],
+     [
+      "top with the halloumi",
+      "top with the tofu"
+     ]
+    ]
+   }
   },
   {
    "id": "naan-pizzas",
@@ -4179,7 +4885,23 @@
     "finger": "Patty cut into fingers, plus soft fries.",
     "chopped": "Patty and fries cut small."
    },
-   "freeze": "The uncooked burgers, between sheets of baking paper"
+   "freeze": "The uncooked burgers, between sheets of baking paper",
+   "nomilk": {
+    "text": [
+     [
+      ", laying the cheese on top for the last minute",
+      ""
+     ],
+     [
+      "Serve in the buns with the yoghurt and salad.",
+      "Serve in the buns with the salad."
+     ],
+     [
+      " with full-fat plain yoghurt",
+      " until smooth"
+     ]
+    ]
+   }
   },
   {
    "id": "salt-pepper-tofu",
@@ -4306,7 +5028,10 @@
     {
      "k": "feta",
      "q": 30,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "spring_onion",
@@ -4359,6 +5084,31 @@
     "smooth": "Blend the feta-free piece with a little milk.",
     "finger": "Fingers of the feta-free piece, completely set.",
     "chopped": "The feta-free piece, chopped."
+   },
+   "nomilk": {
+    "name": "Potato & spinach frittata",
+    "text": [
+     [
+      "Pick one corner to be the baby's piece: no feta goes on the baby's corner.",
+      "Pick one corner to be the baby's piece."
+     ],
+     [
+      "Scatter the feta over the top[[, leaving the baby's corner bare]].",
+      "Let it settle for a minute before cutting."
+     ],
+     [
+      "Blend the feta-free piece with a little milk.",
+      "Blend their piece with a little of their usual milk."
+     ],
+     [
+      "Fingers of the feta-free piece",
+      "Fingers of their piece"
+     ],
+     [
+      "The feta-free piece, chopped.",
+      "Their piece, chopped."
+     ]
+    ]
    }
   },
   {
@@ -4381,7 +5131,10 @@
     {
      "k": "halloumi",
      "q": 50,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "tortillas",
@@ -4408,7 +5161,10 @@
     {
      "k": "greek_yoghurt",
      "q": 30,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     }
    ],
    "steps": [
@@ -4434,7 +5190,25 @@
     "finger": "Falafel cut into fingers, cucumber sticks and tortilla strips with houmous.",
     "chopped": "Falafel, tortilla and cucumber, chopped."
    },
-   "emergency": true
+   "emergency": true,
+   "nomilk": {
+    "name": "Falafel wraps",
+    "blurb": "Shop falafel in warm wraps with houmous. Ready in 12 minutes.",
+    "text": [
+     [
+      " out for the baby now, before the halloumi.",
+      " out for the baby now."
+     ],
+     [
+      "Slice the halloumi about 1 cm thick. Heat a dry frying pan over a medium-high heat and fry it for 1 to 2 minutes a side until golden.",
+      "Heat a dry frying pan over a medium-high heat."
+     ],
+     [
+      "falafel and halloumi, then add the yoghurt and a squeeze of lemon",
+      "falafel, an extra spoon of houmous and a squeeze of lemon"
+     ]
+    ]
+   }
   }
  ],
  "families": [

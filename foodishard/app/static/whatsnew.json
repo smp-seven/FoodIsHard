@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.17.1",
+   "notes": [
+    "Dairy-free recipes now have their own wording, names and little-ones' notes, and ten more dinners can be made dairy-free."
+   ]
+  },
+  {
    "version": "0.17.0",
    "notes": [
     "New: with a milk allergy set, many more dinners now work. Toppings like a spoon of yoghurt or grated cheese are left off, and a few things are swapped (oat drink, dairy-free yoghurt, tofu for paneer). Each adapted recipe says exactly what changed."
