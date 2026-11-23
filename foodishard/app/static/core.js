@@ -366,11 +366,29 @@ function budgetSwaps() {
 function headlineSwaps(r) {
   return effectiveIngredients(r).filter((i) => i.from && isHeadline(i.from, r)).map((i) => ingMeta(i.k).n.split(" (")[0].toLowerCase());
 }
+// Allergy versions: a recipe ingredient can say what to do when the household avoids an allergen it contains,
+// e.g. alt: { milk: "omit" } for yoghurt on top, or { milk: "df_yoghurt" } / { milk: { k: "oil", q: 1, u: "tbsp" } } for a swap.
+// The swap's own allergens are then checked like any other ingredient's.
+function allergyAlt(i) {
+  if (!i.alt) return null;
+  const avoid = avoidList(), al = ingMeta(i.k).al || [];
+  for (const a of Object.keys(i.alt)) if (avoid.includes(a) && al.includes(a)) return i.alt[a];
+  return null;
+}
+const shortName = (k) => ingMeta(k).n.split(" (")[0].split(" / ")[0];
+/** What's been changed in this recipe for the household's allergies, in words ("leave out the cheddar"). */
+function allergyChanges(r) {
+  return r.ingredients.map((i) => { const a = allergyAlt(i); if (!a) return null;
+    return a === "omit" ? `leave out the ${shortName(i.k).toLowerCase()}` : `${shortName(a.k || a).toLowerCase()} instead of ${shortName(i.k).toLowerCase()}`; }).filter(Boolean);
+}
 function effectiveIngredients(r) {
-  return r.ingredients.map((i) => {
+  return r.ingredients.flatMap((i0) => {
+    const alt = allergyAlt(i0);
+    if (alt === "omit") return [];
+    const i = alt ? { ...i0, k: alt.k || alt, q: alt.q ?? i0.q, u: alt.u ?? i0.u, allergyFrom: i0.k } : i0;
     const res = resolveIng(i.k, r), m = ingMeta(res.k);
     const u = res.from ? (m.pk ? m.pk[1] : (i.u || "")) : (i.u || m.u || "");
-    return { ...i, k: res.k, q: i.q == null ? null : i.q * res.r, u, from: res.from, orig: i.k };
+    return [{ ...i, k: res.k, q: i.q == null ? null : i.q * res.r, u, from: res.from, orig: i.k }];
   });
 }
 function avoidList() { return settings().avoid || []; }

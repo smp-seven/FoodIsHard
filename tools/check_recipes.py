@@ -77,6 +77,23 @@ for r in recipes["recipes"]:
             warn(r, f"cupboard item {k} measured in {u!r}")
         if not m.get("c") and "nu" not in m:
             err(r, f"{k} has no nutrition data")
+        # allergy versions: alt: { allergen: "omit" | key | {k, q, u} }
+        allergens = json.loads((DATA / "ingredients.json").read_text())["allergens"]
+        for a, v in (ing.get("alt") or {}).items():
+            if a not in allergens:
+                err(r, f"{k} alt: unknown allergen {a!r}")
+            elif a not in (m.get("al") or []):
+                err(r, f"{k} alt for {a!r}, but {k} doesn't contain {a}")
+            if v == "omit":
+                continue
+            tk = v.get("k") if isinstance(v, dict) else v
+            t = items.get(tk)
+            if not t:
+                err(r, f"{k} alt: unknown ingredient {tk!r}")
+            elif a in (t.get("al") or []):
+                err(r, f"{k} alt: the swap {tk} still contains {a}")
+            elif isinstance(v, dict) and v.get("u", "") not in UNITS:
+                err(r, f"{k} alt: unknown unit {v.get('u')!r}")
         if ing.get("q") is not None and "nu" in m:
             g = ing["q"] if u in ("g", "ml") else ing["q"] * m.get("g", 0)
             protein += g / 100 * m["nu"][1]

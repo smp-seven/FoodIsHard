@@ -437,3 +437,8 @@ Fixes from a review of the new features:
 - Shuffle part-way through the current week: days already gone are left alone; empty ones are marked skipped.
 - Aisle order: drag the ≡ handle to reorder (arrow keys work too), instead of up/down buttons.
 - Update now uses the newest downloaded version (the one the card found may have been replaced by a later one), and if the switch hasn't happened within 3 seconds it clears the saved copy and loads fresh instead of reloading the old version.
+
+## 0.17.0
+- Allergy versions of recipes. A recipe's ingredient can say what to do when the household avoids an allergen it contains (`alt`): leave it out, or swap it. Started with milk: 21 recipes adapt (toppings left off; oat drink for milk, a coconut-based dairy-free yoghurt for yoghurt in sauces, marinades, raita and slaw, oil for butter, flatbreads for naan, firm tofu for paneer). Recipes named after their dairy (halloumi, feta, ricotta, mozzarella, "cheesy", "creamy") stay out. With milk avoided, 27 of 45 dinners are available, up from 6.
+- Swaps are checked against all the household's allergies like any other ingredient. Adapted recipes show "Adapted for your allergies" with each change, on the recipe, in the recipe list and in cooking mode, with a reminder to check labels.
+- New ingredients: oat drink, dairy-free yoghurt alternative. The recipe checker validates allergy tags (real allergen, the ingredient contains it, and the swap doesn't).

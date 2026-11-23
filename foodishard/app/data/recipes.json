@@ -42,7 +42,10 @@
     {
      "k": "greek_yoghurt",
      "q": 100,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "chapati",
@@ -161,12 +164,18 @@
     {
      "k": "greek_yoghurt",
      "q": 80,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "cheddar",
      "q": 20,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "oil",
@@ -366,7 +375,10 @@
     {
      "k": "hard_cheese",
      "q": 20,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "oil",
@@ -441,7 +453,10 @@
     {
      "k": "paneer",
      "q": 110,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "tofu"
+     }
     },
     {
      "k": "peas",
@@ -469,7 +484,10 @@
     {
      "k": "greek_yoghurt",
      "q": 50,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "df_yoghurt"
+     }
     },
     {
      "k": "rice",
@@ -792,17 +810,30 @@
     {
      "k": "cheddar",
      "q": 25,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "milk",
      "q": 30,
-     "u": "ml"
+     "u": "ml",
+     "alt": {
+      "milk": "oat_drink"
+     }
     },
     {
      "k": "butter",
      "q": 10,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": {
+       "k": "oil",
+       "q": 1,
+       "u": "tbsp"
+      }
+     }
     },
     {
      "k": "peas",
@@ -1109,7 +1140,10 @@
     {
      "k": "greek_yoghurt",
      "q": 100,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "rice_pouch",
@@ -1279,11 +1313,17 @@
     {
      "k": "greek_yoghurt",
      "q": 100,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "df_yoghurt"
+     }
     },
     {
      "k": "naan",
-     "q": 1
+     "q": 1,
+     "alt": {
+      "milk": "flatbread"
+     }
     },
     {
      "k": "lemon",
@@ -1406,7 +1446,10 @@
     {
      "k": "greek_yoghurt",
      "q": 120,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "chapati",
@@ -1497,7 +1540,10 @@
     {
      "k": "paneer",
      "q": 110,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "tofu"
+     }
     },
     {
      "k": "frozen_spinach",
@@ -1520,7 +1566,10 @@
     {
      "k": "greek_yoghurt",
      "q": 80,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "df_yoghurt"
+     }
     },
     {
      "k": "chapati",
@@ -1721,7 +1770,10 @@
     {
      "k": "hard_cheese",
      "q": 15,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "oil",
@@ -1970,12 +2022,18 @@
     {
      "k": "cheddar",
      "q": 30,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "greek_yoghurt",
      "q": 50,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "salsa",
@@ -2075,12 +2133,18 @@
     {
      "k": "cheddar",
      "q": 35,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "greek_yoghurt",
      "q": 40,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "garlic",
@@ -2267,7 +2331,10 @@
     {
      "k": "greek_yoghurt",
      "q": 60,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "df_yoghurt"
+     }
     },
     {
      "k": "cornflour",
@@ -2365,7 +2432,10 @@
     {
      "k": "cheddar",
      "q": 20,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "avocado",
@@ -2724,7 +2794,10 @@
     {
      "k": "paneer",
      "q": 100,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "tofu"
+     }
     },
     {
      "k": "cauliflower",
@@ -2741,7 +2814,10 @@
     {
      "k": "greek_yoghurt",
      "q": 100,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "df_yoghurt"
+     }
     },
     {
      "k": "cucumber",
@@ -2749,7 +2825,10 @@
     },
     {
      "k": "naan",
-     "q": 0.5
+     "q": 0.5,
+     "alt": {
+      "milk": "flatbread"
+     }
     },
     {
      "k": "garlic",
@@ -3218,7 +3297,10 @@
     {
      "k": "hard_cheese",
      "q": 15,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "bread",
@@ -3326,7 +3408,10 @@
     {
      "k": "greek_yoghurt",
      "q": 80,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "lemon",
@@ -3430,12 +3515,18 @@
     {
      "k": "ricotta",
      "q": 40,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "hard_cheese",
      "q": 25,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "onion",
@@ -3448,7 +3539,14 @@
     {
      "k": "butter",
      "q": 10,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": {
+       "k": "oil",
+       "q": 1,
+       "u": "tbsp"
+      }
+     }
     },
     {
      "k": "lemon",
@@ -3535,7 +3633,10 @@
     {
      "k": "greek_yoghurt",
      "q": 100,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "df_yoghurt"
+     }
     },
     {
      "k": "cucumber",
@@ -3649,7 +3750,10 @@
     {
      "k": "feta",
      "q": 40,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "hummus",
@@ -3995,7 +4099,10 @@
     {
      "k": "cheddar",
      "q": 20,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "burger_buns",
@@ -4008,7 +4115,10 @@
     {
      "k": "greek_yoghurt",
      "q": 40,
-     "u": "g"
+     "u": "g",
+     "alt": {
+      "milk": "omit"
+     }
     },
     {
      "k": "salad_leaves",

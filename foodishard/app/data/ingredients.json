@@ -2702,6 +2702,56 @@
     0.1,
     0
    ]
+  },
+  "oat_drink": {
+   "n": "Oat drink (unsweetened)",
+   "a": "dairy",
+   "p": 0.99,
+   "pk": [
+    1000,
+    "ml"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "ko": 5,
+   "kt": "Keep in the fridge once opened and use within 5 days. Check the label: some oat drinks are made gluten-free.",
+   "g": 1,
+   "nu": [
+    45,
+    0.3,
+    6.6,
+    3.3,
+    1.5,
+    0.2,
+    0.8,
+    0.1
+   ]
+  },
+  "df_yoghurt": {
+   "n": "Dairy-free yoghurt alternative (coconut-based)",
+   "a": "dairy",
+   "p": 1.6,
+   "pk": [
+    400,
+    "g"
+   ],
+   "al": [
+    "coconut"
+   ],
+   "ko": 5,
+   "kt": "Keep in the fridge once opened and use within 5 days.",
+   "g": 1,
+   "nu": [
+    96,
+    0.8,
+    5.0,
+    4.0,
+    8.2,
+    7.5,
+    0.5,
+    0.1
+   ]
   }
  },
  "prices_base_period": "2026 OCT",

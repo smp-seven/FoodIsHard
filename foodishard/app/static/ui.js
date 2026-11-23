@@ -135,7 +135,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.16.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.17.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -605,7 +605,7 @@ function viewRecipes() {
     const p = prefsFor(r.id), blocked = blockedBy(r);
     return `<button class="rrow ${p.ban || blocked.length ? "off" : ""}" data-act="recipe" data-id="${r.id}"><span class="grow"><b>${esc(r.name)}</b><br>
       <span class="small muted">${r.time} min (${r.hands || r.time} hands-on) · ${money(recipeCost(r))} a portion · ${Math.round(nutritionPerPortion(r).kcal).toLocaleString("en-GB")} kcal</span>
-      ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : ""}</span>
+      ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : allergyChanges(r).length ? `<br><span class="small muted">Adapted for your allergies</span>` : ""}</span>
       ${cookedIt(r.id) ? `<span class="pill accent" title="Cooked it">✓</span>` : ""}${p.fav ? `<span style="color:var(--warm)" aria-label="Favourite">♥</span>` : ""}${r.time <= 15 ? `<span class="pill warm">Quick</span>` : ""}</button>`;
   };
   const flat = q || f !== "all";
@@ -893,7 +893,7 @@ function openRecipe(id, { pickDay = null, keepScroll = false, day = null } = {})
     if ((m.f || []).includes("welfare")) chips.push(`<span class="pill accent">Free-range</span>`);
     checkLabelFor(i.k).forEach((a) => chips.push(`<span class="pill warm">Check: ${esc(a.toLowerCase())}</span>`));
     const canSwap = (ingMeta(i.orig).sw || []).length;
-    return `<li><span>${esc(m.n)} ${chips.join(" ")}${i.from ? `<br><span class="small muted">instead of ${esc(ingMeta(i.from).n.toLowerCase())}</span>` : ""}
+    return `<li><span>${esc(m.n)} ${chips.join(" ")}${i.allergyFrom ? `<br><span class="small muted">instead of ${esc(shortName(i.allergyFrom).toLowerCase())}, for your allergies</span>` : i.from ? `<br><span class="small muted">instead of ${esc(ingMeta(i.from).n.toLowerCase())}</span>` : ""}
       ${canSwap ? `<br><button class="btn sm" style="margin-top:6px" data-act="swapIng" data-k="${esc(i.orig)}" data-reopen="${id}">Swap</button>` : ""}</span>
       <span class="muted" style="white-space:nowrap">${esc(fmtQty(i.q * factor, i.u))}</span></li>`;
   }).join("");
@@ -903,7 +903,7 @@ function openRecipe(id, { pickDay = null, keepScroll = false, day = null } = {})
     <p class="eyebrow">${esc(r.emergency ? "Quick meal" : family(r.family).name)}</p>
     <h1 class="title" style="font-size:27px">${esc(r.name)}</h1>
     <p class="muted" style="margin:6px 0 10px">${esc(r.blurb)}</p>
-    ${blocked.length ? `<p class="pill warm" style="white-space:normal;padding:8px 12px">Contains ${esc(blocked.join(", ").toLowerCase())}, so it's hidden from your plans.</p>` : ""}
+    ${blocked.length ? `<p class="pill warm" style="white-space:normal;padding:8px 12px">Contains ${esc(blocked.join(", ").toLowerCase())}, so it's hidden from your plans.</p>` : allergyNote(r)}
     ${lastFb ? `<p class="small muted" style="margin:0 0 8px">Cooked ${fb.length}× · last time: ${({ loved: "loved it", fine: "fine", never: "not again" })[lastFb.rating] || ""}${lastFb.tags.length ? ` (${esc(lastFb.tags.join(", ").toLowerCase())})` : ""}${lastFb.note ? `, "${esc(lastFb.note)}"` : ""}</p>` : ""}
     <div class="row wrap" style="gap:6px;margin-bottom:12px">${cookedIt(id) ? `<span class="pill accent">✓ Cooked it</span>` : ""}<span class="pill">${r.time} min · ${r.hands || r.time} hands-on</span><span class="pill">${money(cost)} a portion · ${money(cost * factor)} in all</span>
       ${avoid.length && !blocked.length ? `<span class="pill warm">No ${esc(avoid.join(", ").toLowerCase())}</span>` : ""}</div>
@@ -1495,7 +1495,7 @@ function renderCook() {
   $("#cook").innerHTML = `
     <div class="row between"><button class="icon-btn" data-act="cookClose" aria-label="Close cooking mode">${icon("x", 18)}</button>
       <button class="btn sm" data-act="cookIng">${c.showIng ? "Hide" : "Ingredients"}</button></div>
-    <p class="small" style="font-weight:600;color:var(--muted);margin:12px 0 8px">${esc(r.name)}</p>
+    <p class="small" style="font-weight:600;color:var(--muted);margin:12px 0 8px">${esc(r.name)}</p>${allergyNote(r, { short: true })}
     <div class="cook-progress">${prog}</div>
     <div class="grow" style="overflow-y:auto;padding:18px 0;display:flex;flex-direction:column;gap:16px">
       ${c.showIng ? `<div class="card"><ul class="ing-list">${ingList}</ul></div>` : ""}
@@ -2215,6 +2215,12 @@ function budgetSaving() { const s = settings(); const keepB = s.budget, keepSw =
     const off = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
     s.budget = true; const on = buildList(currentWeek()).filter((i) => i.active && !i.cupboard).reduce((t, i) => t + (i.cost || 0), 0);
     s.budget = keepB; app.state.swaps = keepSw; return off - on; }
+/** "Adapted for your allergies: leave out the cheddar; oat drink instead of milk." The steps still name the original. */
+function allergyNote(r, { short = false } = {}) {
+  const ch = allergyChanges(r); if (!ch.length) return "";
+  const list = ch.join("; ");
+  return `<p class="allergy-note"><b>Adapted for your allergies:</b> ${esc(list.charAt(0).toUpperCase() + list.slice(1))}.${short ? "" : ` The steps still mention the original, so follow this instead. Always check labels: "may contain" warnings vary by brand.`}</p>`;
+}
 /** A search box for a long list in a panel. Tapping it lifts it to the top of the panel, so results show above the keyboard. */
 function filterBox(placeholder) {
   return `<input class="input" id="sheetFilter" type="search" placeholder="${esc(placeholder)}" autocomplete="off" style="margin-bottom:6px"

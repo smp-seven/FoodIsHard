@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.17.0",
+   "notes": [
+    "New: with a milk allergy set, many more dinners now work. Toppings like a spoon of yoghurt or grated cheese are left off, and a few things are swapped (oat drink, dairy-free yoghurt, tofu for paneer). Each adapted recipe says exactly what changed."
+   ]
+  },
+  {
    "version": "0.16.1",
    "notes": [
     "Empty days have a \"Choose for me\" button.",
