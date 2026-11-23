@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.18.1",
+   "notes": [
+    "Vegan with little ones: a tip about their nutrition now sits under the Vegan switch."
+   ]
+  },
+  {
    "version": "0.18.0",
    "notes": [
     "New: a Vegan switch in Settings. Dinners are made vegan where they can be, and the rest are left out."

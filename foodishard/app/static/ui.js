@@ -136,7 +136,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.18.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.18.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -657,8 +657,11 @@ function viewSettings() {
 
     <p class="section-label">Food</p>
     <div class="list">
+      ${(() => { const tip = s.vegan && kids().length; return `<div class="${tip ? "subgroup" : ""}">
       <label class="row" style="padding:13px 16px"><span class="grow"><b>Vegan</b><br><span class="small muted">No meat, fish, dairy or eggs. Dinners are made vegan where they can be.</span></span>
         <span class="switch"><input type="checkbox" data-set="bool" data-f="vegan" ${s.vegan ? "checked" : ""} aria-label="Vegan"><i></i></span></label>
+      ${tip ? `<div class="row" style="padding:12px 16px;gap:10px;border-top:1px solid var(--line-soft)"><span aria-hidden="true">🌱</span><span class="small">For little ones on a vegan diet, ask your health visitor about vitamins and getting enough of the right nutrients.</span></div>` : ""}
+      </div>`; })()}
       <div class="stack ${nudges().includes("allergies") ? "nudge-field" : ""}" style="padding:14px 16px;gap:8px"><b>Allergies: never include</b>
         <div class="chips wrap">${Object.entries(app.ing.allergens).map(([k, v]) => `<button class="chip ${avoid.includes(k) ? "on" : ""}" data-act="avoid" data-k="${k}">${esc(v)}</button>`).join("")}</div>
         <span class="small muted">Recipes with these are hidden. Shopping items that sometimes contain them get a "Check" label.${app.host === "Cloudflare" ? ` They're stored with your household so the planner can avoid them. Untick any time to remove them.` : ""}</span>
@@ -2227,8 +2230,7 @@ function allergyNote(r, { short = false } = {}) {
   const head = vegan ? "Made vegan:" : "Adapted for your allergies:";
   const more = short ? "" : vegan ? " The steps are written for this version. Some breads, wraps and stock cubes contain milk or egg, so check the label."
     : ` The steps are written for this version. Always check labels: UK labels show milk in <b>bold</b> in the ingredients, whatever form it's in.`;
-  const kid = !little ? "" : vegan ? "For little ones on a vegan diet, ask your health visitor about vitamins and getting enough of the right nutrients."
-    : "If a little one has the milk allergy, follow your doctor's or dietitian's advice on milk alternatives.";
+  const kid = !little || vegan ? "" : "If a little one has the milk allergy, follow your doctor's or dietitian's advice on milk alternatives.";
   return `<p class="allergy-note"><b>${head}</b> ${esc(list.charAt(0).toUpperCase() + list.slice(1))}.${more}${kid ? `<br><span class="small">${kid}</span>` : ""}</p>`;
 }
 /** A search box for a long list in a panel. Tapping it lifts it to the top of the panel, so results show above the keyboard. */

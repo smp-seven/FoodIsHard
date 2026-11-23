@@ -451,5 +451,6 @@ Fixes from a review of the new features:
 - The checker also refuses "toastie" and "their usual milk" in dairy-free text.
 - For everyone: huevos rancheros "make a hollow" for each egg; the biryani's eggs are described as boiled.
 
-## 0.18.0
+## 0.18.0 – 0.18.1
 - Settings → Food: a Vegan switch. It filters and adapts recipes as milk and egg allergies would (29 of 45 dinners today), without ticking those allergies. Changes made only because of it are worded "Made vegan" instead of "Adapted for your allergies", with a lighter label reminder and, with little ones, a pointer to the health visitor about vitamins and nutrients. A real milk allergy still uses the allergy wording.
+- The vegan little-ones tip (ask your health visitor about vitamins and nutrients) is a tile under the Vegan switch, boxed with it, shown only with little ones, and no longer repeated on every recipe.
