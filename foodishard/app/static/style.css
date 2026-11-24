@@ -455,3 +455,6 @@ details.fold[open] summary::after { transform: rotate(225deg) translate(-1px, -1
 .aisle-row.dragging { transition: none; position: relative; z-index: 2; box-shadow: 0 6px 18px rgba(0,0,0,.18); border-radius: 12px; }
 .aisle-row.dragging .drag-handle { cursor: grabbing; }
 .allergy-note { margin: 8px 0 12px; padding: 10px 12px; border-radius: 12px; background: var(--sunk); border-left: 3px solid var(--accent); font-size: 14px; line-height: 1.45; }
+/* shopping twice a week: the heading for each trip */
+.trip-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin: 22px 2px 4px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+.trip-head b { font-family: var(--serif); font-size: 20px; }

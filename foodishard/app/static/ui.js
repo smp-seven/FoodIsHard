@@ -136,7 +136,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.18.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.19.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -489,12 +489,21 @@ function viewShop() {
   const right = sel ? `<button class="btn sm" data-act="selCancel">Cancel</button>`
     : `<button class="icon-btn" data-act="shopMenu" aria-label="Share, print and more">${icon("dots")}</button>`;
 
-  const groups = {};
-  shown.forEach((i) => { (groups[i.aisle] = groups[i.aisle] || []).push(i); });
-  const body = aisleOrder().filter((a) => groups[a]).map((a) => `<p class="section-label">${esc(aisleName(a))}</p>
-    <div class="list">${groups[a].sort((x, y) => (x.done - y.done) || x.name.localeCompare(y.name)).map(itemRow).join("")}</div>`).join("");
-
   const sum = (list) => list.reduce((t, i) => t + (i.cost || 0), 0);
+  const byAisle = (list) => { const groups = {}; list.forEach((i) => { (groups[i.aisle] = groups[i.aisle] || []).push(i); });
+    return aisleOrder().filter((a) => groups[a]).map((a) => `<p class="section-label">${esc(aisleName(a))}</p>
+    <div class="list">${groups[a].sort((x, y) => (x.done - y.done) || x.name.localeCompare(y.name)).map(itemRow).join("")}</div>`).join(""); };
+  const split = shopSplit();
+  let body;
+  if (!split) body = byAisle(shown);
+  else { // shopping twice a week: one section per trip, each with what's left to buy
+    const day = (i) => DOW[mondayIndex(addDays(parseISO(week), i))], dayLong = (i) => DOW_LONG[mondayIndex(addDays(parseISO(week), i))];
+    const one = shown.filter((i) => i.trip !== 2), two = shown.filter((i) => i.trip === 2);
+    const head = (title, sub, list) => `<div class="trip-head"><span><b>${title}</b><br><span class="small muted">${sub}</span></span><span class="small muted">${list.filter((i) => !i.done).length} to get · ≈ ${money(sum(list.filter((i) => !i.done)))}</span></div>`;
+    body = `${head("First shop", `For ${day(0)}–${day(split - 1)} dinners, and anything that keeps`, one)}${byAisle(one) || `<p class="small muted" style="margin:4px">All done.</p>`}
+      ${head(`${dayLong(split)} shop`, `Fresh things for ${day(split)}–${day(6)} dinners`, two)}${byAisle(two) || `<p class="small muted" style="margin:4px">Nothing fresh needed later in the week.</p>`}`;
+  }
+
   const toBuy = shown.filter((i) => !i.done), trolley = sum(shown.filter((i) => i.done));
   const base = toGet.filter((i) => !i.done).reduce((t, i) => t + (i.cost ? i.cost / shopMult(i.shop === "any" ? priceShop() : i.shop) : 0), 0);
   const compare = enabledShops().slice(0, 4).map((s) => `${esc(shopName(s))} ≈${money(base * shopMult(s))}`).join(" · ");
@@ -681,6 +690,14 @@ function viewSettings() {
         <label><span class="small muted">Weekend cooking time</span><select class="input" data-set="num" data-f="weekendMax">${[40, 60, 90, 120].map((m) => `<option value="${m}" ${+s.weekendMax === m ? "selected" : ""}>Up to ${m} minutes</option>`).join("")}</select></label>
         <label><span class="small muted">Week starts on</span><select class="input" data-set="num" data-f="weekStartDay">${DOW_LONG.map((d, i) => `<option value="${i}" ${(+s.weekStartDay || 0) === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
       </div>
+      ${(() => { const on = !!s.twoShops, start = +s.weekStartDay || 0, d2 = s.shop2 ?? 3;
+        const days = DOW_LONG.map((d, i) => [i, d]).filter(([i]) => i !== start);
+        return `<div class="${on ? "subgroup" : ""}">
+        <label class="row" style="padding:13px 16px"><span class="grow"><b>Shop twice a week</b><br><span class="small muted">Splits the list in two, so fresh food for later in the week is bought later</span></span>
+          <span class="switch"><input type="checkbox" data-set="bool" data-f="twoShops" ${on ? "checked" : ""} aria-label="Shop twice a week"><i></i></span></label>
+        ${on ? `<label class="row" style="padding:10px 16px;gap:12px;border-top:1px solid var(--line-soft)"><span class="grow">Second shop on</span>
+          <select class="input" style="width:auto" data-set="num" data-f="shop2">${days.map(([i, d]) => `<option value="${i}" ${d2 === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>` : ""}
+        </div>`; })()}
     </div>
 
     <p class="section-label">Shopping &amp; prices</p>

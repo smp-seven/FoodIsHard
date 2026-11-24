@@ -725,15 +725,25 @@ function factorFor(id) {
 }
 /** Where today sits in the plan. */
 function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date()) - (settings().weekStartDay || 0) + 7) % 7 }; }
+// ---- Shopping twice a week (off by default) -----------------------------------------------------
+// settings.twoShops, settings.shop2 = the second shop's weekday (0 = Monday). The first shop is before the week
+// starts and covers the days up to the second shop; the second covers that day to the end of the week.
+// Only fresh things are split: anything that keeps is bought in the first shop.
+function shopSplit() {
+  const s = settings(); if (!s.twoShops) return 0;
+  const k = ((s.shop2 ?? 3) - (+s.weekStartDay || 0) + 7) % 7;
+  return k || 0; // the second shop can't be the first day of the week
+}
+function tripOf(dayIndex, k) { const split = shopSplit(); return split && dayIndex >= split && GOES_OFF.has(k) ? 2 : 1; }
 function buildList(week, opts = {}) { // opts.past: an earlier week, worked out only to look back at
   const items = new Map();
-  planFor(week).forEach((d) => {
+  planFor(week).forEach((d, dayIndex) => {
     if (d.status !== "cook" || !d.recipe) return;
     const factor = dayFactor(d);
     const r = app.byId[d.recipe]; if (!r) return;
     effectiveIngredients(r).forEach((ing) => {
-      const m = ingMeta(ing.k), key = "i:" + ing.k;
-      if (!items.has(key)) items.set(key, { key, k: ing.k, name: m.n, aisle: m.a, shop: m.s, flags: m.f || [], note: kidNote(m.note), cupboard: !!m.c, qty: {}, recipes: [], from: new Set(), swappable: new Set() });
+      const m = ingMeta(ing.k), trip = tripOf(dayIndex, ing.k), key = "i:" + ing.k + (trip === 2 ? "@2" : "");
+      if (!items.has(key)) items.set(key, { trip, key, k: ing.k, name: m.n, aisle: m.a, shop: m.s, flags: m.f || [], note: kidNote(m.note), cupboard: !!m.c, qty: {}, recipes: [], from: new Set(), swappable: new Set() });
       const it = items.get(key);
       if (ing.q != null) it.qty[ing.u] = (it.qty[ing.u] || 0) + ing.q * factor;
       if (!it.recipes.includes(r.name)) it.recipes.push(r.name);
