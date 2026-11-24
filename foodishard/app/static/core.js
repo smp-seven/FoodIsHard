@@ -729,11 +729,10 @@ function todaySlot() { return { week: currentWeek(), i: (mondayIndex(new Date())
 // settings.twoShops, settings.shop2 = the second shop's weekday (0 = Monday). The first shop is before the week
 // starts and covers the days up to the second shop; the second covers that day to the end of the week.
 // Only fresh things are split: anything that keeps is bought in the first shop.
-function shopSplit() {
-  const s = settings(); if (!s.twoShops) return 0;
-  const k = ((s.shop2 ?? 3) - (+s.weekStartDay || 0) + 7) % 7;
-  return k || 0; // the second shop can't be the first day of the week
-}
+/** The second shop's weekday. If it's the day the week starts (e.g. after changing "Week starts on"), it moves to
+    halfway through the week, so the split never quietly switches off. */
+function shop2Day() { const s = settings(), start = +s.weekStartDay || 0, d = s.shop2 ?? (start + 3) % 7; return d === start ? (start + 3) % 7 : d; }
+function shopSplit() { const s = settings(); return s.twoShops ? (shop2Day() - (+s.weekStartDay || 0) + 7) % 7 : 0; }
 function tripOf(dayIndex, k) { const split = shopSplit(); return split && dayIndex >= split && GOES_OFF.has(k) ? 2 : 1; }
 function buildList(week, opts = {}) { // opts.past: an earlier week, worked out only to look back at
   const items = new Map();

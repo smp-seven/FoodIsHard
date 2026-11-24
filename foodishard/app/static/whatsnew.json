@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.19.1",
+   "notes": [
+    "Shop twice a week: the day picker follows your week, and it shows what each shop covers."
+   ]
+  },
+  {
    "version": "0.19.0",
    "notes": [
     "New: shop twice a week. Switch it on in Settings → Schedule and pick your second shop day. The list splits in two, so fresh food for later in the week is bought later."

@@ -136,7 +136,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.19.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.19.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -500,8 +500,9 @@ function viewShop() {
     const day = (i) => DOW[mondayIndex(addDays(parseISO(week), i))], dayLong = (i) => DOW_LONG[mondayIndex(addDays(parseISO(week), i))];
     const one = shown.filter((i) => i.trip !== 2), two = shown.filter((i) => i.trip === 2);
     const head = (title, sub, list) => `<div class="trip-head"><span><b>${title}</b><br><span class="small muted">${sub}</span></span><span class="small muted">${list.filter((i) => !i.done).length} to get · ≈ ${money(sum(list.filter((i) => !i.done)))}</span></div>`;
-    body = `${head("First shop", `For ${day(0)}–${day(split - 1)} dinners, and anything that keeps`, one)}${byAisle(one) || `<p class="small muted" style="margin:4px">All done.</p>`}
-      ${head(`${dayLong(split)} shop`, `Fresh things for ${day(split)}–${day(6)} dinners`, two)}${byAisle(two) || `<p class="small muted" style="margin:4px">Nothing fresh needed later in the week.</p>`}`;
+    const span = (a, b) => (a === b ? `${day(a)}'s dinner` : `${day(a)}–${day(b)} dinners`);
+    body = `${head("First shop", `For ${span(0, split - 1)}, and anything that keeps`, one)}${byAisle(one) || `<p class="small muted" style="margin:4px">All done.</p>`}
+      ${head(`${dayLong(split)} shop`, `Fresh things for ${span(split, 6)}`, two)}${byAisle(two) || `<p class="small muted" style="margin:4px">Nothing fresh needed later in the week.</p>`}`;
   }
 
   const toBuy = shown.filter((i) => !i.done), trolley = sum(shown.filter((i) => i.done));
@@ -690,13 +691,16 @@ function viewSettings() {
         <label><span class="small muted">Weekend cooking time</span><select class="input" data-set="num" data-f="weekendMax">${[40, 60, 90, 120].map((m) => `<option value="${m}" ${+s.weekendMax === m ? "selected" : ""}>Up to ${m} minutes</option>`).join("")}</select></label>
         <label><span class="small muted">Week starts on</span><select class="input" data-set="num" data-f="weekStartDay">${DOW_LONG.map((d, i) => `<option value="${i}" ${(+s.weekStartDay || 0) === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
       </div>
-      ${(() => { const on = !!s.twoShops, start = +s.weekStartDay || 0, d2 = s.shop2 ?? 3;
-        const days = DOW_LONG.map((d, i) => [i, d]).filter(([i]) => i !== start);
+      ${(() => { const on = !!s.twoShops, start = +s.weekStartDay || 0, d2 = shop2Day(), split = (d2 - start + 7) % 7;
+        const days = [1, 2, 3, 4, 5, 6].map((n) => [(start + n) % 7, DOW_LONG[(start + n) % 7]]); // in the week's own order
+        const sd = (n) => DOW[(start + n) % 7];
+        const covers = `First shop: ${split === 1 ? `${sd(0)} dinner` : `${sd(0)}–${sd(split - 1)} dinners`} · ${DOW_LONG[d2]} shop: ${split === 6 ? `${sd(6)} dinner` : `${sd(split)}–${sd(6)} dinners`}`;
         return `<div class="${on ? "subgroup" : ""}">
         <label class="row" style="padding:13px 16px"><span class="grow"><b>Shop twice a week</b><br><span class="small muted">Splits the list in two, so fresh food for later in the week is bought later</span></span>
           <span class="switch"><input type="checkbox" data-set="bool" data-f="twoShops" ${on ? "checked" : ""} aria-label="Shop twice a week"><i></i></span></label>
         ${on ? `<label class="row" style="padding:10px 16px;gap:12px;border-top:1px solid var(--line-soft)"><span class="grow">Second shop on</span>
-          <select class="input" style="width:auto" data-set="num" data-f="shop2">${days.map(([i, d]) => `<option value="${i}" ${d2 === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>` : ""}
+          <select class="input" style="width:auto" data-set="num" data-f="shop2">${days.map(([i, d]) => `<option value="${i}" ${d2 === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
+        <p class="small muted" style="margin:0;padding:0 16px 12px">${covers}</p>` : ""}
         </div>`; })()}
     </div>
 
