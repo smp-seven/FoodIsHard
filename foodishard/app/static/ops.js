@@ -24,7 +24,7 @@ function checkOp(op) {
   if (op.op === "extra_update" && op.patch && long(op.patch.name, 120)) bad();
   // a household cooks for up to 10 grown-ups and 10 little ones (guests on a day cover bigger gatherings)
   // dislikes: ingredient keys picked from the list
-  for (const f of ["dislikeKs", "budgetSkip"]) { // lists of ingredient keys: dislikes, and budget swaps turned off
+  for (const f of ["dislikeKs", "budgetSkip", "kitchenOff"]) { // lists of ingredient keys: dislikes, and budget swaps turned off
     const v = op.op === "settings" && op.patch ? op.patch[f] : null;
     if (v != null && (!Array.isArray(v) || v.length > 200 || v.some((k) => typeof k !== "string" || k.length > 60))) bad();
   }

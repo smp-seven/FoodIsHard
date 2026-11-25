@@ -1,0 +1,132 @@
+{
+ "_note": "Appliances, and the cooking jobs recipes ask for. In a step, {{@job ...}} is replaced by the wording for the first option whose appliances the household has. Times in a step are for the first option; scale converts them (rounded up: to the minute under 10, to 5 minutes above). See RECIPES.md.",
+ "_sources": "Air fryer vs oven: the usual rule is about 20C cooler and 20 to 25% quicker in an air fryer (e.g. Instant Pot UK, Arla, SBS), so the oven runs 20C hotter (the air fryer's temperature as fan) for about 1.25 times as long, spread out on a lined tray. Reheating: the Food Standards Agency says steaming hot all the way through, especially rice.",
+ "appliances": [
+  {
+   "id": "hob",
+   "n": "Hob",
+   "always": true
+  },
+  {
+   "id": "oven",
+   "n": "Oven"
+  },
+  {
+   "id": "airFryer",
+   "n": "Air fryer"
+  },
+  {
+   "id": "microwave",
+   "n": "Microwave"
+  }
+ ],
+ "jobs": {
+  "crisp": {
+   "about": "Crisp or roast something in one layer: tofu, chickpeas, veg, wedges, falafel, naan pizzas. t = air fryer minutes (a range like 6-8 is fine). Options: what=\"the tofu\", temp (air fryer, default 200), turn=halfway|once|twice, more (continuing: 'for 8 more minutes'), verb=bake.",
+   "options": [
+    {
+     "a": "airFryer",
+     "text": "air fry{what} at {temp}°C for {time} minutes{turn}",
+     "more": "air fry for {time} more minutes{turn}",
+     "in": "the air fryer",
+     "turn": {
+      "halfway": ", shaking halfway",
+      "once": ", shaking once",
+      "twice": ", shaking twice"
+     }
+    },
+    {
+     "a": "oven",
+     "scale": 1.25,
+     "hotter": 20,
+     "preheat": "heat the oven to {otemp}°C ({temp}°C fan)",
+     "text": "{verb}{what} on a lined baking tray at {otemp}°C ({temp}°C fan) for {time} minutes{turn}",
+     "more": "{verb} for {time} more minutes{turn}",
+     "in": "the tray",
+     "turn": {
+      "halfway": ", turning halfway",
+      "once": ", turning once",
+      "twice": ", turning twice"
+     }
+    }
+   ]
+  },
+  "heatUp": {
+   "about": "Preheat for crisp jobs, where a recipe says so itself (e.g. 'Get ready: {{@heatUp temp=190}}'). Otherwise the oven preheat is added to Get ready automatically.",
+   "options": [
+    {
+     "a": "airFryer",
+     "text": "heat the air fryer to {temp}°C"
+    },
+    {
+     "a": "oven",
+     "hotter": 20,
+     "text": "heat the oven to {otemp}°C ({temp}°C fan)"
+    }
+   ]
+  },
+  "reheat": {
+   "about": "Warm something already cooked (a baby's spoonful, beans). Reads after the thing: 'Warm the chickpeas {{@reheat}}'.",
+   "options": [
+    {
+     "a": "microwave",
+     "text": "in the microwave until steaming hot all the way through"
+    },
+    {
+     "a": "hob",
+     "text": "in a small pan with a splash of water, stirring, until steaming hot all the way through"
+    }
+   ]
+  },
+  "ricePouch": {
+   "about": "Heat a ready-cooked rice pouch. A whole instruction: '{{@ricePouch}}'.",
+   "options": [
+    {
+     "a": "microwave",
+     "text": "heat the rice pouch in the microwave following the packet, until steaming hot all the way through"
+    },
+    {
+     "a": "hob",
+     "text": "tip the rice pouch into a small pan with a splash of water and heat for 3 to 4 minutes, stirring, until steaming hot all the way through"
+    }
+   ]
+  },
+  "thaw": {
+   "about": "Thaw frozen veg (spinach) to squeeze dry. what=\"the spinach\".",
+   "options": [
+    {
+     "a": "microwave",
+     "text": "thaw{what} in a bowl in the microwave for 3 to 4 minutes"
+    },
+    {
+     "a": "hob",
+     "text": "thaw{what} in a pan over a low heat for 4 to 5 minutes, stirring",
+     "addTime": 1
+    }
+   ]
+  },
+  "jacketPotato": {
+   "about": "Cook a jacket potato. A whole instruction.",
+   "options": [
+    {
+     "a": "microwave",
+     "needs": [
+      "microwave",
+      "airFryer"
+     ],
+     "text": "microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). Add 4 to 5 minutes for each extra potato. For crisp skin, air fry at 200°C for 5 minutes afterwards"
+    },
+    {
+     "a": "microwave",
+     "text": "microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). Add 4 to 5 minutes for each extra potato"
+    },
+    {
+     "a": "oven",
+     "addTime": 60,
+     "preheat": "heat the oven to 200°C (180°C fan)",
+     "text": "rub the potato with a little oil and salt and bake it straight on the oven shelf for 1 hour to 1 hour 15 minutes, until crisp outside and soft all the way through when squeezed (use an oven glove)"
+    }
+   ]
+  }
+ }
+}

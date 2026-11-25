@@ -21,13 +21,34 @@ Households differ: some avoid milk, and some have no air fryer. A recipe has **o
   } }
 ```
 
-- **Conditions:** `noMilk` (a milk allergy, or the Vegan switch), `noAirFryer`, `noMicrowave` and `noBlender`.
+- **Conditions:** `noMilk` (a milk allergy, or the Vegan switch), and `noOven`, `noAirFryer` and `noMicrowave` (from the household's appliances). Use these sparingly: appliances are normally handled by cooking jobs, below.
 - **Combinations:** for each step, the app uses the most specific version whose conditions are all switched on. If two conditions both change a step, write the combined version, with its conditions in A–Z order joined by `+`. The checker will tell you when one is missing.
 - **An empty string `""` leaves the step out** in that version.
 - **Write every version as a whole, natural sentence.** Never write "if you don't have…".
 - **The recipe's name, blurb and time:** use `"if": { "noMilk": { "name": "…", "blurb": "…", "time": 40 } }` on the recipe itself.
 - **Little-ones' notes:** use `"babyIf": { "smooth": { "noBlender": "…" } }`.
-- **Appliances with no sensible alternative:** add `"needs": ["airFryer"]` to the recipe. It's hidden for households without one.
+
+## Cooking jobs: appliances ("{{@job}}")
+
+**Don't write "air fry at 200°C for 15 minutes" or "heat in the microwave" in a step.** Write the *job*, and the app words it for the household's appliances using the rules in `data/kitchen.json`:
+
+```
+"Toss the tofu with the oil and cornflour. {{@crisp t=15 turn=halfway}}, until crisp."
+```
+
+- **With an air fryer,** this reads "Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
+- **Without one,** it reads "Roast on a lined baking tray at 220°C (200°C fan) for 20 minutes, turning halfway, until crisp", and "heat the oven" is added to Get ready.
+- **If a household has neither,** the recipe is hidden for them, marked "Needs an air fryer or oven".
+
+Jobs and their options are listed in `kitchen.json`, each with an "about" note:
+- **`crisp`:** `t`, `what`, `temp`, `turn`, `more`, `verb`, and `in` for "the air fryer" or "the tray".
+- **`heatUp`:** a preheat the recipe states itself.
+- **`reheat`:** warming a baby's portion or anything already cooked.
+- **`ricePouch`**, **`thaw`** and **`jacketPotato`.**
+
+Times in a job are for the first choice; the rules convert them. A recipe's total time adds the extra time automatically. The hob is assumed. The oven is needed by anything that says "oven" outside a job, and the recipe is hidden without one.
+
+**Adding an appliance or a job** means editing `kitchen.json`, not the recipes.
 
 ## Allergy swaps for ingredients ("alt")
 
@@ -47,6 +68,7 @@ A recipe ingredient can say what happens when a household avoids an allergen it 
 
 For every recipe, it builds **every combination** of the conditions that can apply and checks four things:
 - each step has exactly one version, with no ambiguity;
-- nothing the household can't use is left in the name, blurb, steps or little-ones' notes, such as dairy words for `noMilk` or "air fryer" for `noAirFryer`;
+- nothing the household can't use is left in the name, blurb, steps or little-ones' notes, such as dairy words with milk avoided or "air fryer" without one. Appliance wording is checked on the app's own rendering (`tools/render_recipes.mjs`) of **every kitchen**, with and without milk;
+- every cooking job is finished and spelt correctly, and no recipe is hidden when every appliance is ticked;
 - there's exactly one baby step;
 - every milk ingredient in a recipe that adapts for milk has a swap or `"omit"`.

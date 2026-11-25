@@ -37,11 +37,15 @@ CONDITIONS = {
     "noAirFryer": re.compile(r"\bair[- ]?fr(y|ier|yer|ied|ying)", re.I),
     "noMicrowave": re.compile(r"microwav", re.I),
     "noBlender": re.compile(r"\bblend|\bblender|food processor", re.I),
+    "noOven": re.compile(r"\boven\b(?! glove)", re.I),
 }
 ALLOWED = {"noMilk": re.compile(r"dairy-free yoghurt|their usual breast milk or formula|peanut butter", re.I)}
 NEEDS = {"airFryer": "noAirFryer", "microwave": "noMicrowave", "blender": "noBlender"}  # r["needs"]: hidden without it
 # Conditions the app lets households switch on. A condition is only enforced once it's listed here.
-ENFORCED = ["noMilk", "noAirFryer", "noMicrowave"]
+ENFORCED = ["noMilk", "noAirFryer", "noMicrowave", "noOven"]
+# Dairy words are checked on each version here; appliance words on the app's own rendering of every kitchen
+# (check_kitchens), because cooking jobs ({{@crisp ...}}) only become words when rendered.
+WORDS_HERE = ["noMilk"]
 
 def pick(variants, on, base, where, err, r):
     best, size, tie = base, 0, []
@@ -53,6 +57,40 @@ def pick(variants, on, base, where, err, r):
     if len(tie) > 1:
         err(r, f"{where}: with {'+'.join(sorted(on))} on, both {tie[0]!r} and {tie[1]!r} apply. Write a combined '{'+'.join(sorted(set(tie[0].split('+')) | set(tie[1].split('+'))))}' version")
     return best
+
+def check_kitchens(recipes_, items, err):
+    """Render every recipe for every kitchen (with and without milk) using the app's own code, and check the result."""
+    import subprocess
+    tool = DATA.parent.parent.parent / "tools" / "render_recipes.mjs"
+    renders = json.loads(subprocess.run(["node", str(tool)], capture_output=True, text=True, check=True).stdout)
+    kitchen = json.loads((DATA / "kitchen.json").read_text())
+    every = sorted(a["id"] for a in kitchen["appliances"])
+    words = {"airFryer": re.compile(r"\bair[- ]?fr(y|ier|yer|ied|ying)", re.I), "microwave": re.compile(r"microwav", re.I),
+             "oven": re.compile(r"\boven\b(?! glove)", re.I)}
+    byid = {r_["id"]: r_ for r_ in recipes_}
+    seen = set()
+    for x in renders:
+        r_ = byid[x["id"]]
+        kit = ", ".join(sorted(set(every) - set(x["have"]))) or "nothing"
+        where = f"kitchen without {kit}{' + milk avoided' if 'noMilk' in x['on'] else ''}"
+        def once(msg):
+            if msg not in seen:
+                seen.add(msg); err(r_, msg)
+        for e in x["errors"]:
+            once(e)
+        if x["needs"]:
+            if sorted(x["have"]) == every:
+                once(f"can't be made even with every appliance: needs {x['needs']}")
+            continue  # hidden for this kitchen, so there's nothing to read
+        texts = [("name", x["name"]), ("blurb", x["blurb"])] + [(f"step {i}", s_["t"]) for i, s_ in enumerate(x["steps"], 1)] + [(f"little ones ({k})", v) for k, v in x["baby"].items()]
+        for w, t in texts:
+            if "{{@" in t:
+                once(f"{where}: {w} still has an unfinished cooking job: {t[:70]!r}")
+            for a, rx in words.items():
+                if a not in x["have"] and (hit := rx.search(t)):
+                    once(f"{where}: {w} says {hit.group(0)!r}: {t[:70]!r}")
+        if sum(1 for s_ in x["steps"] if s_["baby"]) != 1:
+            once(f"{where}: not exactly one baby step")
 
 def check_versions(r, items, err):
     keys = set()
@@ -88,6 +126,8 @@ def check_versions(r, items, err):
                 words.append((f"little ones ({stage})", pick((r.get("babyIf") or {}).get(stage), on, note, f"little ones ({stage})", err, r)))
             if babies != 1: err(r, f"with {'+'.join(sorted(on))} on there are {babies} baby steps, not 1")
             for c in on:
+                if c not in WORDS_HERE:
+                    continue
                 for where, t in words:
                     clean = ALLOWED[c].sub("", t) if c in ALLOWED else t
                     if hit := CONDITIONS[c].search(clean):
@@ -280,6 +320,7 @@ for k in (_re.findall(r'"(\w+)"', m_go.group(1)) if m_go else []):
 
 for w in warnings:
     print("warning:", w)
+check_kitchens(recipes['recipes'], items, err)
 for e in errors:
     print("ERROR:  ", e)
 print(f"\n{len(recipes['recipes'])} recipes checked: {len(errors)} errors, {len(warnings)} warnings")

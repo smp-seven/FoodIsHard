@@ -6,7 +6,8 @@
 // ---------------------------------------------------------------------------
 async function boot() {
   hydrateIcons(document);
-  const [rec, ing, defaults, lunches] = await Promise.all([getJSON("data/recipes.json"), getJSON("data/ingredients.json"), getJSON("data/defaults.json"), getJSON("data/lunches.json").catch(() => null)]);
+  const [rec, ing, defaults, lunches, kitchen] = await Promise.all([getJSON("data/recipes.json"), getJSON("data/ingredients.json"), getJSON("data/defaults.json"), getJSON("data/lunches.json").catch(() => null), getJSON("data/kitchen.json")]);
+  app.kitchen = kitchen; // appliances and cooking jobs (see kitchen.js)
   app.lunchData = lunches || { use: {}, lunches: [], keepDays: 3 }; // quick leftover lunches (templates)
   app.defaults = defaults; // a fresh household's starting point (also used by "See it as a new household")
   app.recipes = rec.recipes; app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
@@ -136,7 +137,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.20.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.21.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -145,7 +146,7 @@ window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e
 // Render
 // ---------------------------------------------------------------------------
 function render() {
-  if (app.recipes) adaptRecipes(); // dairy-free wording when milk is avoided
+  if (app.recipes && app.state) adaptRecipes(); // the household's version of each recipe (allergies, kitchen)
   if (app.mode === "admin" || app.tab === "admin" || app.tab === "feedback") {
     $$(".nav button").forEach((b) => b.classList.remove("on"));
     const view = $("#view"); view.innerHTML = app.tab === "feedback" ? viewAdminFeedback() : viewAdmin(); hydrateIcons(view);
@@ -615,9 +616,10 @@ function viewRecipes() {
   const list = app.recipes.filter(match);
   const row = (r) => {
     const p = prefsFor(r.id), blocked = blockedBy(r);
-    return `<button class="rrow ${p.ban || blocked.length ? "off" : ""}" data-act="recipe" data-id="${r.id}"><span class="grow"><b>${esc(r.name)}</b><br>
+    const kit = kitchenBlock(r);
+    return `<button class="rrow ${p.ban || blocked.length || kit.length ? "off" : ""}" data-act="recipe" data-id="${r.id}"><span class="grow"><b>${esc(r.name)}</b><br>
       <span class="small muted">${r.time} min (${r.hands || r.time} hands-on) · ${money(recipeCost(r))} a portion · ${Math.round(nutritionPerPortion(r).kcal).toLocaleString("en-GB")} kcal</span>
-      ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : allergyChanges(r).length ? `<br><span class="small muted">${veganOnly() ? "Made vegan" : "Adapted for your allergies"}</span>` : ""}</span>
+      ${blocked.length ? `<br><span class="small" style="color:var(--warm)">Contains ${esc(blocked.join(", ").toLowerCase())}</span>` : kit.length ? `<br><span class="small muted">Needs ${esc(kit.join(" and "))}</span>` : p.ban ? `<br><span class="small muted">Marked "never again"</span>` : allergyChanges(r).length ? `<br><span class="small muted">${veganOnly() ? "Made vegan" : "Adapted for your allergies"}</span>` : ""}</span>
       ${cookedIt(r.id) ? `<span class="pill accent" title="Cooked it">✓</span>` : ""}${p.fav ? `<span style="color:var(--warm)" aria-label="Favourite">♥</span>` : ""}${r.time <= 15 ? `<span class="pill warm">Quick</span>` : ""}</button>`;
   };
   const flat = q || f !== "all";
@@ -706,9 +708,11 @@ function viewSettings() {
 
     <p class="section-label">Your kitchen</p>
     <div class="list">
-      ${[["airFryer", "Air fryer"], ["microwave", "Microwave"]].map(([f, label]) => `<label class="row" style="padding:13px 16px"><span class="grow"><b>${label}</b></span>
-        <span class="switch"><input type="checkbox" data-set="kitchen" data-f="${f}" ${(s.kitchen || {})[f] === false ? "" : "checked"} aria-label="${label}"><i></i></span></label>`).join("")}
-      <p class="small muted" style="margin:0;padding:0 16px 12px">Recipes use what you have. Without one, they're written for the oven or hob instead.</p>
+      ${(() => { const list = (app.kitchen ? app.kitchen.appliances : []).filter((x) => !x.always), have = haveAppliances(), n = list.filter((x) => have.includes(x.id)).length;
+        return `<div class="stack" style="padding:14px 16px;gap:8px"><b>Appliances you have</b>
+        <span class="small muted">${n === list.length ? "All selected. Tap any you don't have to turn it off." : `${n} of ${list.length} selected. Recipes are written for what you have, and any that can't be made are hidden.`}</span>
+        <div class="chips wrap">${list.map((x) => { const on = have.includes(x.id); return `<button class="chip pick ${on ? "on" : ""}" data-act="applianceToggle" data-k="${x.id}" aria-pressed="${on}">${on ? icon("check", 14) : ""}${esc(x.n)}</button>`; }).join("")}</div>
+        <span class="small muted">We assume you have a hob.</span></div>`; })()}
     </div>
 
     <p class="section-label">Shopping &amp; prices</p>
@@ -938,7 +942,7 @@ function openRecipe(id, { pickDay = null, keepScroll = false, day = null } = {})
     <p class="eyebrow">${esc(r.emergency ? "Quick meal" : family(r.family).name)}</p>
     <h1 class="title" style="font-size:27px">${esc(r.name)}</h1>
     <p class="muted" style="margin:6px 0 10px">${esc(r.blurb)}</p>
-    ${blocked.length ? `<p class="pill warm" style="white-space:normal;padding:8px 12px">Contains ${esc(blocked.join(", ").toLowerCase())}, so it's hidden from your plans.</p>` : allergyNote(r)}
+    ${blocked.length ? `<p class="pill warm" style="white-space:normal;padding:8px 12px">Contains ${esc(blocked.join(", ").toLowerCase())}, so it's hidden from your plans.</p>` : kitchenBlock(r).length ? `<p class="pill" style="white-space:normal;padding:8px 12px">Needs ${esc(kitchenBlock(r).join(" and "))}, so it's hidden from your plans. You can change this in Settings → Your kitchen.</p>` : allergyNote(r)}
     ${lastFb ? `<p class="small muted" style="margin:0 0 8px">Cooked ${fb.length}× · last time: ${({ loved: "loved it", fine: "fine", never: "not again" })[lastFb.rating] || ""}${lastFb.tags.length ? ` (${esc(lastFb.tags.join(", ").toLowerCase())})` : ""}${lastFb.note ? `, "${esc(lastFb.note)}"` : ""}</p>` : ""}
     <div class="row wrap" style="gap:6px;margin-bottom:12px">${cookedIt(id) ? `<span class="pill accent">✓ Cooked it</span>` : ""}<span class="pill">${r.time} min · ${r.hands || r.time} hands-on</span><span class="pill">${money(cost)} a portion · ${money(cost * factor)} in all</span>
       ${avoid.length && !blocked.length ? `<span class="pill warm">No ${esc(avoid.join(", ").toLowerCase())}</span>` : ""}</div>
@@ -1780,6 +1784,7 @@ const ACTIONS = {
     toast("Linked");
   },
   memberPanel: (d) => openMemberPanel(d.email),
+  applianceToggle: (d) => { const off = new Set(settings().kitchenOff || []); if (off.has(d.k)) off.delete(d.k); else off.add(d.k); send({ op: "settings", patch: { kitchenOff: [...off] } }); },
   accountData: () => openAccountData(),
   dislikes: () => openDislikes(),
   budgetSwaps: () => openBudgetSwaps(),
@@ -1978,7 +1983,6 @@ function onChange(e) {
       return;
     }
     case "budgetSwap": { const skip = new Set(settings().budgetSkip || []); if (el.checked) skip.delete(d.k); else skip.add(d.k); send({ op: "settings", patch: { budgetSkip: [...skip] } }); return; }
-    case "kitchen": send({ op: "settings", patch: { kitchen: { ...(settings().kitchen || {}), [d.f]: el.checked } } }); return;
     case "dislike": { const keys = dislikeKeys(); if (el.checked) keys.add(d.k); else keys.delete(d.k); send({ op: "settings", patch: { dislikeKs: [...keys] } }); return; }
     case "bool": send({ op: "settings", patch: { [d.f]: el.checked } }); if (d.f === "lifeOn" && el.checked) toast("Life tab added"); return;
     case "acctName": case "acctHousehold": {

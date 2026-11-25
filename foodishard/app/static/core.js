@@ -385,13 +385,17 @@ function allergyAlt(i) {
 // time }, and little-ones' notes babyIf.<stage>.<condition>. The household sees one version: for each piece, the most
 // specific one whose conditions are all switched on. tools/check_recipes.py proves every combination is unambiguous
 // and that nothing the household can't use (dairy, an air fryer…) is left in the words.
+/** The appliances this household has (all of them unless they've switched some off in Settings → Your kitchen). */
+function haveAppliances() {
+  const off = new Set(settings().kitchenOff || []), list = (app.kitchen && app.kitchen.appliances) || [];
+  return list.filter((a) => a.always || !off.has(a.id)).map((a) => a.id);
+}
+const condName = (id) => "no" + id.charAt(0).toUpperCase() + id.slice(1); // airFryer → noAirFryer
 function kitchenConditions() {
-  const on = [], k = settings().kitchen || {};
+  const on = [], have = haveAppliances();
   if (avoidList().includes("milk")) on.push("noMilk");
-  if (k.airFryer === false) on.push("noAirFryer");
-  if (k.microwave === false) on.push("noMicrowave");
-  if (k.blender === false) on.push("noBlender");
-  return on;
+  ((app.kitchen && app.kitchen.appliances) || []).forEach((a) => { if (!have.includes(a.id)) on.push(condName(a.id)); });
+  return on.sort();
 }
 function pickVersion(variants, on, base) {
   let best = base, size = 0;
@@ -407,14 +411,26 @@ function adaptRecipes() {
   const on = kitchenConditions(), key = on.join("+");
   if (adaptedFor === key) return;
   adaptedFor = key;
-  app.recipes = app.recipesRaw.map((r) => (on.length ? versionFor(r, on) : r));
+  const have = haveAppliances();
+  app.recipes = app.recipesRaw.map((r) => versionFor(r, on, have)); // always: cooking jobs need writing out even with everything on
   app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
 }
-function versionFor(r, on) {
-  const top = pickVersion(r.if, on, {});
-  return { ...r, name: top.name || r.name, blurb: top.blurb || r.blurb, time: top.time || r.time,
-    steps: r.steps.map((st) => ({ ...st, t: pickVersion(st.if, on, st.t) })).filter((st) => st.t.trim()),
-    baby: Object.fromEntries(Object.entries(r.baby || {}).map(([k, v]) => [k, pickVersion((r.babyIf || {})[k], on, v)])) };
+function versionFor(r, on, have) {
+  const top = pickVersion(r.if, on, {}), use = kitchenRules.newUse(), K = app.kitchen || { jobs: {} };
+  const job = (t) => kitchenRules.renderJobs(t, K, have, use);
+  let steps = r.steps.map((st) => ({ ...st, t: job(pickVersion(st.if, on, st.t)) })).filter((st) => st.t.trim());
+  steps = kitchenRules.addPreheat(steps, use);
+  const text = steps.map((st) => st.t).join(" ");
+  const needs = [...use.missing].map((j) => j); // a cooking job nothing in this kitchen can do
+  if (/\boven\b(?! glove)/i.test(text) && !have.includes("oven")) needs.push("oven"); // "use an oven glove" doesn't need one
+  return { ...r, name: top.name || r.name, blurb: top.blurb || r.blurb, time: (top.time || r.time) + use.extra, steps,
+    baby: Object.fromEntries(Object.entries(r.baby || {}).map(([k, v]) => [k, job(pickVersion((r.babyIf || {})[k], on, v))])),
+    kitchenNeeds: needs };
+}
+/** Why this kitchen can't make a recipe, in words ("an oven"), or [] if it can. */
+function kitchenBlock(r) {
+  const n = { oven: "an oven", crisp: "an air fryer or oven", jacketPotato: "a microwave or oven", reheat: "a microwave or hob", ricePouch: "a microwave or hob", thaw: "a microwave or hob", heatUp: "an air fryer or oven" };
+  return [...new Set((r.kitchenNeeds || []).map((x) => n[x] || x))];
 }
 const shortName = (k) => ingMeta(k).n.split(" (")[0].split(" / ")[0];
 /** What's been changed in this recipe for the household's allergies, in words ("leave out the cheddar"). */
@@ -451,7 +467,7 @@ function blockedBy(r) {
   return [...why];
 }
 function checkLabelFor(k) { const avoid = avoidList(); return (ingMeta(k).mc || []).filter((a) => avoid.includes(a)).map((a) => app.ing.allergens[a] || a); }
-function usable(r) { return !prefsFor(r.id).ban && !blockedBy(r).length; }
+function usable(r) { return !prefsFor(r.id).ban && !blockedBy(r).length && !kitchenBlock(r).length; }
 
 // ---------------------------------------------------------------------------
 // Shops and prices

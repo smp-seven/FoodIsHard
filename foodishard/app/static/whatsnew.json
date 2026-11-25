@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.21.0",
+   "notes": [
+    "Your kitchen: pick the appliances you have, the same way as your shops. Recipes are written for what you have, and any that can't be made are hidden."
+   ]
+  },
+  {
    "version": "0.20.0",
    "notes": [
     "New: \"Your kitchen\" in Settings. No air fryer or no microwave? Recipes are written for the oven or hob instead."

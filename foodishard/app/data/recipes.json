@@ -881,12 +881,10 @@
      "t": "On a large baking tray, toss the veg and chickpeas with the oil, smoked paprika and cumin, then spread them out in one layer. Roast for 20 minutes."
     },
     {
-     "t": "Take the baby's veg off the tray now, before the salt and halloumi. Warm the baby's spoonful of chickpeas in the microwave until hot and squash them flat.",
+     "t": "Take the baby's veg off the tray now, before the salt and halloumi. Warm the baby's spoonful of chickpeas {{@reheat}} and squash them flat.",
      "baby": true,
      "if": {
-      "noMilk": "Take the baby's veg off the tray now, before the salt and tofu. Warm the baby's spoonful of chickpeas in the microwave until hot and squash them flat.",
-      "noMicrowave": "Take the baby's veg off the tray now, before the salt and halloumi. Warm the baby's spoonful of chickpeas in a small pan with a splash of water until hot and squash them flat.",
-      "noMicrowave+noMilk": "Take the baby's veg off the tray now, before the salt and tofu. Warm the baby's spoonful of chickpeas in a small pan with a splash of water until hot and squash them flat."
+      "noMilk": "Take the baby's veg off the tray now, before the salt and tofu. Warm the baby's spoonful of chickpeas {{@reheat}} and squash them flat."
      }
     },
     {
@@ -1395,10 +1393,7 @@
      "t": "Add the tomatoes, chickpeas and frozen spinach. Simmer for 8 minutes, stirring, and squash some of the chickpeas with the back of a spoon to thicken it."
     },
     {
-     "t": "Meanwhile, heat the rice pouch in the microwave following the packet.",
-     "if": {
-      "noMicrowave": "Meanwhile, tip the rice pouch into a small pan with a splash of water and heat for 3 to 4 minutes, stirring, until piping hot."
-     }
+     "t": "Meanwhile, {{@ricePouch}}."
     },
     {
      "t": "Take the baby's portion out now, before the garam masala, chilli and salt.",
@@ -2387,16 +2382,11 @@
     {
      "t": "Get ready: cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Grate the cheddar. Cut the lime into wedges.",
      "if": {
-      "noMilk": "Get ready: cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Cut the lime into wedges.",
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan). Cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Grate the cheddar. Cut the lime into wedges.",
-      "noAirFryer+noMilk": "Get ready: heat the oven to 220°C (200°C fan). Cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Cut the lime into wedges."
+      "noMilk": "Get ready: cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Cut the lime into wedges."
      }
     },
     {
-     "t": "Toss the sweet potato with the oil, cumin and smoked paprika. Air fry at 200°C for 18 minutes, shaking halfway, until soft and browned (or roast on a tray at 220°C for 25 minutes).",
-     "if": {
-      "noAirFryer": "Toss the sweet potato with the oil, cumin and smoked paprika. Spread it on a lined baking tray and roast for 25 minutes, turning halfway, until soft and browned."
-     }
+     "t": "Toss the sweet potato with the oil, cumin and smoked paprika. {{@crisp t=18 turn=halfway}}, until soft and browned."
     },
     {
      "t": "Meanwhile, warm the beans in a small saucepan over a low heat with a splash of water for 5 minutes, squashing about half of them with a fork."
@@ -2433,12 +2423,10 @@
      "blurb": "Air-fried sweet potato, smoky beans and salsa, all rolled up."
     },
     "noAirFryer": {
-     "blurb": "Roasted sweet potato, smoky beans, cheese and salsa, all rolled up.",
-     "time": 35
+     "blurb": "Roasted sweet potato, smoky beans, cheese and salsa, all rolled up."
     },
     "noAirFryer+noMilk": {
-     "blurb": "Roasted sweet potato, smoky beans and salsa, all rolled up.",
-     "time": 35
+     "blurb": "Roasted sweet potato, smoky beans and salsa, all rolled up."
     }
    }
   },
@@ -2653,16 +2641,11 @@
     {
      "t": "Get ready: slice the pepper and onion into thin strips. Cut the lime into wedges.",
      "if": {
-      "noMilk": "Get ready: slice the pepper and onion into thin strips. Cut the lime into wedges. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers.",
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan). Slice the pepper and onion into thin strips. Cut the lime into wedges.",
-      "noAirFryer+noMilk": "Get ready: heat the oven to 220°C (200°C fan). Slice the pepper and onion into thin strips. Cut the lime into wedges. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers."
+      "noMilk": "Get ready: slice the pepper and onion into thin strips. Cut the lime into wedges. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers."
      }
     },
     {
-     "t": "Toss the pepper and onion with the oil, cumin and smoked paprika. Air fry at 200°C for 8 minutes.",
-     "if": {
-      "noAirFryer": "Toss the pepper and onion with the oil, cumin and smoked paprika. Spread them on a lined baking tray and roast for 12 minutes."
-     }
+     "t": "Toss the pepper and onion with the oil, cumin and smoked paprika. {{@crisp t=8}}."
     },
     {
      "t": "Take a few soft pepper strips out for the baby now, before the halloumi and chilli.",
@@ -2672,11 +2655,9 @@
      }
     },
     {
-     "t": "Cut the halloumi into fingers. Add it to the air fryer with the chilli flakes, toss, and air fry for 8 more minutes, shaking once, until the halloumi is golden.",
+     "t": "Cut the halloumi into fingers. Add it to {{@crisp in}} with the chilli flakes, toss, and {{@crisp t=8 more turn=once}}, until the halloumi is golden.",
      "if": {
-      "noMilk": "Add the tofu to the air fryer with the chilli flakes, toss, and air fry for 8 more minutes, shaking once, until the tofu is golden.",
-      "noAirFryer": "Cut the halloumi into fingers. Add it to the tray with the chilli flakes, toss, and roast for 10 more minutes until the halloumi is golden.",
-      "noAirFryer+noMilk": "Add the tofu to the tray with the chilli flakes, toss, and roast for 12 more minutes, turning once, until the tofu is golden."
+      "noMilk": "Add the tofu to {{@crisp in}} with the chilli flakes, toss, and {{@crisp t=8 more turn=once}}, until the tofu is golden."
      }
     },
     {
@@ -2709,13 +2690,11 @@
      "time": 35
     },
     "noAirFryer": {
-     "name": "Roasted halloumi fajitas",
-     "time": 30
+     "name": "Roasted halloumi fajitas"
     },
     "noAirFryer+noMilk": {
      "name": "Roasted tofu fajitas",
-     "blurb": "Charred peppers and crispy tofu with salsa.",
-     "time": 40
+     "blurb": "Charred peppers and crispy tofu with salsa."
     }
    }
   },
@@ -2800,16 +2779,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: pat the tofu dry with kitchen paper. Grate the garlic. Finely shred the cabbage and grate the carrot. Squeeze the lime juice.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan). Pat the tofu dry with kitchen paper. Grate the garlic. Finely shred the cabbage and grate the carrot. Squeeze the lime juice."
-     }
+     "t": "Get ready: pat the tofu dry with kitchen paper. Grate the garlic. Finely shred the cabbage and grate the carrot. Squeeze the lime juice."
     },
     {
-     "t": "Tear the tofu into bite-sized chunks and toss in a bowl with the oil, cornflour, smoked paprika, cumin and garlic until coated. Air fry at 200°C for 15 minutes, shaking halfway, until crisp.",
-     "if": {
-      "noAirFryer": "Tear the tofu into bite-sized chunks and toss in a bowl with the oil, cornflour, smoked paprika, cumin and garlic until coated. Spread on a lined baking tray and roast for 20 to 25 minutes, turning halfway, until crisp."
-     }
+     "t": "Tear the tofu into bite-sized chunks and toss in a bowl with the oil, cornflour, smoked paprika, cumin and garlic until coated. {{@crisp t=15 turn=halfway}}, until crisp."
     },
     {
      "t": "Meanwhile, make the slaw: mix the cabbage and carrot with half the yoghurt and the lime juice.",
@@ -2838,11 +2811,7 @@
      "noMilk": "Blend the tofu until smooth with a little water."
     }
    },
-   "if": {
-    "noAirFryer": {
-     "time": 35
-    }
-   }
+   "if": {}
   },
   {
    "id": "huevos-rancheros",
@@ -3126,19 +3095,13 @@
    ],
    "steps": [
     {
-     "t": "Get ready: rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Cut the broccoli into florets. Grate the garlic and ginger. Slice the spring onion.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan). Rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Cut the broccoli into florets. Grate the garlic and ginger. Slice the spring onion."
-     }
+     "t": "Get ready: rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Cut the broccoli into florets. Grate the garlic and ginger. Slice the spring onion."
     },
     {
      "t": "Put the rice on: cook it in a pan of boiling water for 10 to 12 minutes until tender, then drain."
     },
     {
-     "t": "Toss the tofu with the oil and cornflour. Air fry at 200°C for 15 minutes, shaking halfway, until crisp.",
-     "if": {
-      "noAirFryer": "Toss the tofu with the oil and cornflour. Spread it on a lined baking tray and roast for 20 to 25 minutes, turning halfway, until crisp."
-     }
+     "t": "Toss the tofu with the oil and cornflour. {{@crisp t=15 turn=halfway}}, until crisp."
     },
     {
      "t": "Meanwhile, boil the broccoli and edamame in a pan of water for 4 minutes, then drain."
@@ -3156,11 +3119,7 @@
     "finger": "Plain tofu fingers, broccoli florets and squashed rice balls.",
     "chopped": "Plain tofu, rice and broccoli, chopped small."
    },
-   "if": {
-    "noAirFryer": {
-     "time": 35
-    }
-   }
+   "if": {}
   },
   {
    "id": "gnocchi-traybake",
@@ -3461,10 +3420,7 @@
    ],
    "steps": [
     {
-     "t": "Get ready: heat the oven to 190°C and oil a small baking dish. Thaw the spinach in a bowl in the microwave for 3 to 4 minutes, let it cool a little, then squeeze it really dry in a clean tea towel. Slice the spring onions and beat the egg.",
-     "if": {
-      "noMicrowave": "Get ready: heat the oven to 190°C and oil a small baking dish. Put the spinach in a pan over a low heat for 4 to 5 minutes, stirring, until thawed. Let it cool a little, then squeeze it really dry in a clean tea towel. Slice the spring onions and beat the egg."
-     }
+     "t": "Get ready: heat the oven to 190°C and oil a small baking dish. {{@thaw what=\"the spinach\"}}, let it cool a little, then squeeze it really dry in a clean tea towel. Slice the spring onions and beat the egg."
     },
     {
      "t": "In a bowl, mix the spinach with the cottage cheese, egg, spring onions and plenty of black pepper."
@@ -3646,18 +3602,11 @@
     {
      "t": "Get ready: scrub the potato and prick it all over with a fork. Grate the cheddar.",
      "if": {
-      "noMilk": "Get ready: scrub the potato and prick it all over with a fork.",
-      "noMicrowave": "Get ready: heat the oven to 200°C (180°C fan). Scrub the potato and prick it all over with a fork. Grate the cheddar.",
-      "noMicrowave+noMilk": "Get ready: heat the oven to 200°C (180°C fan). Scrub the potato and prick it all over with a fork."
+      "noMilk": "Get ready: scrub the potato and prick it all over with a fork."
      }
     },
     {
-     "t": "Microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). Add 4 to 5 minutes for each extra potato. For crisp skin, air fry at 200°C for 5 minutes afterwards.",
-     "if": {
-      "noAirFryer": "Microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). Add 4 to 5 minutes for each extra potato.",
-      "noMicrowave": "Rub the potato with a little oil and salt and bake it straight on the oven shelf for 1 hour to 1 hour 15 minutes, until crisp outside and soft all the way through when squeezed (use an oven glove).",
-      "noAirFryer+noMicrowave": "Rub the potato with a little oil and salt and bake it straight on the oven shelf for 1 hour to 1 hour 15 minutes, until crisp outside and soft all the way through when squeezed (use an oven glove)."
-     }
+     "t": "{{@jacketPotato}}."
     },
     {
      "t": "Meanwhile, warm the beans in a small saucepan over a low heat for 4 to 5 minutes.",
@@ -3700,13 +3649,11 @@
     },
     "noMicrowave": {
      "name": "Jacket potato, beans & cheese",
-     "blurb": "A proper oven-baked jacket potato, loaded with protein.",
-     "time": 75
+     "blurb": "A proper oven-baked jacket potato, loaded with protein."
     },
     "noMicrowave+noMilk": {
      "name": "Jacket potato & beans",
-     "blurb": "A proper oven-baked jacket potato, with beans.",
-     "time": 75
+     "blurb": "A proper oven-baked jacket potato, with beans."
     }
    }
   },
@@ -4430,27 +4377,19 @@
    ],
    "steps": [
     {
-     "t": "Get ready: put the kettle on. Drain and rinse the chickpeas[[, keep a spoonful back for the baby,]] and pat them dry with kitchen paper. Chop the cucumber[[ (keep a few sticks back for the baby)]], halve the tomatoes and thinly slice the red onion. Squeeze the lemon juice.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan) and put the kettle on. Drain and rinse the chickpeas[[, keep a spoonful back for the baby,]] and pat them dry with kitchen paper. Chop the cucumber[[ (keep a few sticks back for the baby)]], halve the tomatoes and thinly slice the red onion. Squeeze the lemon juice."
-     }
+     "t": "Get ready: put the kettle on. Drain and rinse the chickpeas[[, keep a spoonful back for the baby,]] and pat them dry with kitchen paper. Chop the cucumber[[ (keep a few sticks back for the baby)]], halve the tomatoes and thinly slice the red onion. Squeeze the lemon juice."
     },
     {
-     "t": "Toss the chickpeas with half the oil, the oregano and smoked paprika. Air fry at 200°C for 12 minutes, shaking once, until crisp.",
-     "if": {
-      "noAirFryer": "Toss the chickpeas with half the oil, the oregano and smoked paprika. Spread them on a lined baking tray and roast for 20 minutes, shaking once, until crisp."
-     }
+     "t": "Toss the chickpeas with half the oil, the oregano and smoked paprika. {{@crisp t=12 turn=once}}, until crisp."
     },
     {
      "t": "Meanwhile, put the couscous in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes. Fluff with a fork, stirring in the rest of the oil and the lemon juice."
     },
     {
-     "t": "Warm the baby's spoonful of chickpeas in the microwave until hot, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the feta and olives.",
+     "t": "Warm the baby's spoonful of chickpeas {{@reheat}}, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the feta and olives.",
      "baby": true,
      "if": {
-      "noMilk": "Warm the baby's spoonful of chickpeas in the microwave until hot, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the olives.",
-      "noMicrowave": "Warm the baby's spoonful of chickpeas in a small pan with a splash of water until hot, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the feta and olives.",
-      "noMicrowave+noMilk": "Warm the baby's spoonful of chickpeas in a small pan with a splash of water until hot, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the olives."
+      "noMilk": "Warm the baby's spoonful of chickpeas {{@reheat}}, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the olives."
      }
     },
     {
@@ -4469,13 +4408,6 @@
    "if": {
     "noMilk": {
      "blurb": "Crispy chickpeas, crunchy salad and houmous on lemony couscous."
-    },
-    "noAirFryer": {
-     "time": 30
-    },
-    "noAirFryer+noMilk": {
-     "blurb": "Crispy chickpeas, crunchy salad and houmous on lemony couscous.",
-     "time": 30
     }
    }
   },
@@ -4591,7 +4523,7 @@
   {
    "id": "naan-pizzas",
    "name": "Naan pizzas",
-   "blurb": "Pizza night with no dough. Ready in 10 minutes in the air fryer or oven.",
+   "blurb": "Pizza night with no dough. Ready in 10 minutes.",
    "time": 20,
    "hands": 10,
    "family": "fakeaway",
@@ -4657,10 +4589,7 @@
    ],
    "steps": [
     {
-     "t": "Get ready: heat the air fryer to 190°C (or the oven to 220°C). Thinly slice the pepper and mushrooms. Tear the mozzarella and grate the cheddar.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 220°C. Thinly slice the pepper and mushrooms. Tear the mozzarella and grate the cheddar."
-     }
+     "t": "Get ready: {{@heatUp temp=190}}. Thinly slice the pepper and mushrooms. Tear the mozzarella and grate the cheddar."
     },
     {
      "t": "Spread the naans with the passata and sprinkle with the oregano."
@@ -4673,10 +4602,7 @@
      "t": "Top the rest with the mozzarella, cheddar, pepper, mushrooms, sweetcorn and olives."
     },
     {
-     "t": "Air fry for 6 to 8 minutes (or bake for 10 minutes) until bubbling, with the baby's piece alongside. Add the chilli flakes and serve with the salad.",
-     "if": {
-      "noAirFryer": "Bake for 10 minutes until bubbling, with the baby's piece alongside. Add the chilli flakes and serve with the salad."
-     }
+     "t": "{{@crisp t=6-8 temp=190 verb=bake}} until bubbling, with the baby's piece alongside. Add the chilli flakes and serve with the salad."
     }
    ],
    "baby": {
@@ -4756,16 +4682,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: cut the potatoes into wedges (no need to peel). Grate the garlic. Thinly slice the red onion.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan). Cut the potatoes into wedges (no need to peel). Grate the garlic. Thinly slice the red onion."
-     }
+     "t": "Get ready: cut the potatoes into wedges (no need to peel). Grate the garlic. Thinly slice the red onion."
     },
     {
-     "t": "Toss the wedges with the oil and half the smoked paprika. Air fry at 200°C for 20 to 22 minutes, shaking halfway, until golden outside and soft inside.",
-     "if": {
-      "noAirFryer": "Toss the wedges with the oil and half the smoked paprika. Spread them on a lined baking tray and roast for 30 to 35 minutes, turning halfway, until golden outside and soft inside."
-     }
+     "t": "Toss the wedges with the oil and half the smoked paprika. {{@crisp t=20-22 turn=halfway}}, until golden outside and soft inside."
     },
     {
      "t": "Take a few wedges out for the baby now, before the salt and halloumi.",
@@ -4788,8 +4708,7 @@
    },
    "if": {
     "noAirFryer": {
-     "name": "Halloumi burgers with oven wedges",
-     "time": 45
+     "name": "Halloumi burgers with oven wedges"
     }
    }
   },
@@ -4876,16 +4795,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: cut the sweet potato into fries about 1 cm thick. Drain the beans and pat them really dry with kitchen paper. Crush the garlic.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan). Cut the sweet potato into fries about 1 cm thick. Drain the beans and pat them really dry with kitchen paper. Crush the garlic."
-     }
+     "t": "Get ready: cut the sweet potato into fries about 1 cm thick. Drain the beans and pat them really dry with kitchen paper. Crush the garlic."
     },
     {
-     "t": "Toss the fries with half the oil. Air fry at 200°C for 15 to 18 minutes, shaking twice, until crisp at the edges.",
-     "if": {
-      "noAirFryer": "Toss the fries with half the oil. Spread them on a lined baking tray and roast for 25 to 30 minutes, turning halfway, until crisp at the edges."
-     }
+     "t": "Toss the fries with half the oil. {{@crisp t=15-18 turn=twice}}, until crisp at the edges."
     },
     {
      "t": "Meanwhile, blitz the oats to a coarse flour in a food processor. Add the beans, garlic, cumin and smoked paprika and pulse until it holds together but still has some texture."
@@ -4989,19 +4902,13 @@
    ],
    "steps": [
     {
-     "t": "Get ready: rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Slice the pepper, onion and spring onions. Crush the garlic.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 220°C (200°C fan). Rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Slice the pepper, onion and spring onions. Crush the garlic."
-     }
+     "t": "Get ready: rinse the rice in a sieve. Pat the tofu dry with kitchen paper and cut it into 2 cm cubes. Slice the pepper, onion and spring onions. Crush the garlic."
     },
     {
      "t": "Put the rice on: cook it in a pan of boiling water for 10 to 12 minutes, adding the edamame for the last 3, then drain."
     },
     {
-     "t": "Toss the tofu with half the oil and the cornflour. Air fry at 200°C for 15 minutes, shaking halfway, until crisp.",
-     "if": {
-      "noAirFryer": "Toss the tofu with half the oil and the cornflour. Spread it on a lined baking tray and roast for 20 to 25 minutes, turning halfway, until crisp."
-     }
+     "t": "Toss the tofu with half the oil and the cornflour. {{@crisp t=15 turn=halfway}}, until crisp."
     },
     {
      "t": "Meanwhile, heat the rest of the oil in a wok or large frying pan over a high heat. Stir-fry the pepper and onion for 4 minutes, then add the garlic and ground ginger for 1 minute."
@@ -5019,11 +4926,7 @@
     "finger": "Tofu fingers, soft pepper strips and rice balls.",
     "chopped": "As yours before the seasoning, chopped."
    },
-   "if": {
-    "noAirFryer": {
-     "time": 35
-    }
-   }
+   "if": {}
   },
   {
    "id": "potato-spinach-frittata",
@@ -5190,16 +5093,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: cut the cucumber into sticks and the lemon into wedges.",
-     "if": {
-      "noAirFryer": "Get ready: heat the oven to 200°C. Cut the cucumber into sticks and the lemon into wedges."
-     }
+     "t": "Get ready: cut the cucumber into sticks and the lemon into wedges."
     },
     {
-     "t": "Air fry the falafel at 190°C for 8 minutes (or follow the pack).",
-     "if": {
-      "noAirFryer": "Bake the falafel on a tray for 10 to 12 minutes (or follow the pack)."
-     }
+     "t": "{{@crisp what=\"the falafel\" t=8 temp=190}} (or follow the pack)."
     },
     {
      "t": "Take a falafel, some cucumber sticks and a tortilla spread with houmous out for the baby now, before the halloumi.",
@@ -5233,13 +5130,11 @@
      "blurb": "Shop falafel in warm wraps with houmous. Ready in 12 minutes."
     },
     "noAirFryer": {
-     "blurb": "Shop falafel and halloumi in warm wraps with houmous. Ready in 20 minutes.",
-     "time": 20
+     "blurb": "Shop falafel and halloumi in warm wraps with houmous."
     },
     "noAirFryer+noMilk": {
      "name": "Falafel wraps",
-     "blurb": "Shop falafel in warm wraps with houmous. Ready in 20 minutes.",
-     "time": 20
+     "blurb": "Shop falafel in warm wraps with houmous."
     }
    }
   }
