@@ -41,7 +41,7 @@ CONDITIONS = {
 ALLOWED = {"noMilk": re.compile(r"dairy-free yoghurt|their usual breast milk or formula|peanut butter", re.I)}
 NEEDS = {"airFryer": "noAirFryer", "microwave": "noMicrowave", "blender": "noBlender"}  # r["needs"]: hidden without it
 # Conditions the app lets households switch on. A condition is only enforced once it's listed here.
-ENFORCED = ["noMilk"]
+ENFORCED = ["noMilk", "noAirFryer", "noMicrowave"]
 
 def pick(variants, on, base, where, err, r):
     best, size, tie = base, 0, []

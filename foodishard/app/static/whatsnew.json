@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.20.0",
+   "notes": [
+    "New: \"Your kitchen\" in Settings. No air fryer or no microwave? Recipes are written for the oven or hob instead."
+   ]
+  },
+  {
    "version": "0.19.2",
    "notes": [
     "Behind-the-scenes groundwork for recipes that fit your kitchen."

@@ -136,7 +136,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.19.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.20.0"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -702,6 +702,13 @@ function viewSettings() {
           <select class="input" style="width:auto" data-set="num" data-f="shop2">${days.map(([i, d]) => `<option value="${i}" ${d2 === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
         <p class="small muted" style="margin:0;padding:0 16px 12px">${covers}</p>` : ""}
         </div>`; })()}
+    </div>
+
+    <p class="section-label">Your kitchen</p>
+    <div class="list">
+      ${[["airFryer", "Air fryer"], ["microwave", "Microwave"]].map(([f, label]) => `<label class="row" style="padding:13px 16px"><span class="grow"><b>${label}</b></span>
+        <span class="switch"><input type="checkbox" data-set="kitchen" data-f="${f}" ${(s.kitchen || {})[f] === false ? "" : "checked"} aria-label="${label}"><i></i></span></label>`).join("")}
+      <p class="small muted" style="margin:0;padding:0 16px 12px">Recipes use what you have. Without one, they're written for the oven or hob instead.</p>
     </div>
 
     <p class="section-label">Shopping &amp; prices</p>
@@ -1971,6 +1978,7 @@ function onChange(e) {
       return;
     }
     case "budgetSwap": { const skip = new Set(settings().budgetSkip || []); if (el.checked) skip.delete(d.k); else skip.add(d.k); send({ op: "settings", patch: { budgetSkip: [...skip] } }); return; }
+    case "kitchen": send({ op: "settings", patch: { kitchen: { ...(settings().kitchen || {}), [d.f]: el.checked } } }); return;
     case "dislike": { const keys = dislikeKeys(); if (el.checked) keys.add(d.k); else keys.delete(d.k); send({ op: "settings", patch: { dislikeKs: [...keys] } }); return; }
     case "bool": send({ op: "settings", patch: { [d.f]: el.checked } }); if (d.f === "lifeOn" && el.checked) toast("Life tab added"); return;
     case "acctName": case "acctHousehold": {
