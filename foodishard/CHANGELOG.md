@@ -463,8 +463,9 @@ Fixes from a review of the new features:
 ## 0.20.0
 - Settings → Your kitchen: air fryer and microwave (both on by default). Without an air fryer, the 11 recipes that use one roast on a lined tray in the oven instead (preheat added to Get ready, longer times, names like "Roasted halloumi fajitas"). Without a microwave, rice pouches and baby portions are warmed in a pan, frozen spinach is thawed in a pan, and the jacket potato is oven-baked (75 minutes). Combined versions are written wherever a step also has a dairy-free version, and the checker enforces both appliance conditions in every combination.
 
-## 0.21.0 – 0.21.1
+## 0.21.0 – 0.21.2
 - Cooking jobs replace the hand-written appliance versions from 0.20.0. Recipes ask for a job ({{@crisp t=15 turn=halfway}}, {{@reheat}}, {{@ricePouch}}, {{@thaw}}, {{@jacketPotato}}, {{@heatUp}}), and data/kitchen.json words it for the household's appliances. Air fryer to oven: 20°C hotter, about 1.25 times as long, on a lined tray, with the preheat added to Get ready. Microwave to hob: a small pan with a splash of water. Reheating always says "until steaming hot all the way through" (FSA guidance). Recipe times add the extra time.
 - Settings → Your kitchen: appliance chips (oven, air fryer, microwave; the hob is assumed), like the shops. Recipes a kitchen can't make are hidden from plans and say what they need.
 - tools/render_recipes.mjs renders every recipe for every kitchen with and without milk using the app's own code, and the checker checks all 720 renders. With every appliance ticked, recipes read as before, apart from the reheating wording and the naan pizzas and burritos no longer mixing air fryer and oven in one sentence.
 - A recipe a kitchen can't make (hidden from plans, "Needs …") is still written out in full for the first appliance in the rules when opened, instead of showing the raw cooking job. The checker now checks hidden recipes' wording too.
+- Recipes a kitchen can't make go under the Recipes page's Hidden filter, with allergen-blocked and "never again" ones, instead of staying in the main list.

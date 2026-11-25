@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.21.2",
+   "notes": [
+    "Recipes your kitchen can't make are now under Hidden on the Recipes page, like allergens."
+   ]
+  },
+  {
    "version": "0.21.1",
    "notes": [
     "Recipes your kitchen can't make now read properly when you open them."

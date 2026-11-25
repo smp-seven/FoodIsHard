@@ -137,7 +137,7 @@ function fromHash() {
   render(); window.scrollTo(0, 0);
 }
 
-const APP_VERSION = "0.21.1"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
+const APP_VERSION = "0.21.2"; // bump with config.yaml, sw.js VERSION, whatsnew.json and the changelog
 // The last error on this device, sent with "Report a problem" (online version).
 window.addEventListener("error", (e) => { app.lastError = String(e.message || "").slice(0, 160); });
 window.addEventListener("unhandledrejection", (e) => { app.lastError = String((e.reason && (e.reason.message || e.reason)) || "").slice(0, 160); });
@@ -605,7 +605,7 @@ function viewRecipes() {
   const q = app.recipeQuery.trim().toLowerCase(), f = app.recipeFilter;
   const { factor } = household();
   const match = (r) => {
-    const p = prefsFor(r.id), off = p.ban || blockedBy(r).length;
+    const p = prefsFor(r.id), off = p.ban || blockedBy(r).length || kitchenBlock(r).length; // never again, allergies, or the kitchen can't make it
     if (f === "hidden") return off;
     if (off) return false;
     if (f === "fav" && !p.fav) return false;
