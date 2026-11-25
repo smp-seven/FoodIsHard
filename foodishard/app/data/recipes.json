@@ -105,7 +105,10 @@
      "t": "Stir the rest of the spinach, the garam masala and the chilli flakes into the pan and cook for 1 to 2 minutes until the spinach wilts. Season with salt and a squeeze of lemon."
     },
     {
-     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve the dhal with the yoghurt and chapatis."
+     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve the dhal with the yoghurt and chapatis.",
+     "if": {
+      "noMilk": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve the dhal with the chapatis."
+     }
     }
    ],
    "baby": {
@@ -115,26 +118,18 @@
    },
    "tags": [],
    "freeze": "The dhal",
-   "nomilk": {
-    "blurb": "Cheap, warming and properly filling with chapatis.",
-    "text": [
-     [
-      " Serve the dhal with the yoghurt and chapatis.",
-      " Serve the dhal with the chapatis."
-     ],
-     [
-      " Serve with a little full-fat plain yoghurt.",
-      ""
-     ],
-     [
-      ", plus a spoon of full-fat plain yoghurt.",
-      "."
-     ],
-     [
-      "loosen with their usual milk",
-      "loosen with a little water, or their usual breast milk or formula"
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend or mash until smooth and loosen with a little water, or their usual breast milk or formula."
+    },
+    "finger": {
+     "noMilk": "Keep it thick and let it cool to warm. Chapati or toast fingers to scoop with."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "blurb": "Cheap, warming and properly filling with chapatis."
+    }
    }
   },
   {
@@ -241,14 +236,20 @@
      "t": "Add the beans, the tomatoes and {{100|ml}} water. Bring to a simmer, cover and cook gently for 20 minutes, stirring once or twice, until a knife slides easily into the sweet potato."
     },
     {
-     "t": "Meanwhile, cook the rice in a pan of boiling water for 10 to 12 minutes until tender, then drain. Grate the cheddar."
+     "t": "Meanwhile, cook the rice in a pan of boiling water for 10 to 12 minutes until tender, then drain. Grate the cheddar.",
+     "if": {
+      "noMilk": "Meanwhile, cook the rice in a pan of boiling water for 10 to 12 minutes until tender, then drain."
+     }
     },
     {
      "t": "Take the baby's portion out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Stir the chilli flakes into the rest and season with salt. Serve over the rice with the cheddar and a spoon of yoghurt."
+     "t": "Stir the chilli flakes into the rest and season with salt. Serve over the rice with the cheddar and a spoon of yoghurt.",
+     "if": {
+      "noMilk": "Stir the chilli flakes into the rest and season with salt. Serve over the rice."
+     }
     }
    ],
    "baby": {
@@ -260,30 +261,21 @@
     "onepot"
    ],
    "freeze": "The chilli (not the rice)",
-   "nomilk": {
-    "blurb": "Smoky beans and sweet potato with rice.",
-    "text": [
-     [
-      " Grate the cheddar.",
-      ""
-     ],
-     [
-      " with the cheddar and a spoon of yoghurt.",
-      "."
-     ],
-     [
-      " with a little full-fat plain yoghurt",
-      ""
-     ],
-     [
-      " and a pinch of cheese",
-      ""
-     ],
-     [
-      ", with a little cheese",
-      ""
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Mash the beans and sweet potato smooth."
+    },
+    "finger": {
+     "noMilk": "Lightly squashed beans, soft sweet potato cubes to pick up, sticky rice."
+    },
+    "chopped": {
+     "noMilk": "As yours before the chilli."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "blurb": "Smoky beans and sweet potato with rice."
+    }
    }
   },
   {
@@ -467,14 +459,20 @@
      "t": "Add the lentils, the tomatoes and {{75|ml}} water. Simmer gently for 15 minutes, stirring now and then, until thick."
     },
     {
-     "t": "Meanwhile, cook the pasta in the boiling water for the time on the packet. Scoop out a mugful of the cooking water, then drain. Grate the cheese."
+     "t": "Meanwhile, cook the pasta in the boiling water for the time on the packet. Scoop out a mugful of the cooking water, then drain. Grate the cheese.",
+     "if": {
+      "noMilk": "Meanwhile, cook the pasta in the boiling water for the time on the packet. Scoop out a mugful of the cooking water, then drain."
+     }
     },
     {
      "t": "Take the baby's sauce and pasta out now, before the Henderson's and seasoning.",
      "baby": true
     },
     {
-     "t": "Season the rest of the sauce with Henderson's, salt and pepper. Toss it with the pasta, loosening with a splash of the pasta water, and scatter the cheese over."
+     "t": "Season the rest of the sauce with Henderson's, salt and pepper. Toss it with the pasta, loosening with a splash of the pasta water, and scatter the cheese over.",
+     "if": {
+      "noMilk": "Season the rest of the sauce with Henderson's, salt and pepper. Toss it with the pasta, loosening with a splash of the pasta water."
+     }
     }
    ],
    "baby": {
@@ -486,21 +484,10 @@
     "comfort"
    ],
    "freeze": "The sauce (not the pasta)",
-   "nomilk": {
-    "text": [
-     [
-      " Grate the cheese.",
-      ""
-     ],
-     [
-      ", and scatter the cheese over",
-      ""
-     ],
-     [
-      ", with a little grated cheese",
-      ""
-     ]
-    ]
+   "babyIf": {
+    "finger": {
+     "noMilk": "Big pasta shapes like fusilli, cooked soft and coated in sauce."
+    }
    }
   },
   {
@@ -601,29 +588,47 @@
    ],
    "steps": [
     {
-     "t": "Get ready: cut the paneer into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger. Chop the coriander. Rinse the rice in a sieve."
+     "t": "Get ready: cut the paneer into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger. Chop the coriander. Rinse the rice in a sieve.",
+     "if": {
+      "noMilk": "Get ready: drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger. Chop the coriander. Rinse the rice in a sieve."
+     }
     },
     {
-     "t": "Heat the oil in a large frying pan over a high heat. Fry the paneer for about 4 minutes, turning, until golden on a few sides. Lift it onto a plate."
+     "t": "Heat the oil in a large frying pan over a high heat. Fry the paneer for about 4 minutes, turning, until golden on a few sides. Lift it onto a plate.",
+     "if": {
+      "noMilk": "Heat the oil in a large frying pan over a high heat. Fry the tofu for about 4 minutes, turning, until golden on a few sides. Lift it onto a plate."
+     }
     },
     {
      "t": "Put the rice on: cook it in a pan of boiling water for 10 to 12 minutes until tender, then drain."
     },
     {
-     "t": "Turn the paneer pan down to a medium heat. Add the onion and cook for 6 minutes until soft."
+     "t": "Turn the paneer pan down to a medium heat. Add the onion and cook for 6 minutes until soft.",
+     "if": {
+      "noMilk": "Turn the tofu pan down to a medium heat. Add the onion and cook for 6 minutes until soft."
+     }
     },
     {
      "t": "Add the garlic, ginger, cumin, ground coriander and turmeric and stir for 1 minute. Add the tomatoes and {{75|ml}} water and simmer for 8 minutes until slightly thickened."
     },
     {
-     "t": "Add the peas and paneer and simmer for 3 minutes, then take the pan off the heat."
+     "t": "Add the peas and paneer and simmer for 3 minutes, then take the pan off the heat.",
+     "if": {
+      "noMilk": "Add the peas and tofu and simmer for 3 minutes, then take the pan off the heat."
+     }
     },
     {
      "t": "Take the baby's portion out now, before the yoghurt, garam masala, chilli and salt. Stir a spoon of full-fat plain yoghurt into the baby's portion if you like.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take the baby's portion out now, before the dairy-free yoghurt, garam masala, chilli and salt."
+     }
     },
     {
-     "t": "Stir the yoghurt into the rest off the heat (so it doesn't split)."
+     "t": "Stir the yoghurt into the rest off the heat (so it doesn't split).",
+     "if": {
+      "noMilk": "Stir the dairy-free yoghurt into the rest off the heat (so it doesn't split)."
+     }
     },
     {
      "t": "Stir the garam masala and chilli flakes into the rest and season with salt. Scatter over the coriander and serve with the rice."
@@ -635,52 +640,23 @@
     "chopped": "As yours before the chilli and salt, paneer chopped small."
    },
    "tags": [],
-   "nomilk": {
-    "name": "Tofu & pea curry",
-    "blurb": "Mild tomato curry with golden tofu and peas.",
-    "text": [
-     [
-      "cut the paneer into 2 cm cubes",
-      "drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes"
-     ],
-     [
-      "Fry the paneer",
-      "Fry the tofu"
-     ],
-     [
-      "Turn the paneer pan",
-      "Turn the tofu pan"
-     ],
-     [
-      "Add the peas and paneer",
-      "Add the peas and tofu"
-     ],
-     [
-      " Stir a spoon of full-fat plain yoghurt into the baby's portion if you like.",
-      ""
-     ],
-     [
-      "before the yoghurt, garam masala",
-      "before the dairy-free yoghurt, garam masala"
-     ],
-     [
-      "Stir the yoghurt into the rest",
-      "Stir the dairy-free yoghurt into the rest"
-     ],
-     [
-      "a little paneer",
-      "a little tofu"
-     ],
-     [
-      "Paneer fingers",
-      "Tofu fingers"
-     ],
-     [
-      "paneer chopped small",
-      "tofu chopped small"
-     ]
-    ],
-    "time": 40
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend the sauce with the peas and a little tofu."
+    },
+    "finger": {
+     "noMilk": "Tofu fingers, squashed peas, and rice they can grab in clumps."
+    },
+    "chopped": {
+     "noMilk": "As yours before the chilli and salt, tofu chopped small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Tofu & pea curry",
+     "blurb": "Mild tomato curry with golden tofu and peas.",
+     "time": 40
+    }
    }
   },
   {
@@ -770,13 +746,19 @@
     },
     {
      "t": "Spoon the baby's portion of sauce into a small pan, crack in one egg, cover and cook on a low heat for about 8 minutes, until the white and yolk are both fully set. Do the baby's egg before any salt, chilli or feta goes in.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Spoon the baby's portion of sauce into a small pan, crack in one egg, cover and cook on a low heat for about 8 minutes, until the white and yolk are both fully set. Do the baby's egg before any salt or chilli goes in."
+     }
     },
     {
      "t": "Season the rest with salt and chilli flakes. Make a hollow for each egg with the back of a spoon and crack the eggs in. Cover and cook on a low heat for 5 to 8 minutes, until the whites are set but the yolks are still soft."
     },
     {
-     "t": "Meanwhile, toast the bread. Crumble the feta over the top and serve."
+     "t": "Meanwhile, toast the bread. Crumble the feta over the top and serve.",
+     "if": {
+      "noMilk": "Meanwhile, toast the bread. Serve."
+     }
     }
    ],
    "baby": {
@@ -787,26 +769,18 @@
    "tags": [
     "onepot"
    ],
-   "nomilk": {
-    "name": "Chickpea shakshuka",
-    "text": [
-     [
-      "before any salt, chilli or feta goes in",
-      "before any salt or chilli goes in"
-     ],
-     [
-      " Crumble the feta over the top and serve.",
-      " Serve."
-     ],
-     [
-      " No feta: it's salty.",
-      ""
-     ],
-     [
-      ", no feta",
-      ""
-     ]
-    ]
+   "babyIf": {
+    "finger": {
+     "noMilk": "Their egg cooked until fully set, in strips, with squashed chickpeas and bread fingers to dip."
+    },
+    "chopped": {
+     "noMilk": "As yours, egg cooked through."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Chickpea shakshuka"
+    }
    }
   },
   {
@@ -898,23 +872,38 @@
    ],
    "steps": [
     {
-     "t": "Get ready: heat the oven to 200°C fan. Cut the onion, courgette and pepper into chunks about 3 cm across. Drain and rinse the chickpeas[[ (keep a spoonful back for the baby)]] and pat them dry with kitchen paper."
+     "t": "Get ready: heat the oven to 200°C fan. Cut the onion, courgette and pepper into chunks about 3 cm across. Drain and rinse the chickpeas[[ (keep a spoonful back for the baby)]] and pat them dry with kitchen paper.",
+     "if": {
+      "noMilk": "Get ready: heat the oven to 200°C fan. Cut the onion, courgette and pepper into chunks about 3 cm across. Drain and rinse the chickpeas[[ (keep a spoonful back for the baby)]] and pat them dry with kitchen paper. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes."
+     }
     },
     {
      "t": "On a large baking tray, toss the veg and chickpeas with the oil, smoked paprika and cumin, then spread them out in one layer. Roast for 20 minutes."
     },
     {
      "t": "Take the baby's veg off the tray now, before the salt and halloumi. Warm the baby's spoonful of chickpeas in the microwave until hot and squash them flat.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take the baby's veg off the tray now, before the salt and tofu. Warm the baby's spoonful of chickpeas in the microwave until hot and squash them flat."
+     }
     },
     {
-     "t": "Slice the halloumi about 1 cm thick. Season the tray with salt, add the halloumi and the whole cherry tomatoes, and roast for 12 to 15 minutes until the halloumi is golden."
+     "t": "Slice the halloumi about 1 cm thick. Season the tray with salt, add the halloumi and the whole cherry tomatoes, and roast for 12 to 15 minutes until the halloumi is golden.",
+     "if": {
+      "noMilk": "Toss the tofu with a little oil and a pinch of smoked paprika. Season the tray with salt, add the tofu and the whole cherry tomatoes, and roast for 12 to 15 minutes until the tofu is golden."
+     }
     },
     {
-     "t": "Meanwhile, squeeze the lemon juice into the yoghurt, add the tahini and a splash of water, and stir until it's runny enough to drizzle."
+     "t": "Meanwhile, squeeze the lemon juice into the yoghurt, add the tahini and a splash of water, and stir until it's runny enough to drizzle.",
+     "if": {
+      "noMilk": "Meanwhile, squeeze the lemon juice into the dairy-free yoghurt, add the tahini and a splash of water, and stir until it's runny enough to drizzle."
+     }
     },
     {
-     "t": "Warm the flatbreads in the oven for the last 2 minutes. Serve the traybake with the tahini yoghurt and flatbreads."
+     "t": "Warm the flatbreads in the oven for the last 2 minutes. Serve the traybake with the tahini yoghurt and flatbreads.",
+     "if": {
+      "noMilk": "Warm the flatbreads in the oven for the last 2 minutes. Serve the traybake with the tahini dressing and flatbreads."
+     }
     }
    ],
    "baby": {
@@ -925,43 +914,22 @@
    "tags": [
     "oven"
    ],
-   "nomilk": {
-    "name": "Smoky chickpea & tofu traybake",
-    "blurb": "One tray of roast veg, chickpeas and tofu with a tahini dressing.",
-    "text": [
-     [
-      "before the salt and halloumi",
-      "before the salt and tofu"
-     ],
-     [
-      "Slice the halloumi about 1 cm thick. Season the tray with salt, add the halloumi",
-      "Toss the tofu with a little oil and a pinch of smoked paprika. Season the tray with salt, add the tofu"
-     ],
-     [
-      "until the halloumi is golden",
-      "until the tofu is golden"
-     ],
-     [
-      "into the yoghurt",
-      "into the dairy-free yoghurt"
-     ],
-     [
-      "tahini yoghurt",
-      "tahini dressing"
-     ],
-     [
-      "Mash the roast veg and chickpeas with full-fat plain yoghurt.",
-      "Mash the roast veg and chickpeas until smooth."
-     ],
-     [
-      " and full-fat plain yoghurt. No halloumi: it's very salty.",
-      "."
-     ],
-     [
-      "and pat them dry with kitchen paper.",
-      "and pat them dry with kitchen paper. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Mash the roast veg and chickpeas until smooth."
+    },
+    "finger": {
+     "noMilk": "Soft roast pepper and courgette strips, squashed chickpeas, flatbread fingers."
+    },
+    "chopped": {
+     "noMilk": "As yours before the salt and tofu, with the held-back chickpeas squashed and everything cut small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Smoky chickpea & tofu traybake",
+     "blurb": "One tray of roast veg, chickpeas and tofu with a tahini dressing."
+    }
    }
   },
   {
@@ -1062,7 +1030,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: scrub the potatoes (no need to peel) and cut them into 3 cm chunks. Finely chop the onion, carrot and mushrooms. Drain and rinse the lentils. Grate the cheddar."
+     "t": "Get ready: scrub the potatoes (no need to peel) and cut them into 3 cm chunks. Finely chop the onion, carrot and mushrooms. Drain and rinse the lentils. Grate the cheddar.",
+     "if": {
+      "noMilk": "Get ready: scrub the potatoes (no need to peel) and cut them into 3 cm chunks. Finely chop the onion, carrot and mushrooms. Drain and rinse the lentils."
+     }
     },
     {
      "t": "Put the potatoes in a saucepan, cover with cold water and bring to the boil. Simmer for 15 to 18 minutes until a knife slides in easily. Heat the oven to 200°C fan."
@@ -1074,14 +1045,20 @@
      "t": "Stir in the tomato purée and herbs for 1 minute, then add the lentils and {{100|ml}} water. Simmer for 10 minutes until thick."
     },
     {
-     "t": "Drain the potatoes and mash them with the milk and butter until smooth."
+     "t": "Drain the potatoes and mash them with the milk and butter until smooth.",
+     "if": {
+      "noMilk": "Scoop out a mugful of the cooking water, then drain the potatoes and mash them with the oil and a splash of the cooking water until smooth."
+     }
     },
     {
      "t": "Spoon some filling into a small ovenproof dish for the baby now and top it with mash, before the stock and seasoning.",
      "baby": true
     },
     {
-     "t": "Crumble the stock cube into the rest of the filling with the Henderson's, salt and pepper and stir well. Tip it into a baking dish, spread the mash over the top and scatter with the cheddar."
+     "t": "Crumble the stock cube into the rest of the filling with the Henderson's, salt and pepper and stir well. Tip it into a baking dish, spread the mash over the top and scatter with the cheddar.",
+     "if": {
+      "noMilk": "Crumble the stock cube into the rest of the filling with the Henderson's, salt and pepper and stir well. Tip it into a baking dish, spread the mash over the top."
+     }
     },
     {
      "t": "Bake for 25 minutes until golden and bubbling, with the baby's dish alongside for the last 15. Meanwhile, cook the peas in boiling water for 3 minutes, drain and serve with the pie."
@@ -1097,25 +1074,10 @@
     "comfort"
    ],
    "freeze": "The whole pie, or the filling on its own",
-   "nomilk": {
-    "text": [
-     [
-      " Grate the cheddar.",
-      ""
-     ],
-     [
-      "Drain the potatoes and mash them with the milk and butter until smooth.",
-      "Scoop out a mugful of the cooking water, then drain the potatoes and mash them with the oil and a splash of the cooking water until smooth."
-     ],
-     [
-      " and scatter with the cheddar",
-      ""
-     ],
-     [
-      ", with a little cheese",
-      ""
-     ]
-    ]
+   "babyIf": {
+    "chopped": {
+     "noMilk": "As yours before the stock."
+    }
    }
   },
   {
@@ -1298,20 +1260,29 @@
    ],
    "steps": [
     {
-     "t": "Get ready: grate the cheddar."
+     "t": "Get ready: grate the cheddar.",
+     "if": {
+      "noMilk": "Get ready: open the beans and get the bread out."
+     }
     },
     {
      "t": "Warm the beans in a small saucepan over a low heat for 4 to 5 minutes, stirring now and then."
     },
     {
-     "t": "Meanwhile, heat the oil in a frying pan over a medium heat, crack in the eggs and fry for 3 to 4 minutes until the whites are set[[ (fry the baby's a little longer, turning it, until the yolk is firm)]]. Toast the bread and butter it."
+     "t": "Meanwhile, heat the oil in a frying pan over a medium heat, crack in the eggs and fry for 3 to 4 minutes until the whites are set[[ (fry the baby's a little longer, turning it, until the yolk is firm)]]. Toast the bread and butter it.",
+     "if": {
+      "noMilk": "Meanwhile, heat the oil in a frying pan over a medium heat, crack in the eggs and fry for 3 to 4 minutes until the whites are set[[ (fry the baby's a little longer, turning it, until the yolk is firm)]]. Toast the bread."
+     }
     },
     {
      "t": "Take the baby's portion out now: toast fingers, a spoon of mashed beans and an egg cooked until the yolk is firm.",
      "baby": true
     },
     {
-     "t": "Pile the beans on the toast, scatter the cheese over and top with the eggs."
+     "t": "Pile the beans on the toast, scatter the cheese over and top with the eggs.",
+     "if": {
+      "noMilk": "Pile the beans on the toast and top with the eggs."
+     }
     }
    ],
    "baby": {
@@ -1322,30 +1293,18 @@
    "tags": [
     "comfort"
    ],
-   "nomilk": {
-    "name": "Beans on toast with an egg",
-    "text": [
-     [
-      "Get ready: grate the cheddar.",
-      "Get ready: open the beans and get the bread out."
-     ],
-     [
-      "Toast the bread and butter it.",
-      "Toast the bread."
-     ],
-     [
-      ", scatter the cheese over",
-      ""
-     ],
-     [
-      " Go easy on the cheese.",
-      ""
-     ],
-     [
-      ", with a little cheese",
-      ""
-     ]
-    ]
+   "babyIf": {
+    "finger": {
+     "noMilk": "Toast fingers, a small spoon of mashed reduced-salt beans, and egg cooked through, in strips."
+    },
+    "chopped": {
+     "noMilk": "As yours, cut small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Beans on toast with an egg"
+    }
    }
   },
   {
@@ -1436,7 +1395,10 @@
      "baby": true
     },
     {
-     "t": "Stir the garam masala and chilli flakes into the rest and season with salt. Serve with the rice and a spoon of yoghurt."
+     "t": "Stir the garam masala and chilli flakes into the rest and season with salt. Serve with the rice and a spoon of yoghurt.",
+     "if": {
+      "noMilk": "Stir the garam masala and chilli flakes into the rest and season with salt. Serve with the rice."
+     }
     }
    ],
    "baby": {
@@ -1446,21 +1408,13 @@
    },
    "tags": [],
    "freeze": "The curry, before the yoghurt (not the rice)",
-   "nomilk": {
-    "text": [
-     [
-      " and a spoon of yoghurt",
-      ""
-     ],
-     [
-      "Blend with a spoon of full-fat plain yoghurt until smooth.",
-      "Blend until smooth."
-     ],
-     [
-      ", plus full-fat plain yoghurt",
-      ""
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend until smooth."
+    },
+    "finger": {
+     "noMilk": "Squashed chickpeas and spinach to scoop with rice."
+    }
    }
   },
   {
@@ -1630,7 +1584,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: chop the onion. Crush most of the garlic and finely grate the rest for the yoghurt. Grate the ginger. Drain and rinse the chickpeas. Chop the coriander."
+     "t": "Get ready: chop the onion. Crush most of the garlic and finely grate the rest for the yoghurt. Grate the ginger. Drain and rinse the chickpeas. Chop the coriander.",
+     "if": {
+      "noMilk": "Get ready: chop the onion. Crush most of the garlic and finely grate the rest for the dip. Grate the ginger. Drain and rinse the chickpeas. Chop the coriander."
+     }
     },
     {
      "t": "Heat the oil in a medium saucepan over a medium heat. Add the onion and cook for 8 minutes until soft and golden at the edges."
@@ -1649,7 +1606,10 @@
      "t": "Stir the garam masala and chilli flakes into the rest and season with salt and a squeeze of lemon."
     },
     {
-     "t": "Mix the grated garlic into the yoghurt with a pinch of salt. Warm the naan in a dry frying pan or the toaster. Serve the curry with the garlic yoghurt, coriander and naan."
+     "t": "Mix the grated garlic into the yoghurt with a pinch of salt. Warm the naan in a dry frying pan or the toaster. Serve the curry with the garlic yoghurt, coriander and naan.",
+     "if": {
+      "noMilk": "Mix the grated garlic into the dairy-free yoghurt with a pinch of salt. Warm the flatbreads in a dry frying pan or the toaster. Serve the curry with the garlic dip, coriander and flatbreads."
+     }
     }
    ],
    "baby": {
@@ -1658,39 +1618,22 @@
     "chopped": "As yours before the chilli and salt, chickpeas squashed, with naan pieces."
    },
    "freeze": "The curry, before the yoghurt",
-   "nomilk": {
-    "name": "Chana masala with flatbreads",
-    "blurb": "A proper tomatoey chickpea curry with a cool garlic dip.",
-    "text": [
-     [
-      "for the yoghurt",
-      "for the dip"
-     ],
-     [
-      "Mix the grated garlic into the yoghurt",
-      "Mix the grated garlic into the dairy-free yoghurt"
-     ],
-     [
-      "Warm the naan in a dry frying pan or the toaster.",
-      "Warm the flatbreads in a dry frying pan or the toaster."
-     ],
-     [
-      "with the garlic yoghurt, coriander and naan",
-      "with the garlic dip, coriander and flatbreads"
-     ],
-     [
-      "Blend with a spoon of full-fat plain yoghurt until smooth.",
-      "Blend until smooth."
-     ],
-     [
-      "Strips of naan to dip.",
-      "Strips of flatbread to dip."
-     ],
-     [
-      "with naan pieces",
-      "with flatbread pieces"
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend until smooth."
+    },
+    "finger": {
+     "noMilk": "Squash the chickpeas with a fork so they're soft and flat. Strips of flatbread to dip."
+    },
+    "chopped": {
+     "noMilk": "As yours before the chilli and salt, chickpeas squashed, with flatbread pieces."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Chana masala with flatbreads",
+     "blurb": "A proper tomatoey chickpea curry with a cool garlic dip."
+    }
    }
   },
   {
@@ -1809,7 +1752,10 @@
      "t": "Stir the garam masala and chilli flakes into the rest, season with salt and scatter with the coriander."
     },
     {
-     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve with the yoghurt."
+     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve with the yoghurt.",
+     "if": {
+      "noMilk": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve the curry with the chapatis."
+     }
     }
    ],
    "baby": {
@@ -1818,17 +1764,10 @@
     "chopped": "As yours before the chilli and salt, cut small."
    },
    "freeze": "The curry, before the yoghurt",
-   "nomilk": {
-    "text": [
-     [
-      " Serve with the yoghurt.",
-      " Serve the curry with the chapatis."
-     ],
-     [
-      "Blend with a little full-fat plain yoghurt until smooth.",
-      "Blend until smooth."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend until smooth."
+    }
    }
   },
   {
@@ -1920,10 +1859,16 @@
    ],
    "steps": [
     {
-     "t": "Get ready: cut the paneer into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger."
+     "t": "Get ready: cut the paneer into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger.",
+     "if": {
+      "noMilk": "Get ready: drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes. Chop the onion, crush the garlic and grate the ginger."
+     }
     },
     {
-     "t": "Heat half the oil in a large frying pan over a medium-high heat. Fry the paneer for about 5 minutes, turning, until golden on a few sides. Tip it onto a plate."
+     "t": "Heat half the oil in a large frying pan over a medium-high heat. Fry the paneer for about 5 minutes, turning, until golden on a few sides. Tip it onto a plate.",
+     "if": {
+      "noMilk": "Heat half the oil in a large frying pan over a medium-high heat. Fry the tofu for about 5 minutes, turning, until golden on a few sides. Tip it onto a plate."
+     }
     },
     {
      "t": "Turn the heat down to medium, add the rest of the oil and the onion, and cook for 6 minutes until soft."
@@ -1939,10 +1884,16 @@
      "baby": true
     },
     {
-     "t": "Return the rest to the pan with the paneer, garam masala and chilli flakes and simmer for 3 minutes. Take off the heat, stir in half the yoghurt and season with salt and a squeeze of lemon."
+     "t": "Return the rest to the pan with the paneer, garam masala and chilli flakes and simmer for 3 minutes. Take off the heat, stir in half the yoghurt and season with salt and a squeeze of lemon.",
+     "if": {
+      "noMilk": "Return the rest to the pan with the tofu, garam masala and chilli flakes and simmer for 3 minutes. Take off the heat, stir in half the dairy-free yoghurt and season with salt and a squeeze of lemon."
+     }
     },
     {
-     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve with the rest of the yoghurt."
+     "t": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve with the rest of the yoghurt.",
+     "if": {
+      "noMilk": "Warm the chapatis in a dry frying pan for about 30 seconds a side. Serve with the rest of the dairy-free yoghurt."
+     }
     }
    ],
    "baby": {
@@ -1950,44 +1901,23 @@
     "finger": "Paneer cut into fingers, plus spinach sauce to dip chapati into.",
     "chopped": "As yours before the chilli and salt, paneer cut small."
    },
-   "nomilk": {
-    "name": "Saag tofu",
-    "blurb": "Golden tofu in a silky spiced spinach sauce. The blender does the work.",
-    "text": [
-     [
-      "cut the paneer into 2 cm cubes",
-      "drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes"
-     ],
-     [
-      "Fry the paneer",
-      "Fry the tofu"
-     ],
-     [
-      "with the paneer,",
-      "with the tofu,"
-     ],
-     [
-      "stir in half the yoghurt",
-      "stir in half the dairy-free yoghurt"
-     ],
-     [
-      "Serve with the rest of the yoghurt.",
-      "Serve with the rest of the dairy-free yoghurt."
-     ],
-     [
-      ", loosened with a little full-fat plain yoghurt",
-      ""
-     ],
-     [
-      "Paneer cut into fingers",
-      "Tofu cut into fingers"
-     ],
-     [
-      "paneer cut small",
-      "tofu cut small"
-     ]
-    ],
-    "time": 40
+   "babyIf": {
+    "smooth": {
+     "noMilk": "The blended spinach is perfect as it is."
+    },
+    "finger": {
+     "noMilk": "Tofu cut into fingers, plus spinach sauce to dip chapati into."
+    },
+    "chopped": {
+     "noMilk": "As yours before the chilli and salt, tofu cut small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Saag tofu",
+     "blurb": "Golden tofu in a silky spiced spinach sauce. The blender does the work.",
+     "time": 40
+    }
    }
   },
   {
@@ -2145,7 +2075,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: put a large pan of water on to boil. Thinly slice the garlic. Drain and rinse the chickpeas. Halve the olives. Grate the cheese."
+     "t": "Get ready: put a large pan of water on to boil. Thinly slice the garlic. Drain and rinse the chickpeas. Halve the olives. Grate the cheese.",
+     "if": {
+      "noMilk": "Get ready: put a large pan of water on to boil. Thinly slice the garlic. Drain and rinse the chickpeas. Halve the olives."
+     }
     },
     {
      "t": "Cook the pasta in the boiling water for the time on the packet."
@@ -2158,7 +2091,10 @@
      "baby": true
     },
     {
-     "t": "Stir the olives, capers and chilli flakes into the rest and simmer for 2 minutes. Scoop out a mugful of pasta water, drain the pasta and toss it with the sauce and a splash of the water. Finish with the cheese."
+     "t": "Stir the olives, capers and chilli flakes into the rest and simmer for 2 minutes. Scoop out a mugful of pasta water, drain the pasta and toss it with the sauce and a splash of the water. Finish with the cheese.",
+     "if": {
+      "noMilk": "Stir the olives, capers and chilli flakes into the rest and simmer for 2 minutes. Scoop out a mugful of pasta water, drain the pasta and toss it with the sauce and a splash of the water."
+     }
     }
    ],
    "baby": {
@@ -2166,19 +2102,7 @@
     "finger": "Pasta shapes in the plain sauce, chickpeas squashed.",
     "chopped": "Plain sauce and pasta, chickpeas squashed."
    },
-   "freeze": "The sauce (not the pasta)",
-   "nomilk": {
-    "text": [
-     [
-      " Grate the cheese.",
-      ""
-     ],
-     [
-      " Finish with the cheese.",
-      ""
-     ]
-    ]
-   }
+   "freeze": "The sauce (not the pasta)"
   },
   {
    "id": "roast-pepper-feta-pasta",
@@ -2261,10 +2185,16 @@
     },
     {
      "t": "Take the baby's portion out now, before the feta and chilli.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take the baby's portion out now, before the chilli."
+     }
     },
     {
-     "t": "Season the rest with salt and pepper, crumble the feta over the top and add the chilli flakes."
+     "t": "Season the rest with salt and pepper, crumble the feta over the top and add the chilli flakes.",
+     "if": {
+      "noMilk": "Season the rest with salt and pepper and add the chilli flakes."
+     }
     }
    ],
    "baby": {
@@ -2273,23 +2203,16 @@
     "chopped": "As yours before the feta, chopped small."
    },
    "freeze": "The blended sauce, before the feta",
-   "nomilk": {
-    "name": "Roasted pepper pasta",
-    "blurb": "A silky blended sauce of red peppers and white beans.",
-    "text": [
-     [
-      "before the feta and chilli",
-      "before the chilli"
-     ],
-     [
-      ", crumble the feta over the top",
-      ""
-     ],
-     [
-      "As yours before the feta, chopped small.",
-      "As yours before the chilli, chopped small."
-     ]
-    ]
+   "babyIf": {
+    "chopped": {
+     "noMilk": "As yours before the chilli, chopped small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Roasted pepper pasta",
+     "blurb": "A silky blended sauce of red peppers and white beans."
+    }
    }
   },
   {
@@ -2452,7 +2375,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Grate the cheddar. Cut the lime into wedges."
+     "t": "Get ready: cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Grate the cheddar. Cut the lime into wedges.",
+     "if": {
+      "noMilk": "Get ready: cut the sweet potato into 2 cm cubes (no need to peel). Drain and rinse the beans. Cut the lime into wedges."
+     }
     },
     {
      "t": "Toss the sweet potato with the oil, cumin and smoked paprika. Air fry at 200°C for 18 minutes, shaking halfway, until soft and browned (or roast on a tray at 220°C for 25 minutes)."
@@ -2468,7 +2394,10 @@
      "t": "Season the rest with the chilli flakes, salt and a squeeze of lime. Warm the tortillas in a dry frying pan for about 20 seconds a side."
     },
     {
-     "t": "Fill each tortilla down the middle with beans, sweet potato, cheese, salsa and yoghurt, fold in the sides and roll up."
+     "t": "Fill each tortilla down the middle with beans, sweet potato, cheese, salsa and yoghurt, fold in the sides and roll up.",
+     "if": {
+      "noMilk": "Fill each tortilla down the middle with beans, sweet potato and salsa, fold in the sides and roll up."
+     }
     }
    ],
    "baby": {
@@ -2476,26 +2405,18 @@
     "finger": "Sweet potato cubes, squashed beans and strips of tortilla.",
     "chopped": "Sweet potato, beans and grated cheese, cut small."
    },
-   "nomilk": {
-    "blurb": "Air-fried sweet potato, smoky beans and salsa, all rolled up.",
-    "text": [
-     [
-      " Grate the cheddar.",
-      ""
-     ],
-     [
-      "sweet potato, cheese, salsa and yoghurt",
-      "sweet potato and salsa"
-     ],
-     [
-      " with a little full-fat plain yoghurt",
-      ""
-     ],
-     [
-      "Sweet potato, beans and grated cheese, cut small.",
-      "Sweet potato and beans, cut small."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend the sweet potato and beans."
+    },
+    "chopped": {
+     "noMilk": "Sweet potato and beans, cut small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "blurb": "Air-fried sweet potato, smoky beans and salsa, all rolled up."
+    }
    }
   },
   {
@@ -2584,7 +2505,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: heat the oven to 200°C. Chop the pepper and crush the garlic. Drain and rinse the beans. Grate the cheddar. Mix the passata with the oregano."
+     "t": "Get ready: heat the oven to 200°C. Chop the pepper and crush the garlic. Drain and rinse the beans. Grate the cheddar. Mix the passata with the oregano.",
+     "if": {
+      "noMilk": "Get ready: heat the oven to 200°C. Chop the pepper and crush the garlic. Drain and rinse the beans. Mix the passata with the oregano."
+     }
     },
     {
      "t": "Heat the oil in a frying pan over a medium heat. Add the pepper and cook for 4 minutes until softening, then add the garlic, cumin and smoked paprika and stir for 1 minute."
@@ -2594,13 +2518,22 @@
     },
     {
      "t": "Take the baby's portion out now, before the chilli and salt: roll a little filling in a piece of tortilla and lay it in a small ovenproof dish with a spoon of passata and a little cheese for the baby.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take the baby's portion out now, before the chilli and salt: roll a little filling in a piece of tortilla and lay it in a small ovenproof dish with a spoon of passata."
+     }
     },
     {
-     "t": "Season the rest of the filling with the chilli flakes and salt. Spoon it down the middle of each tortilla, roll them up and lay them seam-down in a baking dish. Pour over the passata and scatter with the cheese."
+     "t": "Season the rest of the filling with the chilli flakes and salt. Spoon it down the middle of each tortilla, roll them up and lay them seam-down in a baking dish. Pour over the passata and scatter with the cheese.",
+     "if": {
+      "noMilk": "Season the rest of the filling with the chilli flakes and salt. Spoon it down the middle of each tortilla, roll them up and lay them seam-down in a baking dish. Pour over the passata so the tortilla edges are covered, then cover the dish with foil."
+     }
     },
     {
-     "t": "Bake for 20 minutes until bubbling, with the baby's dish alongside for the last 10. Serve with the yoghurt."
+     "t": "Bake for 20 minutes until bubbling, with the baby's dish alongside for the last 10. Serve with the yoghurt.",
+     "if": {
+      "noMilk": "Bake for 20 minutes, taking the foil off for the last 5, with the baby's dish alongside for the last 10."
+     }
     }
    ],
    "baby": {
@@ -2608,30 +2541,15 @@
     "finger": "A tortilla rolled round some filling, baked with a little cheese, cut into strips.",
     "chopped": "Cut up from a mini baked one."
    },
-   "nomilk": {
-    "blurb": "Rolled, sauced and baked. Ten minutes of work.",
-    "text": [
-     [
-      " Grate the cheddar.",
-      ""
-     ],
-     [
-      " and a little cheese for the baby",
-      ""
-     ],
-     [
-      "Pour over the passata and scatter with the cheese.",
-      "Pour over the passata so the tortilla edges are covered, then cover the dish with foil."
-     ],
-     [
-      "Bake for 20 minutes until bubbling, with the baby's dish alongside for the last 10. Serve with the yoghurt.",
-      "Bake for 20 minutes, taking the foil off for the last 5, with the baby's dish alongside for the last 10."
-     ],
-     [
-      ", baked with a little cheese,",
-      ", baked in a little passata,"
-     ]
-    ]
+   "babyIf": {
+    "finger": {
+     "noMilk": "A tortilla rolled round some filling, baked in a little passata, cut into strips."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "blurb": "Rolled, sauced and baked. Ten minutes of work."
+    }
    }
   },
   {
@@ -2710,20 +2628,32 @@
    ],
    "steps": [
     {
-     "t": "Get ready: slice the pepper and onion into thin strips. Cut the lime into wedges."
+     "t": "Get ready: slice the pepper and onion into thin strips. Cut the lime into wedges.",
+     "if": {
+      "noMilk": "Get ready: slice the pepper and onion into thin strips. Cut the lime into wedges. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers."
+     }
     },
     {
      "t": "Toss the pepper and onion with the oil, cumin and smoked paprika. Air fry at 200°C for 8 minutes."
     },
     {
      "t": "Take a few soft pepper strips out for the baby now, before the halloumi and chilli.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take a few soft pepper strips out for the baby now, before the tofu and chilli."
+     }
     },
     {
-     "t": "Cut the halloumi into fingers. Add it to the air fryer with the chilli flakes, toss, and air fry for 8 more minutes, shaking once, until the halloumi is golden."
+     "t": "Cut the halloumi into fingers. Add it to the air fryer with the chilli flakes, toss, and air fry for 8 more minutes, shaking once, until the halloumi is golden.",
+     "if": {
+      "noMilk": "Add the tofu to the air fryer with the chilli flakes, toss, and air fry for 8 more minutes, shaking once, until the tofu is golden."
+     }
     },
     {
-     "t": "Warm the tortillas in a dry frying pan for about 20 seconds a side. Squeeze the lime over the filling and serve in the tortillas with the salsa and yoghurt."
+     "t": "Warm the tortillas in a dry frying pan for about 20 seconds a side. Squeeze the lime over the filling and serve in the tortillas with the salsa and yoghurt.",
+     "if": {
+      "noMilk": "Warm the tortillas in a dry frying pan for about 20 seconds a side. Squeeze the lime over the filling and serve in the tortillas with the salsa."
+     }
     }
    ],
    "baby": {
@@ -2731,44 +2661,23 @@
     "finger": "Soft pepper strips and tortilla strips spread with full-fat plain yoghurt.",
     "chopped": "Peppers and tortilla cut small, with full-fat plain yoghurt."
    },
-   "nomilk": {
-    "name": "Air-fryer tofu fajitas",
-    "blurb": "Charred peppers and crispy tofu with salsa.",
-    "text": [
-     [
-      "before the halloumi and chilli",
-      "before the tofu and chilli"
-     ],
-     [
-      "Cut the halloumi into fingers. Add it to the air fryer",
-      "Add the tofu to the air fryer"
-     ],
-     [
-      "until the halloumi is golden",
-      "until the tofu is golden"
-     ],
-     [
-      " with the salsa and yoghurt",
-      " with the salsa"
-     ],
-     [
-      "Blend the peppers with full-fat plain yoghurt.",
-      "Blend the peppers until smooth."
-     ],
-     [
-      " spread with full-fat plain yoghurt",
-      ""
-     ],
-     [
-      ", with full-fat plain yoghurt",
-      ""
-     ],
-     [
-      "Cut the lime into wedges.",
-      "Cut the lime into wedges. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into fingers."
-     ]
-    ],
-    "time": 35
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend the peppers until smooth."
+    },
+    "finger": {
+     "noMilk": "Soft pepper strips and tortilla strips."
+    },
+    "chopped": {
+     "noMilk": "Peppers and tortilla cut small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Air-fryer tofu fajitas",
+     "blurb": "Charred peppers and crispy tofu with salsa.",
+     "time": 35
+    }
    }
   },
   {
@@ -2858,14 +2767,20 @@
      "t": "Tear the tofu into bite-sized chunks and toss in a bowl with the oil, cornflour, smoked paprika, cumin and garlic until coated. Air fry at 200°C for 15 minutes, shaking halfway, until crisp."
     },
     {
-     "t": "Meanwhile, make the slaw: mix the cabbage and carrot with half the yoghurt and the lime juice."
+     "t": "Meanwhile, make the slaw: mix the cabbage and carrot with half the yoghurt and the lime juice.",
+     "if": {
+      "noMilk": "Meanwhile, make the slaw: mix the cabbage and carrot with half the dairy-free yoghurt and the lime juice."
+     }
     },
     {
      "t": "Take the baby's tofu out now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Toss the rest of the tofu with the chilli flakes and a pinch of salt. Warm the tortillas in a dry frying pan for about 20 seconds a side, then fill with the tofu, slaw and the rest of the yoghurt."
+     "t": "Toss the rest of the tofu with the chilli flakes and a pinch of salt. Warm the tortillas in a dry frying pan for about 20 seconds a side, then fill with the tofu, slaw and the rest of the yoghurt.",
+     "if": {
+      "noMilk": "Toss the rest of the tofu with the chilli flakes and a pinch of salt. Warm the tortillas in a dry frying pan for about 20 seconds a side, then fill with the tofu, slaw and the rest of the dairy-free yoghurt."
+     }
     }
    ],
    "baby": {
@@ -2873,21 +2788,10 @@
     "finger": "Soft pieces of tofu (pick the least crispy), grated carrot and tortilla strips.",
     "chopped": "Tofu and tortilla cut small, a little grated carrot."
    },
-   "nomilk": {
-    "text": [
-     [
-      "with half the yoghurt",
-      "with half the dairy-free yoghurt"
-     ],
-     [
-      "and the rest of the yoghurt",
-      "and the rest of the dairy-free yoghurt"
-     ],
-     [
-      "Blend the tofu with full-fat plain yoghurt.",
-      "Blend the tofu until smooth with a little water."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend the tofu until smooth with a little water."
+    }
    }
   },
   {
@@ -2968,7 +2872,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: chop the onion and pepper. Drain and rinse the beans. Grate the cheddar. Slice the avocado and cut the lime into wedges."
+     "t": "Get ready: chop the onion and pepper. Drain and rinse the beans. Grate the cheddar. Slice the avocado and cut the lime into wedges.",
+     "if": {
+      "noMilk": "Get ready: chop the onion and pepper. Drain and rinse the beans. Slice the avocado and cut the lime into wedges."
+     }
     },
     {
      "t": "Heat the oil in a frying pan that has a lid, over a medium heat. Add the onion and pepper and cook for 6 minutes until soft."
@@ -2984,25 +2891,16 @@
      "t": "Season the rest with salt. Make a hollow for each egg with the back of a spoon and crack the eggs in. Cover and cook on a low heat for 6 to 8 minutes until the whites are set."
     },
     {
-     "t": "Meanwhile, toast the tortillas in a dry frying pan for 1 minute a side. Serve the eggs and sauce on the tortillas, topped with the cheese, avocado, a squeeze of lime and the chilli flakes."
+     "t": "Meanwhile, toast the tortillas in a dry frying pan for 1 minute a side. Serve the eggs and sauce on the tortillas, topped with the cheese, avocado, a squeeze of lime and the chilli flakes.",
+     "if": {
+      "noMilk": "Meanwhile, toast the tortillas in a dry frying pan for 1 minute a side. Serve the eggs and sauce on the tortillas, topped with the avocado, a squeeze of lime and the chilli flakes."
+     }
     }
    ],
    "baby": {
     "smooth": "Blend the sauce with mashed avocado.",
     "finger": "Toasted tortilla strips to dip, avocado fingers, and egg cooked until the yolk is completely firm.",
     "chopped": "Sauce, a fully set egg and avocado, chopped."
-   },
-   "nomilk": {
-    "text": [
-     [
-      " Grate the cheddar.",
-      ""
-     ],
-     [
-      "topped with the cheese, avocado",
-      "topped with the avocado"
-     ]
-    ]
    }
   },
   {
@@ -3392,23 +3290,38 @@
    ],
    "steps": [
     {
-     "t": "Get ready: heat the oven to 220°C and line a large tray with baking paper. Cut the paneer into 2 cm cubes, the cauliflower into small florets and the onion and pepper into chunks. Grate the garlic and ginger."
+     "t": "Get ready: heat the oven to 220°C and line a large tray with baking paper. Cut the paneer into 2 cm cubes, the cauliflower into small florets and the onion and pepper into chunks. Grate the garlic and ginger.",
+     "if": {
+      "noMilk": "Get ready: heat the oven to 220°C and line a large tray with baking paper. Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes, the cauliflower into small florets and the onion and pepper into chunks. Grate the garlic and ginger."
+     }
     },
     {
-     "t": "In a large bowl, mix half the yoghurt with the garlic, ginger, garam masala, cumin, turmeric, smoked paprika and oil."
+     "t": "In a large bowl, mix half the yoghurt with the garlic, ginger, garam masala, cumin, turmeric, smoked paprika and oil.",
+     "if": {
+      "noMilk": "In a large bowl, mix half the dairy-free yoghurt with the garlic, ginger, garam masala, cumin, turmeric, smoked paprika and oil."
+     }
     },
     {
-     "t": "Add the paneer and veg and toss until coated, then spread out on the tray. Roast for 25 minutes until charred at the edges."
+     "t": "Add the paneer and veg and toss until coated, then spread out on the tray. Roast for 25 minutes until charred at the edges.",
+     "if": {
+      "noMilk": "Add the tofu and veg and toss until coated, then spread out on the tray. Roast for 25 minutes until charred at the edges."
+     }
     },
     {
      "t": "Take the baby's portion off the tray now, before the chilli and salt.",
      "baby": true
     },
     {
-     "t": "Season the rest with the chilli flakes, salt and a squeeze of lemon. Grate the cucumber into the rest of the yoghurt to make raita."
+     "t": "Season the rest with the chilli flakes, salt and a squeeze of lemon. Grate the cucumber into the rest of the yoghurt to make raita.",
+     "if": {
+      "noMilk": "Season the rest with the chilli flakes, salt and a squeeze of lemon. Grate the cucumber into the rest of the dairy-free yoghurt to make raita."
+     }
     },
     {
-     "t": "Warm the naan in the oven for 2 minutes. Serve the traybake with the raita and naan."
+     "t": "Warm the naan in the oven for 2 minutes. Serve the traybake with the raita and naan.",
+     "if": {
+      "noMilk": "Warm the flatbreads in the oven for 2 minutes. Serve the traybake with the raita and flatbreads."
+     }
     }
    ],
    "baby": {
@@ -3416,39 +3329,19 @@
     "finger": "Paneer fingers, soft cauliflower and naan strips, with full-fat plain yoghurt to dip.",
     "chopped": "As yours, cut small."
    },
-   "nomilk": {
-    "name": "Tandoori tofu traybake",
-    "blurb": "Spiced tofu and veg roasted hot, with cucumber raita.",
-    "text": [
-     [
-      "Cut the paneer into 2 cm cubes",
-      "Drain the tofu, press it between sheets of kitchen paper for 10 minutes, then pat dry and cut it into 2 cm cubes"
-     ],
-     [
-      "mix half the yoghurt",
-      "mix half the dairy-free yoghurt"
-     ],
-     [
-      "Add the paneer and veg",
-      "Add the tofu and veg"
-     ],
-     [
-      "into the rest of the yoghurt",
-      "into the rest of the dairy-free yoghurt"
-     ],
-     [
-      "Warm the naan in the oven for 2 minutes. Serve the traybake with the raita and naan.",
-      "Warm the flatbreads in the oven for 2 minutes. Serve the traybake with the raita and flatbreads."
-     ],
-     [
-      "Blend the veg with full-fat plain yoghurt.",
-      "Blend the veg until smooth."
-     ],
-     [
-      "Paneer fingers, soft cauliflower and naan strips, with full-fat plain yoghurt to dip.",
-      "Tofu fingers, soft cauliflower and flatbread strips."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend the veg until smooth."
+    },
+    "finger": {
+     "noMilk": "Tofu fingers, soft cauliflower and flatbread strips."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Tandoori tofu traybake",
+     "blurb": "Spiced tofu and veg roasted hot, with cucumber raita."
+    }
    }
   },
   {
@@ -3687,7 +3580,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: scrub the potato and prick it all over with a fork. Grate the cheddar."
+     "t": "Get ready: scrub the potato and prick it all over with a fork. Grate the cheddar.",
+     "if": {
+      "noMilk": "Get ready: scrub the potato and prick it all over with a fork."
+     }
     },
     {
      "t": "Microwave the potato on full power for 10 to 12 minutes, turning halfway, until soft all the way through when squeezed (use an oven glove). Add 4 to 5 minutes for each extra potato. For crisp skin, air fry at 200°C for 5 minutes afterwards."
@@ -3697,10 +3593,16 @@
     },
     {
      "t": "Take the baby's portion out now: potato flesh, a few beans and a little cheese.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take the baby's portion out now: potato flesh and a few beans."
+     }
     },
     {
-     "t": "Split the potato, add the butter, then pile on the beans, cheese and cottage cheese. Add black pepper and serve with the salad."
+     "t": "Split the potato, add the butter, then pile on the beans, cheese and cottage cheese. Add black pepper and serve with the salad.",
+     "if": {
+      "noMilk": "Split the potato, drizzle in a little oil, then pile on the beans. Add black pepper and serve with the salad."
+     }
     }
    ],
    "baby": {
@@ -3709,31 +3611,19 @@
     "chopped": "Potato, beans and cheese, cut small."
    },
    "emergency": true,
-   "nomilk": {
-    "name": "Microwave jacket potato & beans",
-    "blurb": "A jacket potato in 15 minutes, with beans.",
-    "text": [
-     [
-      " Grate the cheddar.",
-      ""
-     ],
-     [
-      "potato flesh, a few beans and a little cheese.",
-      "potato flesh and a few beans."
-     ],
-     [
-      "Split the potato, add the butter, then pile on the beans, cheese and cottage cheese.",
-      "Split the potato, drizzle in a little oil, then pile on the beans."
-     ],
-     [
-      "Mash the potato with butter and their usual milk.",
-      "Mash the potato with a little water, or their usual breast milk or formula."
-     ],
-     [
-      "Potato, beans and cheese, cut small.",
-      "Potato and beans, cut small."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Mash the potato with a little water, or their usual breast milk or formula."
+    },
+    "chopped": {
+     "noMilk": "Potato and beans, cut small."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Microwave jacket potato & beans",
+     "blurb": "A jacket potato in 15 minutes, with beans."
+    }
    }
   },
   {
@@ -3812,7 +3702,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: chop the onion and carrot and crush the garlic. Rinse the lentils in a sieve. Grate the cheddar."
+     "t": "Get ready: chop the onion and carrot and crush the garlic. Rinse the lentils in a sieve. Grate the cheddar.",
+     "if": {
+      "noMilk": "Get ready: chop the onion and carrot and crush the garlic. Rinse the lentils in a sieve."
+     }
     },
     {
      "t": "Heat the oil in a large saucepan over a medium heat. Add the onion and carrot and cook for 6 minutes until soft. Add the garlic and smoked paprika and stir for 1 minute."
@@ -3831,7 +3724,10 @@
      "t": "Crumble the stock cube into the rest, simmer for 2 minutes and add pepper."
     },
     {
-     "t": "For the toasties, butter the outside of the bread and sandwich the cheese between. Cook in a dry frying pan over a medium heat for 2 to 3 minutes a side until golden and melted."
+     "t": "For the toasties, butter the outside of the bread and sandwich the cheese between. Cook in a dry frying pan over a medium heat for 2 to 3 minutes a side until golden and melted.",
+     "if": {
+      "noMilk": "Toast the bread to dunk in the soup."
+     }
     }
    ],
    "baby": {
@@ -3840,27 +3736,19 @@
     "chopped": "Soup thickened a little, with toastie pieces."
    },
    "freeze": "The soup (not the toasties)",
-   "nomilk": {
-    "name": "Tomato & red lentil soup with toast",
-    "blurb": "Thick, smooth soup with toast to dunk in it.",
-    "text": [
-     [
-      " Grate the cheddar.",
-      ""
-     ],
-     [
-      "For the toasties, butter the outside of the bread and sandwich the cheese between. Cook in a dry frying pan over a medium heat for 2 to 3 minutes a side until golden and melted.",
-      "Toast the bread to dunk in the soup."
-     ],
-     [
-      "plus a little toastie cut into strips",
-      "plus a little toast cut into strips"
-     ],
-     [
-      "with toastie pieces",
-      "with toast pieces"
-     ]
-    ]
+   "babyIf": {
+    "finger": {
+     "noMilk": "Thick soup to dip toast fingers into, plus a little toast cut into strips."
+    },
+    "chopped": {
+     "noMilk": "Soup thickened a little, with toast pieces."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Tomato & red lentil soup with toast",
+     "blurb": "Thick, smooth soup with toast to dunk in it."
+    }
    }
   },
   {
@@ -3944,7 +3832,10 @@
    ],
    "steps": [
     {
-     "t": "Get ready: chop the onion and crush the garlic. Drain and rinse the beans. Grate the cheese."
+     "t": "Get ready: chop the onion and crush the garlic. Drain and rinse the beans. Grate the cheese.",
+     "if": {
+      "noMilk": "Get ready: chop the onion and crush the garlic. Drain and rinse the beans."
+     }
     },
     {
      "t": "Heat the oil in a large saucepan over a medium heat. Add the onion and cook for 5 minutes until soft, then add the garlic and herbs and stir for 1 minute."
@@ -3960,7 +3851,10 @@
      "baby": true
     },
     {
-     "t": "Crumble the stock cube into the rest and simmer for 2 minutes. Season, then serve with the cheese and bread."
+     "t": "Crumble the stock cube into the rest and simmer for 2 minutes. Season, then serve with the cheese and bread.",
+     "if": {
+      "noMilk": "Crumble the stock cube into the rest and simmer for 2 minutes. Season, then serve with the bread."
+     }
     }
    ],
    "baby": {
@@ -3969,25 +3863,13 @@
     "chopped": "As yours before the stock, cut small."
    },
    "freeze": "The soup (the pasta goes softer)",
-   "nomilk": {
-    "text": [
-     [
-      " Grate the cheese.",
-      ""
-     ],
-     [
-      "serve with the cheese and bread",
-      "serve with the bread"
-     ],
-     [
-      "Blend with a spoon of grated cheese.",
-      "Blend until smooth."
-     ],
-     [
-      ", with a little cheese",
-      ""
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend until smooth."
+    },
+    "finger": {
+     "noMilk": "Drain some of the bits out: pasta, beans and soft veg."
+    }
    }
   },
   {
@@ -4103,7 +3985,10 @@
      "t": "Season the rest with the chilli flakes and salt."
     },
     {
-     "t": "Put the couscous in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes, then fluff with a fork. Serve the stew on the couscous with the yoghurt, a squeeze of lemon and the coriander."
+     "t": "Put the couscous in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes, then fluff with a fork. Serve the stew on the couscous with the yoghurt, a squeeze of lemon and the coriander.",
+     "if": {
+      "noMilk": "Put the couscous in a bowl, pour over {{75|ml}} boiling water, cover with a plate and leave for 5 minutes, then fluff with a fork. Serve the stew on the couscous with a squeeze of lemon and the coriander."
+     }
     }
    ],
    "baby": {
@@ -4112,17 +3997,10 @@
     "chopped": "As yours, cut small."
    },
    "freeze": "The stew (not the couscous)",
-   "nomilk": {
-    "text": [
-     [
-      " with the yoghurt, a squeeze",
-      " with a squeeze"
-     ],
-     [
-      "Blend with a little full-fat plain yoghurt.",
-      "Blend until smooth."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend until smooth."
+    }
    }
   },
   {
@@ -4208,10 +4086,16 @@
    ],
    "steps": [
     {
-     "t": "Get ready: heat the oven to 200°C and put the kettle on. Chop the onion and crush the garlic. Grate the cheese and zest the lemon."
+     "t": "Get ready: heat the oven to 200°C and put the kettle on. Chop the onion and crush the garlic. Grate the cheese and zest the lemon.",
+     "if": {
+      "noMilk": "Get ready: heat the oven to 200°C and put the kettle on. Chop the onion and crush the garlic. Zest the lemon."
+     }
     },
     {
-     "t": "In an ovenproof pan with a lid (or a casserole dish), melt the butter over a medium heat. Add the onion and cook for 5 minutes until soft."
+     "t": "In an ovenproof pan with a lid (or a casserole dish), melt the butter over a medium heat. Add the onion and cook for 5 minutes until soft.",
+     "if": {
+      "noMilk": "In an ovenproof pan with a lid (or a casserole dish), heat the oil over a medium heat. Add the onion and cook for 5 minutes until soft."
+     }
     },
     {
      "t": "Add the garlic and rice and stir for 1 minute until the rice is coated."
@@ -4224,10 +4108,16 @@
     },
     {
      "t": "Spoon the baby's portion out now, before the stock and cheese. Squash any edamame and peas in the baby's portion flat with a fork.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Spoon the baby's portion out now, before the stock. Squash any edamame and peas in the baby's portion flat with a fork."
+     }
     },
     {
-     "t": "Dissolve the stock cube in {{30|ml}} boiling water and stir it through the rest with most of the cheese, until creamy. Top with the ricotta, the rest of the cheese, the lemon zest and black pepper."
+     "t": "Dissolve the stock cube in {{30|ml}} boiling water and stir it through the rest with most of the cheese, until creamy. Top with the ricotta, the rest of the cheese, the lemon zest and black pepper.",
+     "if": {
+      "noMilk": "Dissolve the stock cube in {{30|ml}} boiling water and stir it through the rest with an extra splash of boiling water until loose and glossy. Finish with the lemon zest and plenty of black pepper."
+     }
     }
    ],
    "baby": {
@@ -4236,34 +4126,18 @@
     "chopped": "As yours before the stock, with a little ricotta."
    },
    "grainsMixed": true,
-   "nomilk": {
-    "blurb": "Risotto without the stirring. It goes in the oven.",
-    "text": [
-     [
-      " Grate the cheese and zest the lemon.",
-      " Zest the lemon."
-     ],
-     [
-      "melt the butter over a medium heat",
-      "heat the oil over a medium heat"
-     ],
-     [
-      "before the stock and cheese",
-      "before the stock"
-     ],
-     [
-      "stir it through the rest with most of the cheese, until creamy. Top with the ricotta, the rest of the cheese, the lemon zest and black pepper.",
-      "stir it through the rest with an extra splash of boiling water until loose and glossy. Finish with the lemon zest and plenty of black pepper."
-     ],
-     [
-      "Blend with a spoon of ricotta.",
-      "Blend with a little water, or their usual breast milk or formula."
-     ],
-     [
-      "As yours before the stock, with a little ricotta.",
-      "As yours before the stock."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend with a little water, or their usual breast milk or formula."
+    },
+    "chopped": {
+     "noMilk": "As yours before the stock."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "blurb": "Risotto without the stirring. It goes in the oven."
+    }
    }
   },
   {
@@ -4376,7 +4250,10 @@
      "baby": true
     },
     {
-     "t": "Season the rest with the chilli flakes and salt and fluff it up with a fork. Grate the cucumber into the yoghurt to make raita. Serve with the halved eggs and coriander."
+     "t": "Season the rest with the chilli flakes and salt and fluff it up with a fork. Grate the cucumber into the yoghurt to make raita. Serve with the halved eggs and coriander.",
+     "if": {
+      "noMilk": "Season the rest with the chilli flakes and salt and fluff it up with a fork. Grate the cucumber into the dairy-free yoghurt to make raita. Serve with the halved eggs and coriander."
+     }
     }
    ],
    "baby": {
@@ -4385,17 +4262,10 @@
     "chopped": "As yours before the chilli and salt, with chopped egg."
    },
    "grainsMixed": true,
-   "nomilk": {
-    "text": [
-     [
-      "into the yoghurt",
-      "into the dairy-free yoghurt"
-     ],
-     [
-      " with a little full-fat plain yoghurt and egg",
-      " with a little egg"
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend the rice and veg with a little egg."
+    }
    }
   },
   {
@@ -4486,10 +4356,16 @@
     },
     {
      "t": "Warm the baby's spoonful of chickpeas in the microwave until hot, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the feta and olives.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Warm the baby's spoonful of chickpeas in the microwave until hot, then squash them flat. Take the baby's couscous and cucumber sticks out now too, before the olives."
+     }
     },
     {
-     "t": "Build the bowls: couscous, cucumber, tomatoes, red onion and chickpeas, with the feta crumbled over, the olives and a spoon of houmous."
+     "t": "Build the bowls: couscous, cucumber, tomatoes, red onion and chickpeas, with the feta crumbled over, the olives and a spoon of houmous.",
+     "if": {
+      "noMilk": "Build the bowls: couscous, cucumber, tomatoes, red onion and chickpeas, with the olives and a spoon of houmous."
+     }
     }
    ],
    "baby": {
@@ -4498,18 +4374,10 @@
     "chopped": "Couscous, squashed chickpeas and chopped cucumber."
    },
    "grainsMixed": true,
-   "nomilk": {
-    "blurb": "Crispy chickpeas, crunchy salad and houmous on lemony couscous.",
-    "text": [
-     [
-      "before the feta and olives",
-      "before the olives"
-     ],
-     [
-      ", with the feta crumbled over, the olives",
-      ", with the olives"
-     ]
-    ]
+   "if": {
+    "noMilk": {
+     "blurb": "Crispy chickpeas, crunchy salad and houmous on lemony couscous."
+    }
    }
   },
   {
@@ -4584,13 +4452,22 @@
     },
     {
      "t": "Take the baby's portion (with some couscous) out now, before the halloumi.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take the baby's portion (with some couscous) out now, before the tofu."
+     }
     },
     {
-     "t": "Slice the halloumi about 1 cm thick. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the halloumi for 1 to 2 minutes a side until golden."
+     "t": "Slice the halloumi about 1 cm thick. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the halloumi for 1 to 2 minutes a side until golden.",
+     "if": {
+      "noMilk": "Drain the tofu, press it firmly between sheets of kitchen paper and pat dry, then cut it into 2 cm cubes. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the tofu for about 5 minutes, turning, until golden."
+     }
     },
     {
-     "t": "Fluff the couscous with a fork, stir in the lemon juice, black pepper and the chickpea mix, and top with the halloumi."
+     "t": "Fluff the couscous with a fork, stir in the lemon juice, black pepper and the chickpea mix, and top with the halloumi.",
+     "if": {
+      "noMilk": "Fluff the couscous with a fork, stir in the lemon juice, black pepper and the chickpea mix, and top with the tofu."
+     }
     }
    ],
    "baby": {
@@ -4600,23 +4477,16 @@
    },
    "emergency": true,
    "grainsMixed": true,
-   "nomilk": {
-    "name": "15-minute tofu & chickpea couscous",
-    "blurb": "Golden tofu, warm chickpeas and tomatoes on lemony couscous.",
-    "text": [
-     [
-      "before the halloumi",
-      "before the tofu"
-     ],
-     [
-      "Slice the halloumi about 1 cm thick. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the halloumi for 1 to 2 minutes a side until golden.",
-      "Drain the tofu, press it firmly between sheets of kitchen paper and pat dry, then cut it into 2 cm cubes. Wipe the pan, heat the rest of the oil over a medium-high heat and fry the tofu for about 5 minutes, turning, until golden."
-     ],
-     [
-      "top with the halloumi",
-      "top with the tofu"
-     ]
-    ]
+   "babyIf": {
+    "chopped": {
+     "noMilk": "As yours before the tofu, chopped."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "15-minute tofu & chickpea couscous",
+     "blurb": "Golden tofu, warm chickpeas and tomatoes on lemony couscous."
+    }
    }
   },
   {
@@ -4900,7 +4770,10 @@
      "t": "Add the chilli flakes and a pinch of salt to the rest and shape into burgers. Chill all the burgers in the fridge for 10 minutes so they firm up."
     },
     {
-     "t": "Heat the rest of the oil in a non-stick frying pan over a medium heat. Fry the burgers for 4 minutes a side, laying the cheese on top for the last minute. Serve in the buns with the yoghurt and salad."
+     "t": "Heat the rest of the oil in a non-stick frying pan over a medium heat. Fry the burgers for 4 minutes a side, laying the cheese on top for the last minute. Serve in the buns with the yoghurt and salad.",
+     "if": {
+      "noMilk": "Heat the rest of the oil in a non-stick frying pan over a medium heat. Fry the burgers for 4 minutes a side. Serve in the buns with the salad."
+     }
     }
    ],
    "baby": {
@@ -4909,21 +4782,10 @@
     "chopped": "Patty and fries cut small."
    },
    "freeze": "The uncooked burgers, between sheets of baking paper",
-   "nomilk": {
-    "text": [
-     [
-      ", laying the cheese on top for the last minute",
-      ""
-     ],
-     [
-      "Serve in the buns with the yoghurt and salad.",
-      "Serve in the buns with the salad."
-     ],
-     [
-      " with full-fat plain yoghurt",
-      " until smooth"
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Mash the patty and sweet potato until smooth."
+    }
    }
   },
   {
@@ -5094,10 +4956,16 @@
     },
     {
      "t": "Pick one corner to be the baby's piece: no feta goes on the baby's corner.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Pick one corner to be the baby's piece."
+     }
     },
     {
-     "t": "Scatter the feta over the top[[, leaving the baby's corner bare]]."
+     "t": "Scatter the feta over the top[[, leaving the baby's corner bare]].",
+     "if": {
+      "noMilk": ""
+     }
     },
     {
      "t": "Grill for 4 to 5 minutes until set and golden. Rest for 2 minutes, then cut into wedges. Toast the sourdough and serve with the salad."
@@ -5108,30 +4976,21 @@
     "finger": "Fingers of the feta-free piece, completely set.",
     "chopped": "The feta-free piece, chopped."
    },
-   "nomilk": {
-    "name": "Potato & spinach frittata",
-    "text": [
-     [
-      "Pick one corner to be the baby's piece: no feta goes on the baby's corner.",
-      "Pick one corner to be the baby's piece."
-     ],
-     [
-      "Scatter the feta over the top[[, leaving the baby's corner bare]].",
-      ""
-     ],
-     [
-      "Blend the feta-free piece with a little milk.",
-      "Blend their piece with a little water, or their usual breast milk or formula."
-     ],
-     [
-      "Fingers of the feta-free piece",
-      "Fingers of their piece"
-     ],
-     [
-      "The feta-free piece, chopped.",
-      "Their piece, chopped."
-     ]
-    ]
+   "babyIf": {
+    "smooth": {
+     "noMilk": "Blend their piece with a little water, or their usual breast milk or formula."
+    },
+    "finger": {
+     "noMilk": "Fingers of their piece, completely set."
+    },
+    "chopped": {
+     "noMilk": "Their piece, chopped."
+    }
+   },
+   "if": {
+    "noMilk": {
+     "name": "Potato & spinach frittata"
+    }
    }
   },
   {
@@ -5199,13 +5058,22 @@
     },
     {
      "t": "Take a falafel, some cucumber sticks and a tortilla spread with houmous out for the baby now, before the halloumi.",
-     "baby": true
+     "baby": true,
+     "if": {
+      "noMilk": "Take a falafel, some cucumber sticks and a tortilla spread with houmous out for the baby now."
+     }
     },
     {
-     "t": "Slice the halloumi about 1 cm thick. Heat a dry frying pan over a medium-high heat and fry it for 1 to 2 minutes a side until golden."
+     "t": "Slice the halloumi about 1 cm thick. Heat a dry frying pan over a medium-high heat and fry it for 1 to 2 minutes a side until golden.",
+     "if": {
+      "noMilk": ""
+     }
     },
     {
-     "t": "Warm the tortillas in the same pan for about 20 seconds a side. Fill with houmous, salad, cucumber, falafel and halloumi, then add the yoghurt and a squeeze of lemon."
+     "t": "Warm the tortillas in the same pan for about 20 seconds a side. Fill with houmous, salad, cucumber, falafel and halloumi, then add the yoghurt and a squeeze of lemon.",
+     "if": {
+      "noMilk": "Warm the tortillas in a dry frying pan for about 20 seconds a side. Fill with houmous, salad, cucumber, falafel, an extra spoon of houmous and a squeeze of lemon."
+     }
     }
    ],
    "baby": {
@@ -5214,27 +5082,11 @@
     "chopped": "Falafel, tortilla and cucumber, chopped."
    },
    "emergency": true,
-   "nomilk": {
-    "name": "Falafel wraps",
-    "blurb": "Shop falafel in warm wraps with houmous. Ready in 12 minutes.",
-    "text": [
-     [
-      " out for the baby now, before the halloumi.",
-      " out for the baby now."
-     ],
-     [
-      "Slice the halloumi about 1 cm thick. Heat a dry frying pan over a medium-high heat and fry it for 1 to 2 minutes a side until golden.",
-      ""
-     ],
-     [
-      "falafel and halloumi, then add the yoghurt and a squeeze of lemon",
-      "falafel, an extra spoon of houmous and a squeeze of lemon"
-     ],
-     [
-      "Warm the tortillas in the same pan",
-      "Warm the tortillas in a dry frying pan"
-     ]
-    ]
+   "if": {
+    "noMilk": {
+     "name": "Falafel wraps",
+     "blurb": "Shop falafel in warm wraps with houmous. Ready in 12 minutes."
+    }
    }
   }
  ],

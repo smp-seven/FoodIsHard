@@ -379,22 +379,42 @@ function allergyAlt(i) {
   }
   return null;
 }
-// With milk avoided, recipes that have a dairy-free version ("nomilk") use its name, blurb and rewritten
-// steps and baby notes everywhere (including cooking mode). The originals are kept in app.recipesRaw.
+// ---- Recipe versions ("if") ------------------------------------------------------------------------------
+// A step can carry complete alternative wording for conditions: { t: "...", if: { noMilk: "...", noAirFryer: "...",
+// "noAirFryer+noMilk": "..." } } ("" leaves the step out). The recipe itself can have if.<condition> = { name, blurb,
+// time }, and little-ones' notes babyIf.<stage>.<condition>. The household sees one version: for each piece, the most
+// specific one whose conditions are all switched on. tools/check_recipes.py proves every combination is unambiguous
+// and that nothing the household can't use (dairy, an air fryer…) is left in the words.
+function kitchenConditions() {
+  const on = [], k = settings().kitchen || {};
+  if (avoidList().includes("milk")) on.push("noMilk");
+  if (k.airFryer === false) on.push("noAirFryer");
+  if (k.microwave === false) on.push("noMicrowave");
+  if (k.blender === false) on.push("noBlender");
+  return on;
+}
+function pickVersion(variants, on, base) {
+  let best = base, size = 0;
+  for (const [key, text] of Object.entries(variants || {})) {
+    const conds = key.split("+");
+    if (conds.length > size && conds.every((c) => on.includes(c))) { best = text; size = conds.length; }
+  }
+  return best;
+}
 let adaptedFor = null;
 function adaptRecipes() {
   if (!app.recipesRaw) app.recipesRaw = app.recipes;
-  const key = avoidList().includes("milk") ? "milk" : "";
+  const on = kitchenConditions(), key = on.join("+");
   if (adaptedFor === key) return;
   adaptedFor = key;
-  app.recipes = app.recipesRaw.map((r) => (key && r.nomilk ? withText(r, r.nomilk) : r));
+  app.recipes = app.recipesRaw.map((r) => (on.length ? versionFor(r, on) : r));
   app.byId = Object.fromEntries(app.recipes.map((r) => [r.id, r]));
 }
-function withText(r, a) {
-  const fix = (t) => (a.text || []).reduce((out, [from, to]) => out.split(from).join(to), t || "");
-  return { ...r, name: a.name || r.name, blurb: a.blurb || fix(r.blurb), adapted: "milk", time: a.time || r.time,
-    steps: r.steps.map((st) => ({ ...st, t: fix(st.t) })).filter((st) => st.t.trim()), // a step rewritten to nothing is dropped
-    baby: Object.fromEntries(Object.entries(r.baby || {}).map(([k, v]) => [k, fix(v)])) };
+function versionFor(r, on) {
+  const top = pickVersion(r.if, on, {});
+  return { ...r, name: top.name || r.name, blurb: top.blurb || r.blurb, time: top.time || r.time,
+    steps: r.steps.map((st) => ({ ...st, t: pickVersion(st.if, on, st.t) })).filter((st) => st.t.trim()),
+    baby: Object.fromEntries(Object.entries(r.baby || {}).map(([k, v]) => [k, pickVersion((r.babyIf || {})[k], on, v)])) };
 }
 const shortName = (k) => ingMeta(k).n.split(" (")[0].split(" / ")[0];
 /** What's been changed in this recipe for the household's allergies, in words ("leave out the cheddar"). */

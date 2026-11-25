@@ -26,6 +26,73 @@ errors, warnings = [], []
 seen = set()
 
 
+
+# ---- Recipe versions -------------------------------------------------------------------------------------------
+# A step can carry full alternative wording per condition ({"t": ..., "if": {"noMilk": ..., "noAirFryer+noMilk": ...}}),
+# the recipe can override name/blurb/time per condition (r["if"]), and little-ones' notes per stage (r["babyIf"]).
+# The app shows, for each piece, the most specific version whose conditions are all on. Here we build EVERY
+# combination and check: no ambiguity, nothing the household can't use left in the words, one baby step.
+CONDITIONS = {
+    "noMilk": re.compile(r"\b(cheese|cheesy|cheddar|yoghurt|yogurt|butter|milk|paneer|ricotta|feta|halloumi|mozzarella|naan|creamy|cream|ghee|dairy|toastie|toasties)\b", re.I),
+    "noAirFryer": re.compile(r"\bair[- ]?fr(y|ier|yer|ied|ying)", re.I),
+    "noMicrowave": re.compile(r"microwav", re.I),
+    "noBlender": re.compile(r"\bblend|\bblender|food processor", re.I),
+}
+ALLOWED = {"noMilk": re.compile(r"dairy-free yoghurt|their usual breast milk or formula|peanut butter", re.I)}
+NEEDS = {"airFryer": "noAirFryer", "microwave": "noMicrowave", "blender": "noBlender"}  # r["needs"]: hidden without it
+# Conditions the app lets households switch on. A condition is only enforced once it's listed here.
+ENFORCED = ["noMilk"]
+
+def pick(variants, on, base, where, err, r):
+    best, size, tie = base, 0, []
+    for key, text in (variants or {}).items():
+        conds = set(key.split("+"))
+        if conds <= on:
+            if len(conds) > size: best, size, tie = text, len(conds), [key]
+            elif len(conds) == size: tie.append(key)
+    if len(tie) > 1:
+        err(r, f"{where}: with {'+'.join(sorted(on))} on, both {tie[0]!r} and {tie[1]!r} apply. Write a combined '{'+'.join(sorted(set(tie[0].split('+')) | set(tie[1].split('+'))))}' version")
+    return best
+
+def check_versions(r, items, err):
+    keys = set()
+    for s_ in r.get("steps", []): keys |= set((s_.get("if") or {}).keys())
+    keys |= set((r.get("if") or {}).keys())
+    for v in (r.get("babyIf") or {}).values(): keys |= set(v.keys())
+    for key in keys:
+        parts = key.split("+")
+        if any(c not in CONDITIONS for c in parts): err(r, f"unknown condition in {key!r}")
+        if parts != sorted(parts): err(r, f"write {key!r} with its conditions in A-Z order: {'+'.join(sorted(parts))!r}")
+    milky = [i for i in r.get("ingredients", []) if "milk" in (items.get(i["k"], {}).get("al") or []) and not i.get("optional")]
+    adaptable = bool(milky) and all("milk" in (i.get("alt") or {}) for i in milky)
+    if any("milk" in (i.get("alt") or {}) for i in milky) and not adaptable:
+        for i in milky:
+            if "milk" not in (i.get("alt") or {}): err(r, f"{i['k']} contains milk but has no dairy-free swap or 'omit'")
+    for n in r.get("needs", []):
+        if n not in NEEDS: err(r, f"needs: unknown appliance {n!r}")
+    # conditions that can actually apply to this recipe (if it's hidden under a condition, there's nothing to check)
+    relevant = [c for c in ENFORCED if not (c == "noMilk" and milky and not adaptable)
+                and not any(NEEDS.get(n) == c for n in r.get("needs", []))]
+    from itertools import combinations
+    for size in range(1, len(relevant) + 1):
+        for combo in combinations(relevant, size):
+            on = set(combo)
+            top = pick(r.get("if"), on, {}, "name/blurb", err, r)
+            words = [("name", top.get("name") or r["name"]), ("blurb", top.get("blurb") or r.get("blurb", ""))]
+            babies = 0
+            for n_, s_ in enumerate(r.get("steps", []), 1):
+                t = pick(s_.get("if"), on, s_["t"], f"step {n_}", err, r)
+                if t.strip():
+                    words.append((f"step {n_}", t)); babies += bool(s_.get("baby"))
+            for stage, note in (r.get("baby") or {}).items():
+                words.append((f"little ones ({stage})", pick((r.get("babyIf") or {}).get(stage), on, note, f"little ones ({stage})", err, r)))
+            if babies != 1: err(r, f"with {'+'.join(sorted(on))} on there are {babies} baby steps, not 1")
+            for c in on:
+                for where, t in words:
+                    clean = ALLOWED[c].sub("", t) if c in ALLOWED else t
+                    if hit := CONDITIONS[c].search(clean):
+                        err(r, f"with {'+'.join(sorted(on))} on, {where} still says {hit.group(0)!r}: {t[:70]!r}")
+
 def err(r, msg):
     errors.append(f"{r.get('id', '?')}: {msg}")
 
@@ -126,29 +193,8 @@ for r in recipes["recipes"]:
                 err(r, f"[[...]] is for baby-only text, but this doesn't mention the baby: {aside[:50]!r}")
     if r.get("grainsMixed") and not any(i.get("k") in ("rice", "rice_pouch", "arborio", "couscous") for i in r.get("ingredients", [])):
         err(r, "grainsMixed is set but there's no rice or couscous in it")
-    # dairy-free version: every rewrite must match, and no dairy may be left in the words or the ingredients
-    nm = r.get("nomilk")
-    milky = [i["k"] for i in r.get("ingredients", []) if "milk" in (items.get(i["k"], {}).get("al") or []) and not i.get("optional")]
-    if nm:
-        texts = [s_["t"] for s_ in r.get("steps", [])] + list((r.get("baby") or {}).values()) + [r.get("blurb", "")]
-        for pair in nm.get("text", []):
-            if not any(pair[0] in t for t in texts):
-                err(r, f"nomilk: can't find {pair[0][:50]!r}")
-        def fix(t):
-            for a_, b_ in nm.get("text", []):
-                t = t.replace(a_, b_)
-            return t
-        final = [nm.get("name", r["name"]), nm.get("blurb") or fix(r.get("blurb", ""))] + [fix(t) for t in texts[:-1]]
-        for t in final:
-            clean = re.sub(r"dairy-free yoghurt|their usual breast milk or formula", "", t, flags=re.I)
-            hit = re.search(r"\b(cheese|cheesy|cheddar|yoghurt|yogurt|butter|milk|paneer|ricotta|feta|halloumi|mozzarella|naan|creamy|cream|ghee|dairy|toastie|toasties)\b", clean, re.I)
-            if hit:
-                err(r, f"nomilk: {hit.group(0)!r} is still in: {t[:70]!r}")
-        for k_ in milky:
-            if "milk" not in (next(i for i in r["ingredients"] if i["k"] == k_).get("alt") or {}):
-                err(r, f"nomilk: {k_} contains milk but has no dairy-free swap or 'omit'")
-    elif any("milk" in (i.get("alt") or {}) for i in r.get("ingredients", [])):
-        err(r, "has dairy-free swaps but no 'nomilk' wording for the steps")
+    # recipe versions ("if"): build every combination of the conditions this recipe can meet and check each one
+    check_versions(r, items, err)
     for stage in STAGES:
         if not r.get("baby", {}).get(stage):
             err(r, f"missing baby note for stage '{stage}'")
