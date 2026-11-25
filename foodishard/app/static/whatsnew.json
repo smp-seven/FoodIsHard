@@ -3,6 +3,12 @@
  "minVersion": "0.0.0",
  "versions": [
   {
+   "version": "0.21.1",
+   "notes": [
+    "Recipes your kitchen can't make now read properly when you open them."
+   ]
+  },
+  {
    "version": "0.21.0",
    "notes": [
     "Your kitchen: pick the appliances you have, the same way as your shops. Recipes are written for what you have, and any that can't be made are hidden."

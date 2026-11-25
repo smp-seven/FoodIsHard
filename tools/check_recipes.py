@@ -78,14 +78,14 @@ def check_kitchens(recipes_, items, err):
                 seen.add(msg); err(r_, msg)
         for e in x["errors"]:
             once(e)
+        texts = [("name", x["name"]), ("blurb", x["blurb"])] + [(f"step {i}", s_["t"]) for i, s_ in enumerate(x["steps"], 1)] + [(f"little ones ({k})", v) for k, v in x["baby"].items()]
+        for w, t in texts:  # even a recipe hidden for this kitchen can be opened, so it must read properly
+            if "{{@" in t:
+                once(f"{where}: {w} still has an unfinished cooking job: {t[:70]!r}")
         if x["needs"]:
             if sorted(x["have"]) == every:
                 once(f"can't be made even with every appliance: needs {x['needs']}")
-            continue  # hidden for this kitchen, so there's nothing to read
-        texts = [("name", x["name"]), ("blurb", x["blurb"])] + [(f"step {i}", s_["t"]) for i, s_ in enumerate(x["steps"], 1)] + [(f"little ones ({k})", v) for k, v in x["baby"].items()]
-        for w, t in texts:
-            if "{{@" in t:
-                once(f"{where}: {w} still has an unfinished cooking job: {t[:70]!r}")
+            continue  # hidden for this kitchen: it's written for appliances it doesn't have, under "Needs …"
             for a, rx in words.items():
                 if a not in x["have"] and (hit := rx.search(t)):
                     once(f"{where}: {w} says {hit.group(0)!r}: {t[:70]!r}")

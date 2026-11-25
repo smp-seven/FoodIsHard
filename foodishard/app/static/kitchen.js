@@ -24,8 +24,11 @@
     return String(text || "").replace(/\{\{@(\w+)([^}]*)\}\}/g, (whole, name, argText, offset, str) => {
       const job = kitchen.jobs[name];
       if (!job) { use.errors.push(`unknown job "${name}"`); return whole; }
-      const a = parseArgs(argText), o = optionFor(job, have);
-      if (!o) { use.missing.add(name); return whole; }
+      const a = parseArgs(argText);
+      let o = optionFor(job, have);
+      // Nothing in this kitchen can do it: the recipe is hidden from plans and says what it needs, but if someone
+      // opens it anyway it still reads properly, written for the first appliance in the rules.
+      if (!o) { use.missing.add(name); o = (job.options || [])[0]; if (!o) return ""; }
       const temp = +(a.temp || 200), otemp = temp + (o.hotter || 0);
       let time = "", extra = 0;
       if (a.t != null) { const s = scaleTime(a.t, o.scale); time = s.text; extra = s.extra; }
